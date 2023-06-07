@@ -1,0 +1,9 @@
+{
+  "name": "entities/models",
+  "ts": {
+    "path": "ts",
+    "files": [
+      "*"
+    ]
+  }
+}
