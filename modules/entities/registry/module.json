@@ -1,10 +1,9 @@
 {
 	"name": "entities/registry",
 	"platforms": ["web", "android", "ios"],
-	"start": {
-		"ts": {
-			"path": "/start/ts",
-			"files": ["*"]
-		}
+
+	"ts": {
+		"path": "/start/ts",
+		"files": ["*"]
 	}
 }

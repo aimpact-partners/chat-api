@@ -9,10 +9,8 @@ interface IChat {
 
 export /*bundle*/ class Chat extends Item<IChat> {
 	protected properties = ['id', 'userId', 'category'];
-	protected storeName = 'Chat';
-	protected db = 'chat-api@1';
 
 	constructor({ id = undefined } = {}) {
-		super({ id, provider: ChatProvider });
+		super({ id, db: 'chat-api', storeName: 'Chat', provider: ChatProvider });
 	}
 }
