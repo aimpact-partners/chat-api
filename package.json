@@ -31,6 +31,16 @@
 					"http": 6581,
 					"inspect": 6582
 				}
+			},
+			{
+				"name": "web",
+				"environment": "development",
+				"platform": "web",
+				"ports": {
+					"bundles": 3380,
+					"http": 3581,
+					"inspect": 3282
+				}
 			}
 		]
 	},
