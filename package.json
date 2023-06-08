@@ -36,6 +36,7 @@
 				"name": "web",
 				"environment": "development",
 				"platform": "web",
+				"backend": "backend",
 				"ports": {
 					"bundles": 3380,
 					"http": 3581,
