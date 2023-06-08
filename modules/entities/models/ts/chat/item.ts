@@ -1,6 +1,6 @@
 // ChatItem
-import { Item } from '@beyond-js/reactive-2/entities';
-import { ChatProvider } from '@aimpact/chat-api/provider';
+import {Item} from '@beyond-js/reactive-2/entities';
+import {ChatProvider} from '@aimpact/chat-api/backend-provider';
 
 interface IChat {
 	userId: string;
@@ -10,7 +10,7 @@ interface IChat {
 export /*bundle*/ class Chat extends Item<IChat> {
 	protected properties = ['id', 'userId', 'category'];
 
-	constructor({ id = undefined } = {}) {
-		super({ id, db: 'chat-api', storeName: 'Chat', provider: ChatProvider });
+	constructor({id = undefined} = {}) {
+		super({id, db: 'chat-api', storeName: 'Chat', provider: ChatProvider});
 	}
 }

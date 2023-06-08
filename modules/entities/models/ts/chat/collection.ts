@@ -1,5 +1,5 @@
 import {Collection} from '@beyond-js/reactive-2/entities';
-import {ChatsProvider} from '@aimpact/chat-api/provider';
+import {ChatProvider} from '@aimpact/chat-api/backend-provider';
 import {Chat} from './item';
 
 interface IChats {
@@ -13,7 +13,7 @@ export class Chats extends Collection {
 
 	constructor() {
 		super();
-		this.provider = new ChatsProvider();
+		this.provider = new ChatProvider();
 		this.init();
 	}
 }
