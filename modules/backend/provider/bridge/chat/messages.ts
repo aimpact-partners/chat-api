@@ -34,7 +34,7 @@ export class ChatMessages {
 
 			//const item = await this.collection.add(data);
 
-			return { status: true, message: responseData, response: };
+			return { status: true, message: responseData };
 		} catch (e) {
 			console.error(e);
 			return { error: true, message: e.message };
