@@ -1,5 +1,6 @@
 import type { Server } from 'socket.io';
-import { db } from './db';
+import { db } from '../db';
+import { ChatMessages } from './messages';
 
 interface Chat {
 	id: string;
@@ -11,18 +12,21 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 	socket: Server;
 	private collection;
 	private table = 'Chat';
+	#messages;
 
 	constructor(socket: Server) {
 		this.socket = socket;
 		this.collection = db.collection(this.table);
+		this.#messages = new ChatMessages();
 	}
 
-	async load(id: string) {
+	async load({ id }: { id: string }) {
 		try {
 			if (!id) {
 				return { status: false, error: true, message: 'id is required' };
 			}
 
+			console.log('id', id);
 			const chatRef = await this.collection.doc(id);
 			const doc = await chatRef.get();
 
