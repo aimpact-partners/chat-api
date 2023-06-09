@@ -19,12 +19,13 @@ export /*bundle*/ class Chat extends Item<IChat> {
 
 	constructor({ id = undefined } = {}) {
 		super({ id, db: 'chat-api', storeName: 'Chat', provider: ChatProvider });
+
 	}
 
-	async load() {
+	loadAll = async specs => {
 		console.log(1, 'starting');
-		await super.load(...arguments);
+		const response = await this.load(specs);
 		//@ts-ignore
-		console.log(2, this.remoteData);
-	}
+		
+	};
 }

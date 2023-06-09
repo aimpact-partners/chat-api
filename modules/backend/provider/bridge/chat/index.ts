@@ -26,7 +26,6 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 				return { status: false, error: true, message: 'id is required' };
 			}
 
-			console.log('id', id);
 			const chatRef = await this.collection.doc(id);
 			const doc = await chatRef.get();
 
