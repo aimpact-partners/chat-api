@@ -11,4 +11,7 @@ export /*bundle */ class Chats extends Collection {
 	constructor() {
 		super({ provider: ChatProvider, storeName: 'Chat', db: 'chat-api' });
 	}
+
+
+	
 }

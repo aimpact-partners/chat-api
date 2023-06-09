@@ -1,5 +1,5 @@
-import type {Server} from 'socket.io';
-import {db} from './db';
+import type { Server } from 'socket.io';
+import { db } from './db';
 
 interface Chat {
 	id: string;
@@ -20,12 +20,23 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 	async load(id: string) {
 		try {
 			if (!id) {
-				return {status: false, error: true, message: 'id is required'};
+				return { status: false, error: true, message: 'id is required' };
 			}
-			const response = await this.collection.doc(id).get();
-			return {status: true, data: response.data() as Chat};
+			const chatRef = await this.collection.doc(id);
+			const doc = await chatRef.get();
+
+			const messagesSnapshot = await chatRef.collection('messages').get();
+			const messages = messagesSnapshot.docs.map(doc => doc.data());
+
+			return {
+				status: true,
+				data: {
+					...doc.data(),
+					messages,
+				},
+			};
 		} catch (e) {
-			return {error: true, message: e.message};
+			return { error: true, message: e.message };
 		}
 	}
 
@@ -36,7 +47,7 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 			return response;
 		} catch (e) {
 			console.error(e);
-			return {error: true, message: e.message};
+			return { error: true, message: e.message };
 		}
 	}
 
@@ -45,9 +56,9 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 			const entries = [];
 			const items = await this.collection.get();
 			items.forEach(item => entries.push(item.data()));
-			return {status: true, data: {entries}};
+			return { status: true, data: { entries } };
 		} catch (e) {
-			return {error: true, message: e.message};
+			return { error: true, message: e.message };
 		}
 	}
 
@@ -56,11 +67,11 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 			const entries = [];
 			const promises = [];
 			data.forEach(item => promises.push(this.collection.add(item)));
-			await Promise.all(promises).then(i => i.map((chat, j) => entries.push({id: chat.id, ...data[j]})));
+			await Promise.all(promises).then(i => i.map((chat, j) => entries.push({ id: chat.id, ...data[j] })));
 
-			return {status: true, data: {entries}};
+			return { status: true, data: { entries } };
 		} catch (e) {
-			return {error: true, message: e.message};
+			return { error: true, message: e.message };
 		}
 	}
 }
