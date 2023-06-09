@@ -1,0 +1,14 @@
+{
+	"name": "/tests/page",
+	"widget": {
+		"route": "/chat-api/tests",
+		"is": "page",
+		"ts": {
+			"path": "/widget/ts",
+			"files": ["*"]
+		},
+		"element": {
+			"name": "chat-api-test"
+		}
+	}
+}

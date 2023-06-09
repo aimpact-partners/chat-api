@@ -7,11 +7,7 @@ interface IDocuments {
 
 export class Documents extends Collection {
 	item = Document;
-	protected storeName = 'Documents';
-	protected db = 'chat-api@1';
-
 	constructor() {
-		super();
-		this.init();
+		super({ storeName: 'Documents', db: 'chat-api' });
 	}
 }
