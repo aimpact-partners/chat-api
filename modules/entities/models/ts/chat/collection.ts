@@ -8,9 +8,6 @@ interface IChats {
 
 export /*bundle */ class Chats extends Collection {
 	item = Chat;
-	protected storeName = 'Chat';
-	protected db = 'chat-api';
-
 	constructor() {
 		super({ provider: ChatProvider, storeName: 'Chat', db: 'chat-api' });
 	}
