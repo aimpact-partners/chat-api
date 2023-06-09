@@ -12,9 +12,9 @@ interface IChat {
 export /*bundle*/ class Chat extends Item<IChat> {
 	protected properties = ['id', 'userId', 'category', 'name'];
 
-	#messages: Messages;
+	#messages: any[];
 	get messages() {
-		return [];
+		return this.#messages;
 	}
 
 	constructor({ id = undefined } = {}) {
@@ -24,7 +24,9 @@ export /*bundle*/ class Chat extends Item<IChat> {
 	loadAll = async specs => {
 		//@ts-ignore
 		const response = await this.load(specs);
-		console.log(0.1, response);
+		console.log(12, response);
+		this.#messages = response.data.messages ?? response.data.messages;
+
 		//@ts-ignore
 	};
 
@@ -37,18 +39,21 @@ export /*bundle*/ class Chat extends Item<IChat> {
 			//@ts-ignore
 			messageItem.setOffline(true);
 			//@ts-ignore
+			this.#messages.push({ id: messageItem.id, text, role: 'user', timestamp: Date.now() });
+			//@ts-ignore
 			await messageItem.publish({ text, role: 'user', timestamp: Date.now() });
+			//@ts-ignore
 			this.triggerEvent('new.message');
 			//@ts-ignore
 			const data = { ...messageItem.getValues() };
-			console.log(2, data);
+
 			//@ts-ignore
 			const response = await this.provider.sendMessage({ chatId: this.id, ...data });
 			if (!response.status) {
 				throw new Error(response.error);
 			}
-			console.log(10, response);
-			this.#messages.add(response.data.response);
+
+			this.#messages.push(response.data.response);
 			//@ts-ignore
 			this.triggerEvent('new.message');
 		} catch (e) {
