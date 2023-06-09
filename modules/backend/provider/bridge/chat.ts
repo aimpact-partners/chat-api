@@ -22,6 +22,7 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 			if (!id) {
 				return { status: false, error: true, message: 'id is required' };
 			}
+
 			const chatRef = await this.collection.doc(id);
 			const doc = await chatRef.get();
 
@@ -54,6 +55,7 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 	async list() {
 		try {
 			const entries = [];
+
 			const items = await this.collection.get();
 			items.forEach(item => entries.push(item.data()));
 			return { status: true, data: { entries } };
