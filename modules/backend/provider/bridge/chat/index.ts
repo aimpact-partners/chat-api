@@ -17,7 +17,7 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 	constructor(socket: Server) {
 		this.socket = socket;
 		this.collection = db.collection(this.table);
-		this.#messages = new ChatMessages();
+		this.#messages = new ChatMessages(this);
 	}
 
 	async load({ id }: { id: string }) {
