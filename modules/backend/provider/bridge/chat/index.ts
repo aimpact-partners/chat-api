@@ -17,7 +17,7 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 	constructor(socket: Server) {
 		this.socket = socket;
 		this.collection = db.collection(this.table);
-		this.#messages = new ChatMessages(this);
+		this.#messages = new ChatMessages();
 	}
 
 	async load({ id }: { id: string }) {
@@ -78,5 +78,9 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 		} catch (e) {
 			return { error: true, message: e.message };
 		}
+	}
+
+	async sendMessage(data) {
+		return this.#messages.publish(data);
 	}
 }

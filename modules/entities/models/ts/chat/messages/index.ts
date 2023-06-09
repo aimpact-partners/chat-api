@@ -8,7 +8,16 @@ interface IMessages {
 
 export class Messages extends Collection {
 	item = Message;
+
 	constructor() {
 		super({ provider: MessageProvider, storeName: 'Messages', db: 'chat-api' });
+	}
+
+	add(text) {
+		//@ts-ignore
+		const message = new Message();
+		// message.setOffline(true);
+
+		// this.items.push(message);
 	}
 }

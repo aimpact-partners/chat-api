@@ -1,6 +1,6 @@
 // ChatItem
-import {Item} from '@beyond-js/reactive-2/entities';
-import {MessageProvider} from '@aimpact/chat-api/backend-provider';
+import { Item } from '@beyond-js/reactive-2/entities';
+import { MessageProvider } from '@aimpact/chat-api/backend-provider';
 
 interface IMessage {
 	userId: string;
@@ -8,9 +8,9 @@ interface IMessage {
 }
 
 export /*bundle*/ class Message extends Item<IMessage> {
-	protected properties = ['id', 'userId', 'timestamp'];
+	protected properties = ['id', 'userId', 'text', 'timestamp'];
 
-	constructor({id = undefined} = {}) {
-		super({id, db: 'chat-api', storeName: 'Messages', provider: MessageProvider});
+	constructor({ id = undefined } = {}) {
+		super({ id, db: 'chat-api', storeName: 'Messages', provider: MessageProvider });
 	}
 }

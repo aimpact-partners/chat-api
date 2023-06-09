@@ -1,7 +1,7 @@
-import type {Server} from 'socket.io';
-import {db} from '../db';
+import type { Server } from 'socket.io';
+import { db } from '../db';
 import * as admin from 'firebase-admin';
-import {TriggerAgent} from '@aimpact/chat-api/trigger-agent';
+import { TriggerAgent } from '@aimpact/chat-api/trigger-agent';
 
 interface Message {
 	id: string;
@@ -17,21 +17,22 @@ export class ChatMessages {
 	private table = 'messages';
 	#agent: TriggerAgent;
 
-	constructor(parent) {
-		parent.addMessage = this.publish.bind(this);
+	constructor() {
 		this.#agent = new TriggerAgent();
 	}
 
 	async publish(data) {
 		try {
+			console.log(0.1, data);
 			if (!data.chatId) {
 				throw new Error('chatId is required');
 			}
-			if (!data.message) {
+			if (!data.text) {
 				throw new Error('message is required');
 			}
+			console.log(0.4, data.agent);
+			const response = await this.#agent.call(data.text);
 
-			const response = await this.#agent.call(data.message);
 			if (!response.status) {
 				return response;
 			}
@@ -44,7 +45,6 @@ export class ChatMessages {
 			const chatDoc = await chat.get();
 			const messageRef = await chat.collection(this.table).add({
 				...data,
-				role: 'user',
 				timestamp: admin.firestore.FieldValue.serverTimestamp(),
 			});
 			const savedMessage = await messageRef.get();
@@ -55,16 +55,16 @@ export class ChatMessages {
 			 */
 			const agentMessage = {
 				chatId: data.chatId,
-				message: response.data.output,
+				text: response.data.output,
 				role: 'system',
 				timestamp: admin.firestore.FieldValue.serverTimestamp(),
 			};
 			await chat.collection(this.table).add(agentMessage);
 
-			return {status: true, message: responseData};
+			return { status: true, message: responseData, response: agentMessage };
 		} catch (e) {
 			console.error(e);
-			return {error: true, message: e.message};
+			return { error: true, message: e.message };
 		}
 	}
 }
