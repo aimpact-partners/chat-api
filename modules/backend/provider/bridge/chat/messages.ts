@@ -1,7 +1,7 @@
-import type { Server } from 'socket.io';
-import { db } from '../db';
+import type {Server} from 'socket.io';
+import {db} from '../db';
 import * as admin from 'firebase-admin';
-import { TriggerAgent } from '@aimpact/chat-api/trigger-agent';
+import {TriggerAgent} from '@aimpact/chat-api/trigger-agent';
 
 interface Message {
 	id: string;
@@ -21,9 +21,22 @@ export class ChatMessages {
 		this.#agent = new TriggerAgent();
 	}
 
+	async bulkSave(data) {
+		try {
+			const entries = [];
+			const promises = [];
+			data.forEach(item => promises.push(this.collection.add(item)));
+			await Promise.all(promises).then(i => i.map((chat, j) => entries.push({id: chat.id, ...data[j]})));
+
+			console.log('bulk save entries', entries);
+			return {status: true, data: {entries}};
+		} catch (e) {
+			return {status: false, error: e.message};
+		}
+	}
+
 	async publish(data) {
 		try {
-			console.log(0.1, data);
 			if (!data.chatId) {
 				throw new Error('chatId is required');
 			}
@@ -61,10 +74,10 @@ export class ChatMessages {
 			};
 			await chat.collection(this.table).add(agentMessage);
 
-			return { status: true, message: responseData, response: agentMessage };
+			return {status: true, data: {message: responseData, response: agentMessage}};
 		} catch (e) {
 			console.error(e);
-			return { error: true, message: e.message };
+			return {status: false, error: e.message};
 		}
 	}
 }

@@ -1,5 +1,5 @@
-import type { Server } from 'socket.io';
-import { db } from './db';
+import type {Server} from 'socket.io';
+import {db} from './db';
 import * as admin from 'firebase-admin';
 interface Message {
 	id: string;
@@ -20,12 +20,12 @@ export /*actions*/ /*bundle*/ class MessageProvider {
 	async load(id: string) {
 		try {
 			if (!id) {
-				return { status: false, error: true, message: 'id is required' };
+				return {status: false, error: true, message: 'id is required'};
 			}
 			const response = await this.collection.doc(id).get();
-			return { status: true, data: response.data() as Message };
+			return {status: true, data: response.data() as Message};
 		} catch (e) {
-			return { error: true, message: e.message };
+			return {status: false, error: e.message};
 		}
 	}
 
@@ -45,12 +45,10 @@ export /*actions*/ /*bundle*/ class MessageProvider {
 			const savedMessage = await messageRef.get();
 			const responseData = savedMessage.exists ? savedMessage.data() : undefined;
 
-			//const item = await this.collection.add(data);
-
-			return { status: true, message: responseData };
+			return {status: true, data: responseData};
 		} catch (e) {
 			console.error(e);
-			return { error: true, message: e.message };
+			return {status: false, error: e.message};
 		}
 	}
 
@@ -59,9 +57,9 @@ export /*actions*/ /*bundle*/ class MessageProvider {
 			const entries = [];
 			const items = await this.collection.get();
 			items.forEach(item => entries.push(item.data()));
-			return { status: true, data: { entries } };
+			return {status: true, data: {entries}};
 		} catch (e) {
-			return { error: true, message: e.message };
+			return {status: false, error: e.message};
 		}
 	}
 
@@ -70,11 +68,11 @@ export /*actions*/ /*bundle*/ class MessageProvider {
 			const entries = [];
 			const promises = [];
 			data.forEach(item => promises.push(this.collection.add(item)));
-			await Promise.all(promises).then(i => i.map((chat, j) => entries.push({ id: chat.id, ...data[j] })));
+			await Promise.all(promises).then(i => i.map((chat, j) => entries.push({id: chat.id, ...data[j]})));
 
-			return { status: true, data: { entries } };
+			return {status: true, data: {entries}};
 		} catch (e) {
-			return { error: true, message: e.message };
+			return {status: false, error: e.message};
 		}
 	}
 }

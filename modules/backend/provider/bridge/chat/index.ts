@@ -1,6 +1,6 @@
-import type { Server } from 'socket.io';
-import { db } from '../db';
-import { ChatMessages } from './messages';
+import type {Server} from 'socket.io';
+import {db} from '../db';
+import {ChatMessages} from './messages';
 
 interface Chat {
 	id: string;
@@ -20,10 +20,10 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 		this.#messages = new ChatMessages();
 	}
 
-	async load({ id }: { id: string }) {
+	async load({id}: {id: string}) {
 		try {
 			if (!id) {
-				return { status: false, error: true, message: 'id is required' };
+				return {status: false, error: 'id is required'};
 			}
 
 			const chatRef = await this.collection.doc(id);
@@ -40,7 +40,7 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 				},
 			};
 		} catch (e) {
-			return { error: true, message: e.message };
+			return {status: false, error: e.message};
 		}
 	}
 
@@ -51,7 +51,7 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 			return response;
 		} catch (e) {
 			console.error(e);
-			return { error: true, message: e.message };
+			return {status: false, error: e.message};
 		}
 	}
 
@@ -61,9 +61,9 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 
 			const items = await this.collection.get();
 			items.forEach(item => entries.push(item.data()));
-			return { status: true, data: { entries } };
+			return {status: true, data: {entries}};
 		} catch (e) {
-			return { error: true, message: e.message };
+			return {status: false, error: e.message};
 		}
 	}
 
@@ -72,11 +72,11 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 			const entries = [];
 			const promises = [];
 			data.forEach(item => promises.push(this.collection.add(item)));
-			await Promise.all(promises).then(i => i.map((chat, j) => entries.push({ id: chat.id, ...data[j] })));
+			await Promise.all(promises).then(i => i.map((chat, j) => entries.push({id: chat.id, ...data[j]})));
 
-			return { status: true, data: { entries } };
+			return {status: true, data: {entries}};
 		} catch (e) {
-			return { error: true, message: e.message };
+			return {status: false, error: e.message};
 		}
 	}
 

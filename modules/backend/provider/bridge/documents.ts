@@ -19,12 +19,12 @@ export /*actions*/ /*bundle*/ class DocumentProvider {
 	async load(id: string) {
 		try {
 			if (!id) {
-				return {status: false, error: true, message: 'id is required'};
+				return {status: false, error: 'id is required'};
 			}
 			const response = await this.collection.doc(id).get();
 			return {status: true, data: response.data() as Document};
 		} catch (e) {
-			return {error: true, message: e.message};
+			return {status: false, error: e.message};
 		}
 	}
 
@@ -35,7 +35,7 @@ export /*actions*/ /*bundle*/ class DocumentProvider {
 			return response;
 		} catch (e) {
 			console.error(e);
-			return {error: true, message: e.message};
+			return {status: false, error: e.message};
 		}
 	}
 
@@ -46,7 +46,7 @@ export /*actions*/ /*bundle*/ class DocumentProvider {
 			items.forEach(item => entries.push(item.data()));
 			return {status: true, data: {entries}};
 		} catch (e) {
-			return {error: true, message: e.message};
+			return {status: false, error: e.message};
 		}
 	}
 
@@ -59,7 +59,7 @@ export /*actions*/ /*bundle*/ class DocumentProvider {
 
 			return {status: true, data: {entries}};
 		} catch (e) {
-			return {error: true, message: e.message};
+			return {status: false, error: e.message};
 		}
 	}
 }

@@ -51,10 +51,12 @@ export const uploader = async function (req, res) {
 		}
 		res.json({
 			status: true,
-			file: dest,
-			transcription: response.data.text,
-			agent: agentResponse.data.output,
-			message: 'File uploaded successfully',
+			data: {
+				file: dest,
+				transcription: response.data.text,
+				output: agentResponse.data.output,
+				message: 'File uploaded successfully',
+			},
 		});
 	} catch (error) {
 		console.error(error);
