@@ -1,18 +1,16 @@
 // Document
-import { ReactiveModel } from "@beyond-js/reactive-2/model";
-import { Item } from "@beyond-js/reactive-2/entities";
+import {Item} from '@beyond-js/reactive-2/entities';
+import {DocumentProvider} from '@aimpact/chat-api/backend-provider';
 
 interface IDocument {
-    knowledgeBaseId: string;
-    // additional properties...
+	knowledgeBaseId: string;
+	// additional properties...
 }
 
 export class Document extends Item<IDocument> {
-    protected properties = ["id", "knowledgeBaseId", /* additional properties... */];
-    protected storeName = "Documents";
-    protected db = "chat-api@1";
+	protected properties = ['id', 'knowledgeBaseId']; /* additional properties... */
 
-    constructor({ id = undefined } = {}) {
-        super({id});
-    }
+	constructor({id = undefined} = {}) {
+		super({id, db: 'chat-api', storeName: 'Document', provider: DocumentProvider});
+	}
 }

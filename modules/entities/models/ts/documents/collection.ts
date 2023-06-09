@@ -1,4 +1,5 @@
 import { Collection } from '@beyond-js/reactive-2/entities';
+import { DocumentProvider } from '@aimpact/chat-api/backend-provider';
 import { Document } from './item';
 
 interface IDocuments {
@@ -8,6 +9,6 @@ interface IDocuments {
 export class Documents extends Collection {
 	item = Document;
 	constructor() {
-		super({ storeName: 'Documents', db: 'chat-api' });
+		super({ provider: DocumentProvider, storeName: 'Documents', db: 'chat-api' });
 	}
 }
