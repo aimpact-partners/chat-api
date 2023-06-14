@@ -1,12 +1,12 @@
 import { Storage } from '@google-cloud/storage';
-import { firebaseConfig } from './credentials';
+import { getFirebaseConfig } from './credentials';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 
 export async function getFile(fileName: string): Promise<fs.ReadStream> {
 	const storage = new Storage();
-
+	const firebaseConfig = getFirebaseConfig();
 	const bucketName = firebaseConfig.storageBucket;
 
 	const bucket = storage.bucket(bucketName);

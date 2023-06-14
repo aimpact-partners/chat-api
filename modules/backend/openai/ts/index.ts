@@ -1,10 +1,8 @@
-import * as dotenv from 'dotenv';
-import {Configuration, OpenAIApi} from 'openai';
-import type {ChatCompletionRequestMessage} from 'openai';
-import {getFile} from './buckets/read';
-import {gptTurboPlus, davinci3, whisper} from './utils/models';
+import { Configuration, OpenAIApi } from 'openai';
+import type { ChatCompletionRequestMessage } from 'openai';
+import { getFile } from './buckets/read';
+import { gptTurboPlus, davinci3, whisper } from './utils/models';
 
-dotenv.config();
 interface IResponse {
 	data: {
 		text: string;
@@ -12,7 +10,7 @@ interface IResponse {
 }
 export /*bundle*/
 class OpenAIBackend {
-	#configuration = new Configuration({apiKey: process.env.OPEN_AI_KEY});
+	#configuration = new Configuration({ apiKey: process.env.OPEN_AI_KEY });
 	#openai = new OpenAIApi(this.#configuration);
 
 	async completions(prompt: string, text: string) {
@@ -25,10 +23,10 @@ class OpenAIBackend {
 				temperature: 0.2,
 			});
 
-			return {status: true, data: response.data.choices[0].text};
+			return { status: true, data: response.data.choices[0].text };
 		} catch (e) {
 			console.error(e.message);
-			return {status: false, error: e.message};
+			return { status: false, error: e.message };
 		}
 	}
 
@@ -40,10 +38,10 @@ class OpenAIBackend {
 				temperature: 0.2,
 			});
 
-			return {status: true, data: response.data.choices[0].message.content};
+			return { status: true, data: response.data.choices[0].message.content };
 		} catch (e) {
 			console.error(e.message);
-			return {status: false, error: e.message};
+			return { status: false, error: e.message };
 		}
 	}
 
@@ -71,10 +69,10 @@ class OpenAIBackend {
 				lang
 			)) as IResponse;
 
-			return {status: true, data: response.data};
+			return { status: true, data: response.data };
 		} catch (e) {
 			const code = e.message.includes('401' ? 401 : 500);
-			return {status: false, error: e.message, code};
+			return { status: false, error: e.message, code };
 		}
 	}
 }
