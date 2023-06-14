@@ -1,5 +1,6 @@
 import type { Server } from 'socket.io';
 import { db } from '../db';
+import * as dayjs from 'dayjs';
 import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 
 interface Chat {
@@ -18,26 +19,31 @@ export /*actions*/ /*bundle*/ class UserProvider {
 		this.collection = db.collection(this.table);
 	}
 
-	updateUser = async user => {
-		const userRef = doc(this.collection, user.id);
-		const userSnapshot = await getDoc(userRef);
+	async updateUser(user) {
+		try {
+			const userRef = await this.collection.doc(user.id);
+			const userSnapshot = await userRef.get();
+			if (userSnapshot.exists) {
+				// If the user already exists in the database, update the lastLogin field
+				await userRef.update({
+					latLsogin: dayjs().unix(),
+				});
+			} else {
+				// If the user doesn't exist in the database, create a new document for them
+				await userRef.set({
+					id: user.id,
+					displayName: user.displayName,
+					email: user.email,
+					photoURL: user.photoURL,
+					phoneNumber: user.phoneNumber,
+					createdOn: dayjs().unix(),
+					lastLogin: dayjs().unix(),
+				});
+			}
 
-		if (userSnapshot.exists()) {
-			// If the user already exists in the database, update the lastLogin field
-			await updateDoc(userRef, {
-				lastLogin: serverTimestamp(),
-			});
-		} else {
-			// If the user doesn't exist in the database, create a new document for them
-			await setDoc(userRef, {
-				uid: user.uid,
-				displayName: user.displayName,
-				email: user.email,
-				photoURL: user.photoURL,
-				phoneNumber: user.phoneNumber,
-				createdOn: serverTimestamp(),
-				lastLogin: serverTimestamp(),
-			});
+			return { status: true, data: { user: userSnapshot } };
+		} catch (e) {
+			console.error(e);
 		}
-	};
+	}
 }

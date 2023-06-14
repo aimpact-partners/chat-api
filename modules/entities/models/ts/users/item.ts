@@ -18,11 +18,15 @@ export /*bundle*/ class User extends Item<IAudio> {
 	}
 
 	async login(data) {
+		//@ts-ignore
+		await this.isReady;
 		if (this.#logged) return;
 		//@ts-ignore
-		this.set(data);
+		await this.set(data);
+
 		//@ts-ignore
-		await this.provider.updateUser(this.getValues());
+		await this.provider.updateUser({ ...this.getValues(), id: this.id });
 		this.#logged = true;
+		return true;
 	}
 }
