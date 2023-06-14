@@ -1,83 +1,83 @@
 {
-	"name": "@aimpact/chat-api",
-	"version": "0.0.1",
-	"title": "CHAT API for custom chats using Agents",
-	"description": "",
-	"license": "ISC",
-	"scripts": {
-		"start": "node index.js"
-	},
-	"engines": {
-		"node": "16.x.x"
-	},
-	"languages": {
-		"default": "en",
-		"supported": [
-			"en",
-			"es"
-		]
-	},
-	"modules": {
-		"path": "modules"
-	},
-	"libraries": {
-		"imports": [
-			"@beyond-js/reactive-2",
-			"@aimpact/base-agent"
-		]
-	},
-	"deployment": {
-		"distributions": [
-			{
-				"name": "backend",
-				"environment": "development",
-				"platform": "backend",
-				"ports": {
-					"bundles": 6580,
-					"http": 6581,
-					"inspect": 6582
-				}
-			},
-			{
-				"name": "node",
-				"environment": "development",
-				"platform": "node",
-				"ports": {
-					"bundles": 6583,
-					"http": 6584,
-					"inspect": 6585
-				}
-			},
-			{
-				"name": "web",
-				"environment": "development",
-				"platform": "web",
-				"backend": "backend",
-				"ports": {
-					"bundles": 3380,
-					"http": 3581,
-					"inspect": 3282
-				}
-			}
-		]
-	},
-	"dependencies": {
-		"@beyond-js/backend": "~0.1.6",
-		"@beyond-js/kernel": "~0.1.8",
-		"@beyond-js/local": "~0.1.3",
-		"@beyond-js/events": "^0.0.6",
-		"@google-cloud/storage": "^6.10.1",
-		"socket.io-client": "^4.5.4",
-		"multer": "^1.4.5-lts.1",
-		"firebase": "^9.22.1",
-		"fluent-ffmpeg": "^2.1.2",
-		"uuid": "^9.0.0",
-		"express": "^4.17.1",
-		"dexie": "^3.2.4",
-		"dotenv": "^16.0.3",
-		"openai": "^3.2.1",
-		"langchain": "^0.0.75",
-		"firebase-admin": "^11.4.1",
-		"node-fetch": "^2.0.0"
-	}
+    "name": "@aimpact/chat-api",
+    "version": "0.0.1",
+    "title": "CHAT API for custom chats using Agents",
+    "description": "",
+    "license": "ISC",
+    "scripts": {
+        "start": "node index.js"
+    },
+    "engines": {
+        "node": "16.x.x"
+    },
+    "languages": {
+        "default": "en",
+        "supported": [
+            "en",
+            "es"
+        ]
+    },
+    "modules": {
+        "path": "modules"
+    },
+    "libraries": {
+        "imports": [
+            "@beyond-js/reactive-2",
+            "@aimpact/base-agent"
+        ]
+    },
+    "deployment": {
+        "distributions": [
+            {
+                "name": "backend",
+                "environment": "development",
+                "platform": "backend",
+                "ports": {
+                    "bundles": 6580,
+                    "http": 6581,
+                    "inspect": 6582
+                }
+            },
+            {
+                "name": "node",
+                "environment": "development",
+                "platform": "node",
+                "ports": {
+                    "bundles": 6583,
+                    "http": 6584,
+                    "inspect": 6585
+                }
+            },
+            {
+                "name": "web",
+                "environment": "development",
+                "platform": "web",
+                "backend": "backend",
+                "ports": {
+                    "bundles": 3380,
+                    "http": 3581,
+                    "inspect": 3282
+                }
+            }
+        ]
+    },
+    "dependencies": {
+        "@beyond-js/backend": "~0.1.6",
+        "@beyond-js/kernel": "~0.1.8",
+        "@beyond-js/local": "~0.1.3",
+        "@beyond-js/events": "^0.0.6",
+        "@google-cloud/storage": "^6.10.1",
+        "socket.io-client": "^4.5.4",
+        "multer": "^1.4.5-lts.1",
+        "firebase": "^9.22.1",
+        "fluent-ffmpeg": "^2.1.2",
+        "uuid": "^9.0.0",
+        "express": "^4.17.1",
+        "dexie": "^3.2.4",
+        "dotenv": "^16.0.3",
+        "openai": "^3.2.1",
+        "langchain": "^0.0.75",
+        "firebase-admin": "^11.4.1",
+        "node-fetch": "^2.0.0"
+    }
 }
