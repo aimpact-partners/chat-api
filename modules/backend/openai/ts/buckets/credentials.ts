@@ -1,4 +1,4 @@
-console.log(0.1, process.env);
+console.trace(0.1, process.env.STORAGEBUCKET);
 export const firebaseConfig = {
 	apiKey: process.env.APIKEY,
 	authDomain: process.env.AUTHDOMAIN,

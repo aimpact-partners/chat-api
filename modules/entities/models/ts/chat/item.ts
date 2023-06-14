@@ -34,19 +34,35 @@ export /*bundle*/ class Chat extends Item<IChat> {
 		const messageItem = new Message();
 		const promises = [];
 		messages.forEach(message => {
-			console.log('message', message);
 			this.#messages.push(message);
-			this.triggerEvent('new.message');
+			this.triggerEvent();
 			//@ts-ignore
 			promises.push(messageItem.publish(message));
 		});
 		await Promise.all(promises);
 
 		const response = await this.provider.bulkSave(messages);
-		console.log('setAudioMessage response', response);
+
 		return response;
 	}
 
+	sendAudio(audio) {
+		const messageItem = new Message();
+		//@ts-ignore
+		messageItem.setOffline(true);
+
+		//@ts-ignore
+		this.#messages.push({
+			id: messageItem.id,
+			chatId: this.id,
+			type: 'audio',
+			audio,
+			role: 'user',
+			timestamp: Date.now(),
+		});
+
+		this.triggerEvent();
+	}
 	async sendMessage(text: string) {
 		try {
 			//@ts-ignore
