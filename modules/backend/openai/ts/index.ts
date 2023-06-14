@@ -38,6 +38,7 @@ class OpenAIBackend {
 				temperature: 0.2,
 			});
 
+			
 			return { status: true, data: response.data.choices[0].message.content };
 		} catch (e) {
 			console.error(e.message);
@@ -71,6 +72,7 @@ class OpenAIBackend {
 
 			return { status: true, data: response.data };
 		} catch (e) {
+			console.error(e);
 			const code = e.message.includes('401' ? 401 : 500);
 			return { status: false, error: e.message, code };
 		}
