@@ -3,7 +3,7 @@
 	"platforms": ["web", "android", "ios"],
 
 	"ts": {
-		"path": "/start/ts",
+		"path": "ts",
 		"files": ["*"]
 	}
 }

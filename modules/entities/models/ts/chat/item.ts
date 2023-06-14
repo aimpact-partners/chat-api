@@ -36,6 +36,7 @@ export /*bundle*/ class Chat extends Item<IChat> {
 		messages.forEach(message => {
 			console.log('message', message);
 			this.#messages.push(message);
+			this.triggerEvent('new.message');
 			//@ts-ignore
 			promises.push(messageItem.publish(message));
 		});
