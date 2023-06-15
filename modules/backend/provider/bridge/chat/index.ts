@@ -48,11 +48,9 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 
     async publish(data) {
         try {
-            console.log(100, data);
-
-            const element = await this.collection.doc(data.id).set(data);
+            await this.collection.doc(data.id).set(data);
             const item = await this.collection.doc(data.id).get();
-            console.log('item', item, item.data());
+
             return { status: true, data: item.data() };
         } catch (e) {
             console.error(e);
