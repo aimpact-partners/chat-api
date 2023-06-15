@@ -12,7 +12,7 @@ interface IChat {
 export /*bundle*/ class Chat extends Item<IChat> {
 	protected properties = ['id', 'userId', 'category', 'name'];
 
-	#messages: any[];
+	#messages: any[] = [];
 	get messages() {
 		return this.#messages;
 	}
@@ -33,12 +33,13 @@ export /*bundle*/ class Chat extends Item<IChat> {
 	async setAudioMessage(messages: { text: string; role: string }[]) {
 		const messageItem = new Message();
 		const promises = [];
+
 		messages.forEach(message => {
 			this.#messages.push(message);
-			this.triggerEvent();
 			//@ts-ignore
 			promises.push(messageItem.publish(message));
 		});
+		this.triggerEvent();
 		await Promise.all(promises);
 
 		const response = await this.provider.bulkSave(messages);
@@ -80,7 +81,7 @@ export /*bundle*/ class Chat extends Item<IChat> {
 			await messageItem.publish({ chatId: this.id, text, role: 'user', timestamp: Date.now() });
 
 			//@ts-ignore
-			this.triggerEvent('new.message');
+			this.triggerEvent();
 			//@ts-ignore
 			const data = { ...messageItem.getValues() };
 
