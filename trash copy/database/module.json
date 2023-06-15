@@ -1,9 +1,0 @@
-{
-  "name": "database",
-  "ts": {
-    "path": "ts",
-    "files": [
-      "*"
-    ]
-  }
-}
