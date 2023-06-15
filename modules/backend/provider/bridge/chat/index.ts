@@ -52,8 +52,8 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 
             const element = await this.collection.doc(data.id).set(data);
             const item = await this.collection.doc(data.id).get();
-
-            return item;
+            console.log('item', item, item.data());
+            return { status: true, data: item.data() };
         } catch (e) {
             console.error(e);
             return { status: false, error: e.message };
