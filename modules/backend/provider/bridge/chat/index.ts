@@ -3,93 +3,94 @@ import { db } from '../db';
 import { ChatMessages } from './messages';
 
 interface Chat {
-	id: string;
-	userId: string;
-	category: string;
-	knowledgeBoxId: string;
+    id: string;
+    userId: string;
+    category: string;
+    knowledgeBoxId: string;
 }
 
 export /*actions*/ /*bundle*/ class ChatProvider {
-	socket: Server;
-	private collection;
-	private table = 'Chat';
-	#messages;
+    socket: Server;
+    private collection;
+    private table = 'Chat';
+    #messages;
 
-	constructor(socket: Server) {
-		this.socket = socket;
-		this.collection = db.collection(this.table);
-		this.#messages = new ChatMessages();
-	}
+    constructor(socket: Server) {
+        this.socket = socket;
+        this.collection = db.collection(this.table);
+        this.#messages = new ChatMessages();
+    }
 
-	async load({ id }: { id: string }) {
-		try {
-			if (!id) {
-				return { status: false, error: 'id is required' };
-			}
+    async load({ id }: { id: string }) {
+        try {
+            if (!id) {
+                return { status: false, error: 'id is required' };
+            }
 
-			const chatRef = await this.collection.doc(id);
-			const doc = await chatRef.get();
+            const chatRef = await this.collection.doc(id);
+            const doc = await chatRef.get();
 
-			const messagesSnapshot = await chatRef.collection('messages').get();
+            const messagesSnapshot = await chatRef.collection('messages').get();
 
-			const messages = messagesSnapshot.docs.map(doc => doc.data());
+            const messages = messagesSnapshot.docs.map(doc => doc.data());
 
-			return {
-				status: true,
-				data: {
-					...doc.data(),
-					messages,
-				},
-			};
-		} catch (e) {
-			return { status: false, error: e.message };
-		}
-	}
+            return {
+                status: true,
+                data: {
+                    ...doc.data(),
+                    messages,
+                },
+            };
+        } catch (e) {
+            return { status: false, error: e.message };
+        }
+    }
 
-	async publish(data) {
-		try {
-			console.log(100, data);
-			const element = await this.collection.doc(data.id);
-			const item = await element.set(data);
-			const response = await item.data();
-			return response;
-		} catch (e) {
-			console.error(e);
-			return { status: false, error: e.message };
-		}
-	}
+    async publish(data) {
+        try {
+            console.log(100, data);
 
-	async list(specs) {
-		try {
-			const entries = [];
+            const element = await this.collection.doc(data.id).set(data);
+            const item = await this.collection.doc(data.id).get();
 
-			if (!specs.userId) {
-				throw new Error('userId is required');
-			}
-			const items = await this.collection.where('userId', '==', specs.userId).get();
+            return item;
+        } catch (e) {
+            console.error(e);
+            return { status: false, error: e.message };
+        }
+    }
 
-			items.forEach(item => entries.push(item.data()));
+    async list(specs) {
+        try {
+            const entries = [];
 
-			return { status: true, data: { entries } };
-		} catch (e) {
-			return { status: false, error: e.message };
-		}
-	}
+            if (!specs.userId) {
+                throw new Error('userId is required');
+            }
+            const items = await this.collection.where('userId', '==', specs.userId).get();
 
-	async bulkSave(data) {
-		try {
-			const entries = [];
-			const promises = [];
-			data.forEach(item => promises.push(this.collection.add(item)));
-			await Promise.all(promises).then(i => i.map((chat, j) => entries.push({ id: chat.id, ...data[j] })));
+            items.forEach(item => entries.push(item.data()));
 
-			return { status: true, data: { entries } };
-		} catch (e) {
-			return { status: false, error: e.message };
-		}
-	}
+            return { status: true, data: { entries } };
+        } catch (e) {
+            return { status: false, error: e.message };
+        }
+    }
 
-	async sendMessage(data) {
-		return this.#messages.publish(data);
-	}
+    async bulkSave(data) {
+        try {
+            const entries = [];
+            const promises = [];
+            data.forEach(item => promises.push(this.collection.add(item)));
+            await Promise.all(promises).then(i => i.map((chat, j) => entries.push({ id: chat.id, ...data[j] })));
+
+            return { status: true, data: { entries } };
+        } catch (e) {
+            return { status: false, error: e.message };
+        }
+    }
+
+    async sendMessage(data) {
+        return this.#messages.publish(data);
+    }
 }
