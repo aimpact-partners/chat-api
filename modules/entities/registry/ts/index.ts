@@ -3,7 +3,7 @@ import { DBManager } from '@beyond-js/reactive-2/database';
 async function create() {
     try {
         const db = await DBManager.config('chat-api@5', {
-            Chat: 'id, userId, category',
+            Chat: 'id, userId, category, knowledgeBoxId',
             User: 'id',
             Messages: 'id, chatId, userId, text, role, timestamp',
             AudioRecords: 'id, messageId',
