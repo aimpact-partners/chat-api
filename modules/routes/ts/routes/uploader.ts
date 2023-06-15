@@ -42,6 +42,7 @@ export const uploader = async function (req, res) {
         }
 
         const agentResponse = await triggerAgent.call(response.data.text, req.body.container);
+
         if (!response.status) {
             res.json({
                 status: false,
