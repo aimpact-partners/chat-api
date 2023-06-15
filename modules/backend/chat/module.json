@@ -1,8 +1,0 @@
-{
-	"name": "backend/chat",
-	"bridge": {
-		"path": "bridge",
-		"files": ["*"]
-	},
-	"platforms": ["*"]
-}
