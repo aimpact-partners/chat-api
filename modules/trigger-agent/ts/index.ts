@@ -10,8 +10,6 @@ export /*bundle*/ class TriggerAgent {
     async call(text: string, path: string) {
         try {
             const options = { ...this.#options, body: JSON.stringify({ text: text, path: path }) };
-            console.log('trigger call ', options);
-
             const response = await fetch(this.#url, options);
             const responseJson = await response.json();
 
