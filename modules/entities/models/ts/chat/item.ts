@@ -41,7 +41,7 @@ export /*bundle*/ class Chat extends Item<IChat> {
 
 		messages.forEach(message => {
 			if (this.#messages.has(message.id)) {
-				const data = this.#messages.get(message.id);
+				const data = this.#messages.get('temporal.audio');
 				data.text = message.text;
 				promises.push(messageItem.publish(data));
 			} else {
@@ -79,9 +79,9 @@ export /*bundle*/ class Chat extends Item<IChat> {
 			specs.text = transcription;
 		}
 		//@ts-ignore
-		this.#messages.set(item.id, specs);
+		this.#messages.set('temporal.audio', specs);
 		//@ts-ignore
-		this.triggerEvent();
+		this.triggerEvent('new.message');
 	}
 	async sendMessage(text: string) {
 		try {
@@ -91,9 +91,10 @@ export /*bundle*/ class Chat extends Item<IChat> {
 			const item = new Message();
 			//@ts-ignore
 			item.setOffline(true);
-
+			console.log(0.2, item.id);
 			//@ts-ignore
-			this.#messages.set(item.id, { id: item.id, chatId: this.id, text, role: 'user', timestamp: Date.now() });
+			this.#messages.set('temporal', { id: item.id, chatId: this.id, text, role: 'user', timestamp: Date.now() });
+			this.triggerEvent('new.message');
 
 			//TODO no se guarda el chatID en el cliente?
 			//@ts-ignore
@@ -109,9 +110,13 @@ export /*bundle*/ class Chat extends Item<IChat> {
 			if (!response.status) {
 				throw new Error(response.error);
 			}
-
+			console.log(10, response);
+			console.log(11, response.data.response.id, response.data.message.id);
 			this.#messages.set(response.data.response.id, response.data.response);
+			this.#messages.set(response.data.message.id, response.data.response);
+			this.#messages.delete('temporal');
 			//@ts-ignore
+			console.log(15, 'this.#messages', this.#messages);
 			this.triggerEvent('new.message');
 		} catch (e) {
 			console.error(e);
