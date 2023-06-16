@@ -1,4 +1,5 @@
 import type { Server } from 'socket.io';
+import { v4 as uuidv4 } from 'uuid';
 import { db } from '../db';
 import * as admin from 'firebase-admin';
 import { TriggerAgent } from '@aimpact/chat-api/trigger-agent';
@@ -61,23 +62,29 @@ export class ChatMessages {
              * user message
              */
 
-            const messageRef = await chat.collection(this.table).add({
-                ...data,
-                timestamp: admin.firestore.FieldValue.serverTimestamp(),
-            });
-            const savedMessage = await messageRef.get();
+            const userMsgId = uuidv4();
+            await chat
+                .collection(this.table)
+                .doc(userMsgId)
+                .set({
+                    ...data,
+                    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+                });
+            const savedMessage = await chat.collection(this.table).doc(userMsgId).get();
             const responseData = savedMessage.exists ? savedMessage.data() : undefined;
 
             /**
              * agent message
              */
+            const agentMsgId = uuidv4();
             const agentMessage = {
+                id: agentMsgId,
                 chatId: data.chatId,
                 text: response.data.output,
                 role: 'system',
                 timestamp: admin.firestore.FieldValue.serverTimestamp(),
             };
-            await chat.collection(this.table).add(agentMessage);
+            await chat.collection(this.table).doc(agentMsgId).set(agentMessage);
 
             return { status: true, data: { message: responseData, response: agentMessage } };
         } catch (e) {
