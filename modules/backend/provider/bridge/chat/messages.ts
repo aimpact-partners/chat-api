@@ -62,26 +62,29 @@ export class ChatMessages {
              * user message
              */
 
+            const userMsgId = uuidv4();
             await chat
                 .collection(this.table)
-                .doc(uuidv4())
+                .doc(userMsgId)
                 .set({
                     ...data,
                     timestamp: admin.firestore.FieldValue.serverTimestamp(),
                 });
-            const savedMessage = await chat.collection(this.table).doc(uuidv4()).get();
+            const savedMessage = await chat.collection(this.table).doc(userMsgId).get();
             const responseData = savedMessage.exists ? savedMessage.data() : undefined;
 
             /**
              * agent message
              */
+            const agentMsgId = uuidv4();
             const agentMessage = {
+                id: agentMsgId,
                 chatId: data.chatId,
                 text: response.data.output,
                 role: 'system',
                 timestamp: admin.firestore.FieldValue.serverTimestamp(),
             };
-            await chat.collection(this.table).doc(uuidv4()).set(agentMessage);
+            await chat.collection(this.table).doc(agentMsgId).set(agentMessage);
 
             return { status: true, data: { message: responseData, response: agentMessage } };
         } catch (e) {
