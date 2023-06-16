@@ -35,26 +35,23 @@ export /*bundle*/ class Chat extends Item<IChat> {
 		//@ts-ignore
 	};
 
-	async setAudioMessage(messages: { text: string; role: string }[]) {
+	async setAudioMessage({ user, response }) {
 		const messageItem = new Message();
+		const responseItem = new Message();
 		const promises = [];
 
-		messages.forEach(message => {
-			if (this.#messages.has(message.id)) {
-				const data = this.#messages.get('temporal.audio');
-				data.text = message.text;
-				promises.push(messageItem.publish(data));
-			} else {
-				this.#messages.set(message.id, message);
-				promises.push(messageItem.publish(message));
-			}
+		await messageItem.publish(user);
+		await responseItem.publish(response);
+		const audio = this.#messages.get('temporal.audio');
+		const finalData = { ...audio, ...user };
+		this.#messages.delete('temporal.audio');
+		this.#messages.set(messageItem.id, finalData);
+		this.#messages.set(responseItem.id, response);
 
-			//@ts-ignore
-		});
 		this.triggerEvent();
-		await Promise.all(promises);
+		// await Promise.all(promises);
 
-		const response = await this.provider.bulkSave(messages);
+		// const response = await this.provider.bulkSave(messages);
 
 		return response;
 	}
@@ -80,8 +77,9 @@ export /*bundle*/ class Chat extends Item<IChat> {
 		}
 		//@ts-ignore
 		this.#messages.set('temporal.audio', specs);
+		console.log(100, specs, this.#messages);
 		//@ts-ignore
-		this.triggerEvent('new.message');
+		this.triggerEvent();
 	}
 	async sendMessage(text: string) {
 		try {
@@ -94,7 +92,7 @@ export /*bundle*/ class Chat extends Item<IChat> {
 			console.log(0.2, item.id);
 			//@ts-ignore
 			this.#messages.set('temporal', { id: item.id, chatId: this.id, text, role: 'user', timestamp: Date.now() });
-			this.triggerEvent('new.message');
+			this.triggerEvent();
 
 			//TODO no se guarda el chatID en el cliente?
 			//@ts-ignore
@@ -117,7 +115,7 @@ export /*bundle*/ class Chat extends Item<IChat> {
 			this.#messages.delete('temporal');
 			//@ts-ignore
 			console.log(15, 'this.#messages', this.#messages);
-			this.triggerEvent('new.message');
+			this.triggerEvent();
 		} catch (e) {
 			console.error(e);
 		} finally {
