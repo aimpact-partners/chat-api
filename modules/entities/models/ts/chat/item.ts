@@ -5,101 +5,114 @@ import { Message } from './messages/item';
 import { Messages } from './messages';
 
 interface IChat {
-    userId: string;
-    category: string;
-    knowledgeBoxId: string;
+	userId: string;
+	category: string;
+	knowledgeBoxId: string;
 }
 
 export /*bundle*/ class Chat extends Item<IChat> {
-    protected properties = ['id', 'userId', 'category', 'knowledgeBoxId', 'name'];
+	protected properties = ['id', 'userId', 'category', 'knowledgeBoxId', 'name'];
 
-    #messages: any[] = [];
-    get messages() {
-        return this.#messages;
-    }
+	#messages: Map<string, any> = new Map();
+	get messages() {
+		return [...this.#messages.values()];
+	}
 
-    constructor({ id = undefined } = {}) {
-        super({ id, db: 'chat-api', storeName: 'Chat', provider: ChatProvider });
-    }
+	constructor({ id = undefined } = {}) {
+		super({ id, db: 'chat-api', storeName: 'Chat', provider: ChatProvider });
+	}
 
-    loadAll = async specs => {
-        //@ts-ignore
-        const response = await this.load(specs);
+	loadAll = async specs => {
+		//@ts-ignore
+		const response = await this.load(specs);
 
-        this.#messages = response.data.messages ?? response.data.messages;
+		let messages = new Map();
+		if (response.data.messages?.length) {
+			response.data.messages.forEach(message => messages.set(message.id, message));
+		}
+		this.#messages = messages;
 
-        //@ts-ignore
-    };
+		//@ts-ignore
+	};
 
-    async setAudioMessage(messages: { text: string; role: string }[]) {
-        const messageItem = new Message();
-        const promises = [];
+	async setAudioMessage(messages: { text: string; role: string }[]) {
+		const messageItem = new Message();
+		const promises = [];
 
-        messages.forEach(message => {
-            this.#messages.push(message);
-            //@ts-ignore
-            promises.push(messageItem.publish(message));
-        });
-        this.triggerEvent();
-        await Promise.all(promises);
+		messages.forEach(message => {
+			if (this.#messages.has(message.id)) {
+				const data = this.#messages.get(message.id);
+				data.text = message.text;
+				promises.push(messageItem.publish(data));
+			} else {
+				this.#messages.set(message.id, message);
+				promises.push(messageItem.publish(message));
+			}
 
-        const response = await this.provider.bulkSave(messages);
+			//@ts-ignore
+		});
+		this.triggerEvent();
+		await Promise.all(promises);
 
-        return response;
-    }
+		const response = await this.provider.bulkSave(messages);
 
-    sendAudio(audio) {
-        const messageItem = new Message();
-        //@ts-ignore
-        messageItem.setOffline(true);
+		return response;
+	}
 
-        //@ts-ignore
-        this.#messages.push({
-            id: messageItem.id,
-            chatId: this.id,
-            type: 'audio',
-            audio,
-            role: 'user',
-            timestamp: Date.now(),
-        });
+	sendAudio(audio) {
+		const item = new Message();
+		//@ts-ignore
+		item.setOffline(true);
 
-        this.triggerEvent();
-    }
-    async sendMessage(text: string) {
-        try {
-            //@ts-ignore
-            this.fetching = true;
-            //@ts-ignore
-            const messageItem = new Message();
-            //@ts-ignore
-            messageItem.setOffline(true);
+		//@ts-ignore
+		this.#messages.set(item.id, {
+			//@ts-ignore
+			id: item.id,
+			//@ts-ignore
+			chatId: this.id,
+			type: 'audio',
+			audio,
+			role: 'user',
+			timestamp: Date.now(),
+		});
+		//@ts-ignore
+		this.triggerEvent();
+	}
+	async sendMessage(text: string) {
+		try {
+			//@ts-ignore
+			this.fetching = true;
+			//@ts-ignore
+			const item = new Message();
+			//@ts-ignore
+			item.setOffline(true);
 
-            //@ts-ignore
-            this.#messages.push({ id: messageItem.id, chatId: this.id, text, role: 'user', timestamp: Date.now() });
+			//@ts-ignore
+			this.#messages.set(item.id, { id: item.id, chatId: this.id, text, role: 'user', timestamp: Date.now() });
 
-            //TODO no se guarda el chatID en el cliente?
-            //@ts-ignore
-            await messageItem.publish({ chatId: this.id, text, role: 'user', timestamp: Date.now() });
+			//TODO no se guarda el chatID en el cliente?
+			//@ts-ignore
+			await item.publish({ chatId: this.id, text, role: 'user', timestamp: Date.now() });
 
-            //@ts-ignore
-            this.triggerEvent();
-            //@ts-ignore
-            const data = { ...messageItem.getValues() };
+			//@ts-ignore
+			this.triggerEvent();
+			//@ts-ignore
+			const data = { ...item.getValues() };
 
-            //@ts-ignore
-            const response = await this.provider.sendMessage({ chatId: this.id, ...data });
-            if (!response.status) {
-                throw new Error(response.error);
-            }
+			//@ts-ignore
+			const response = await this.provider.sendMessage({ chatId: this.id, ...data });
+			if (!response.status) {
+				throw new Error(response.error);
+			}
 
-            this.#messages.push(response.data.response);
-            //@ts-ignore
-            this.triggerEvent('new.message');
-        } catch (e) {
-            console.error(e);
-        } finally {
-            //@ts-ignore
-            this.fetching = false;
-        }
-    }
+			this.#messages.set(response.data.response.id, response.data.response);
+			//@ts-ignore
+			this.triggerEvent('new.message');
+		} catch (e) {
+			console.error(e);
+		} finally {
+			//@ts-ignore
+			this.fetching = false;
+		}
+	}
 }
