@@ -2,7 +2,6 @@ import type { Server } from 'socket.io';
 import { db } from '../db';
 import * as admin from 'firebase-admin';
 import { TriggerAgent } from '@aimpact/chat-api/trigger-agent';
-
 interface Message {
     id: string;
     chatId: string;
@@ -43,7 +42,17 @@ export class ChatMessages {
                 throw new Error('message is required');
             }
 
-            const response = await this.#agent.call(data.text);
+            const chatProvider = db.collection('Chat');
+            const chat = await chatProvider.doc(data.chatId);
+            const chatDoc = await chat.get();
+            const chatData = chatDoc.data();
+
+            const KBProvider = db.collection('KnowledgeBoxes');
+            const KB = await KBProvider.doc(chatData.knowledgeBoxId);
+            const KBDoc = await KB.get();
+            const KBData = KBDoc.data();
+
+            const response = await this.#agent.call(data.text, KBData?.name);
             if (!response.status) {
                 return response;
             }
@@ -51,9 +60,7 @@ export class ChatMessages {
             /**
              * user message
              */
-            const chatProvider = db.collection('Chat');
-            const chat = await chatProvider.doc(data.chatId);
-            const chatDoc = await chat.get();
+
             const messageRef = await chat.collection(this.table).add({
                 ...data,
                 timestamp: admin.firestore.FieldValue.serverTimestamp(),
