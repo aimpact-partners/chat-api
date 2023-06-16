@@ -59,13 +59,12 @@ export /*bundle*/ class Chat extends Item<IChat> {
 		return response;
 	}
 
-	sendAudio(audio) {
+	sendAudio(audio, transcription = undefined) {
 		const item = new Message();
 		//@ts-ignore
 		item.setOffline(true);
 
-		//@ts-ignore
-		this.#messages.set(item.id, {
+		const specs = {
 			//@ts-ignore
 			id: item.id,
 			//@ts-ignore
@@ -74,7 +73,13 @@ export /*bundle*/ class Chat extends Item<IChat> {
 			audio,
 			role: 'user',
 			timestamp: Date.now(),
-		});
+		};
+		if (transcription) {
+			//@ts-ignore
+			specs.text = transcription;
+		}
+		//@ts-ignore
+		this.#messages.set(item.id, specs);
 		//@ts-ignore
 		this.triggerEvent();
 	}
