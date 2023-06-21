@@ -1,16 +1,16 @@
 // SharedKnowledgeItem
-import {Item} from '@beyond-js/reactive-2/entities';
-import {SharedKnowledgeProvider} from '@aimpact/chat-api/backend-provider';
+import { Item } from '@beyond-js/reactive/entities';
+import { SharedKnowledgeProvider } from '@aimpact/chat-api/backend-provider';
 
 interface ISharedKnowledge {
-	knowledgeBaseId: string;
-	sharedWithUserId: string;
+    knowledgeBaseId: string;
+    sharedWithUserId: string;
 }
 
 export /*bundle*/ class SharedKnowledge extends Item<ISharedKnowledge> {
-	protected properties = ['id', 'knowledgeBaseId', 'sharedWithUserId'];
+    protected properties = ['id', 'knowledgeBaseId', 'sharedWithUserId'];
 
-	constructor({id = undefined} = {}) {
-		super({id, db: 'chat-api', storeName: 'SharedKnowledgeBases', provider: SharedKnowledgeProvider});
-	}
+    constructor({ id = undefined } = {}) {
+        super({ id, db: 'chat-api', storeName: 'SharedKnowledgeBases', provider: SharedKnowledgeProvider });
+    }
 }

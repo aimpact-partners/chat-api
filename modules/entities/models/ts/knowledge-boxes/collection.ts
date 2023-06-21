@@ -1,4 +1,4 @@
-import { Collection } from '@beyond-js/reactive-2/entities';
+import { Collection } from '@beyond-js/reactive/entities';
 import { KnowledgeBoxProvider } from '@aimpact/chat-api/backend-provider';
 import { KnowledgeBox } from './item';
 

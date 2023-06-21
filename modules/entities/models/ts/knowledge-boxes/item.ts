@@ -1,5 +1,5 @@
 // KnowledgeBox
-import { Item } from '@beyond-js/reactive-2/entities';
+import { Item } from '@beyond-js/reactive/entities';
 import { KnowledgeBoxProvider } from '@aimpact/chat-api/backend-provider';
 
 interface IKnowledgeBox {

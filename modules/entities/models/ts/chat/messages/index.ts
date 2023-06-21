@@ -1,23 +1,23 @@
-import { Collection } from '@beyond-js/reactive-2/entities';
+import { Collection } from '@beyond-js/reactive/entities';
 import { MessageProvider } from '@aimpact/chat-api/backend-provider';
 import { Message } from './item';
 
 interface IMessages {
-	items: Message[];
+    items: Message[];
 }
 
 export class Messages extends Collection {
-	item = Message;
+    item = Message;
 
-	constructor() {
-		super({ provider: MessageProvider, storeName: 'Messages', db: 'chat-api' });
-	}
+    constructor() {
+        super({ provider: MessageProvider, storeName: 'Messages', db: 'chat-api' });
+    }
 
-	add(text) {
-		//@ts-ignore
-		const message = new Message();
-		// message.setOffline(true);
+    add(text) {
+        //@ts-ignore
+        const message = new Message();
+        // message.setOffline(true);
 
-		// this.items.push(message);
-	}
+        // this.items.push(message);
+    }
 }

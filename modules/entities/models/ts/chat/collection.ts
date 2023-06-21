@@ -1,4 +1,4 @@
-import { Collection } from '@beyond-js/reactive-2/entities';
+import { Collection } from '@beyond-js/reactive/entities';
 import { ChatProvider } from '@aimpact/chat-api/backend-provider';
 import { Chat } from './item';
 

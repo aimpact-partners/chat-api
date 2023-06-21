@@ -1,15 +1,15 @@
 // KnowledgeItem
-import {Item} from '@beyond-js/reactive-2/entities';
-import {KnowledgeProvider} from '@aimpact/chat-api/backend-provider';
+import { Item } from '@beyond-js/reactive/entities';
+import { KnowledgeProvider } from '@aimpact/chat-api/backend-provider';
 
 interface IKnowledge {
-	userId: string;
+    userId: string;
 }
 
 export /*bundle*/ class Knowledge extends Item<IKnowledge> {
-	protected properties = ['id', 'userId', 'category'];
+    protected properties = ['id', 'userId', 'category'];
 
-	constructor({id = undefined} = {}) {
-		super({id, db: 'chat-api', storeName: 'KnowledgeBases', provider: KnowledgeProvider});
-	}
+    constructor({ id = undefined } = {}) {
+        super({ id, db: 'chat-api', storeName: 'KnowledgeBases', provider: KnowledgeProvider });
+    }
 }
