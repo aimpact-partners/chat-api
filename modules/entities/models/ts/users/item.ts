@@ -2,11 +2,15 @@
 import { Item } from '@beyond-js/reactive/entities';
 import { UserProvider } from '@aimpact/chat-api/backend-provider';
 
-interface IAudio {
-    messageId: string;
+interface IUser {
+    id: string;
+    displayName: string;
+    email: string;
+    photoURL: string;
+    phoneNumber: string;
 }
 
-export /*bundle*/ class User extends Item<IAudio> {
+export /*bundle*/ class User extends Item<IUser> {
     protected properties = ['displayName', 'id', 'email', 'photoURL', 'phoneNumber'];
 
     #logged;
@@ -18,14 +22,10 @@ export /*bundle*/ class User extends Item<IAudio> {
     }
 
     async login(data) {
-        //@ts-ignore
         await this.isReady;
         if (this.#logged) return;
-        //@ts-ignore
-        await this.set(data);
-
-        //@ts-ignore
-        await this.provider.updateUser({ ...this.getValues(), id: this.id });
+        await this.set(data.user);
+        await this.provider.updateUser({ ...this.getProperties(), id: this.id });
         this.#logged = true;
         return true;
     }

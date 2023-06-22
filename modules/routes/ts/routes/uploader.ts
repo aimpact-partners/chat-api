@@ -24,7 +24,8 @@ export /*bundle*/ const uploader = async function (req, res) {
 
         const { path, originalname, mimetype } = req.file;
         const name = `${generateCustomName(originalname)}${getExtension(mimetype)}`;
-        const dest = `${req.body.container}${sep}${req.body.project}${sep}${name}`;
+        let dest = `${req.body.container}${sep}${req.body.project}${sep}${name}`;
+        dest = dest.replace(/\\/g, '/');
 
         let origin = path;
         if (convertable.includes(mimetype)) {

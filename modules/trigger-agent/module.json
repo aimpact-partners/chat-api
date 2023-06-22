@@ -1,8 +1,8 @@
 {
-	"name": "trigger-agent",
-	"platforms": "*",
-	"ts": {
-		"path": "ts",
-		"files": ["*"]
-	}
+    "name": "trigger-agent",
+    "platforms": ["node", "backend"],
+    "ts": {
+        "path": "ts",
+        "files": ["*"]
+    }
 }
