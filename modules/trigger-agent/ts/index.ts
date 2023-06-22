@@ -1,7 +1,8 @@
 import fetch from 'node-fetch';
+import config from '@aimpact/chat-api/config';
 
 export /*bundle*/ class TriggerAgent {
-    #url = 'http://localhost:5010/agent';
+    #url = config.params.AGENTS_SERVER;
     #options = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

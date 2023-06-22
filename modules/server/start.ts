@@ -1,4 +1,5 @@
-import { beyondstarted } from './dotenv';
 import { Server } from './server';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
-new Server();
+!process.env.FUNCTION_REGION && new Server();

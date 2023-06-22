@@ -10,7 +10,7 @@ import { OpenAIBackend } from '@aimpact/chat-api/backend-openai';
 const oaiBackend = new OpenAIBackend();
 const triggerAgent = new TriggerAgent();
 
-export const uploader = async function (req, res) {
+export /*bundle*/ const uploader = async function (req, res) {
     if (!req.file) {
         return res.status(400).send({ status: false, error: 'No file was uploaded' });
     }
