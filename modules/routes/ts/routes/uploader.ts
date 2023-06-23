@@ -1,4 +1,4 @@
-import { sep } from 'path';
+import { join } from 'path';
 import { FilestoreFile } from '../bucket/file';
 import { convertFile } from './utils/convert';
 import { getExtension } from './utils/get-extension';
@@ -24,7 +24,9 @@ export /*bundle*/ const uploader = async function (req, res) {
 
         const { path, originalname, mimetype } = req.file;
         const name = `${generateCustomName(originalname)}${getExtension(mimetype)}`;
-        let dest = `${req.body.container}${sep}${req.body.project}${sep}${name}`;
+
+        const { project, container, userId } = req.body;
+        let dest = join(project, userId, container, name);
         dest = dest.replace(/\\/g, '/');
 
         let origin = path;

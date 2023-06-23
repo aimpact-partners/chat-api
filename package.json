@@ -30,6 +30,7 @@
                 "name": "backend",
                 "environment": "development",
                 "platform": "backend",
+                "host": "https://aimpact-partners-dev.ue.r.appspot.com/",
                 "ports": {
                     "bundles": 6580,
                     "http": 6581,
