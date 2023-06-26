@@ -31,7 +31,6 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 			const doc = await chatRef.get();
 
 			const messagesSnapshot = await chatRef.collection('messages').orderBy('timestamp').get();
-
 			const messages = messagesSnapshot.docs.map(doc => doc.data());
 
 			return {
