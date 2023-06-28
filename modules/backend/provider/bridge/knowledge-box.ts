@@ -23,11 +23,11 @@ export /*actions*/ /*bundle*/ class KnowledgeBoxProvider {
 		// this.#documents = new Documents();
 	}
 
-    /**
-     * @todo validate if it's necessary to filter by user
-     * @param param
-     * @returns 
-     */
+	/**
+	 * @todo validate if it's necessary to filter by user
+	 * @param param
+	 * @returns
+	 */
 	async load({ id }: { id: string; userId: string }) {
 		try {
 			if (!id) {
@@ -53,18 +53,28 @@ export /*actions*/ /*bundle*/ class KnowledgeBoxProvider {
 		}
 	}
 
-	async list({userI}) {
+	async list({ userI }) {
 		try {
 			const entries = [];
 			const items = await this.collection.get();
-			// TODO [1]var { files } = await this.#documents.list();
 
-			items.forEach(item => {
-				item = item.data();
-				entries.push(item);
-				// TODO [1]const filter = files.filter(file => file.name === item.path);
-				// TODO [1]entries.push({ ...item, files: !filter.length ? [] : filter[0].items });
+			// Create an array of promises to fetch each subcollection
+			const fetchPromises = items.docs.map(async item => {
+				const itemData = item.data();
+
+				// Start the fetch of the subcollection
+				const documentsCollectionPromise = item.ref.collection('documents').get();
+
+				// When the fetch is done, map the documents, add them to the item data, and push it to entries
+				return documentsCollectionPromise.then(documentsCollection => {
+					const documents = documentsCollection.docs.map(doc => doc.data());
+					const itemWithDocuments = { ...itemData, documents };
+					entries.push(itemWithDocuments);
+				});
 			});
+
+			// Wait for all the fetches to complete
+			await Promise.all(fetchPromises);
 
 			return { status: true, data: { entries } };
 		} catch (e) {
