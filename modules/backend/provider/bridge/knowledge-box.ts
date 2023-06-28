@@ -6,77 +6,95 @@ import { db } from '@aimpact/chat-api/backend-db';
 // import { Documents } from '@aimpact/ailearn-estrada/models/documents';
 
 interface KnowledgeBox {
-    id: string;
-    path: string;
+	id: string;
+	path: string;
 }
 
 export /*actions*/ /*bundle*/ class KnowledgeBoxProvider {
-    socket: Server;
-    private collection;
-    private table = 'KnowledgeBoxes';
-    #documents;
+	socket: Server;
+	private collection;
+	private table = 'KnowledgeBoxes';
+	#documents;
 
-    constructor(socket: Server) {
-        this.socket = socket;
-        this.socket = socket;
-        this.collection = db.collection(this.table);
-        // this.#documents = new Documents();
-    }
+	constructor(socket: Server) {
+		this.socket = socket;
+		this.socket = socket;
+		this.collection = db.collection(this.table);
+		// this.#documents = new Documents();
+	}
 
-    async load({ id }: { id: string }) {
-        try {
-            if (!id) {
-                return { status: false, error: 'id is required' };
-            }
+	/**
+	 * @todo validate if it's necessary to filter by user
+	 * @param param
+	 * @returns
+	 */
+	async load({ id }: { id: string; userId: string }) {
+		try {
+			if (!id) {
+				return { status: false, error: 'id is required' };
+			}
 
-            const response = await this.collection.doc(id).get();
+			const response = await this.collection.doc(id).get();
 
-            return { status: true, data: response.data() as KnowledgeBox };
-        } catch (e) {
-            return { status: false, error: e.message };
-        }
-    }
+			return { status: true, data: response.data() as KnowledgeBox };
+		} catch (e) {
+			return { status: false, error: e.message };
+		}
+	}
 
-    async publish(data) {
-        try {
-            const item = await this.collection.add(data);
-            const response = await this.load(item.id);
-            return response;
-        } catch (e) {
-            console.error(e);
-            return { status: false, error: e.message };
-        }
-    }
+	async publish(data) {
+		try {
+			const item = await this.collection.add(data);
+			const response = await this.load(item.id);
+			return response;
+		} catch (e) {
+			console.error(e);
+			return { status: false, error: e.message };
+		}
+	}
 
-    async list() {
-        try {
-            const entries = [];
-            const items = await this.collection.get();
-            // TODO [1]var { files } = await this.#documents.list();
+	async list({ userId }) {
+		try {
+			const entries = [];
+			if (!userId) {
+				return { statue: false, error: 'userId is required' };
+			}
+			const items = await this.collection.where('userId', '==', userId).get();
 
-            items.forEach(item => {
-                item = item.data();
-                entries.push(item);
-                // TODO [1]const filter = files.filter(file => file.name === item.path);
-                // TODO [1]entries.push({ ...item, files: !filter.length ? [] : filter[0].items });
-            });
+			// Create an array of promises to fetch each subcollection
+			const fetchPromises = items.docs.map(async item => {
+				const itemData = item.data();
 
-            return { status: true, data: { entries } };
-        } catch (e) {
-            return { status: false, error: e.message };
-        }
-    }
+				// Start the fetch of the subcollection
+				const documentsCollectionPromise = item.ref.collection('documents').get();
 
-    async bulkSave(data) {
-        try {
-            const entries = [];
-            const promises = [];
-            data.forEach(item => promises.push(this.collection.add(item)));
-            await Promise.all(promises).then(i => i.map((chat, j) => entries.push({ id: chat.id, ...data[j] })));
+				// When the fetch is done, map the documents, add them to the item data, and push it to entries
+				return documentsCollectionPromise.then(documentsCollection => {
+					const documents = documentsCollection.docs.map(doc => doc.data());
+					const itemWithDocuments = { ...itemData, documents };
+					entries.push(itemWithDocuments);
+				});
+			});
 
-            return { status: true, data: { entries } };
-        } catch (e) {
-            return { status: false, error: e.message };
-        }
-    }
+			// Wait for all the fetches to complete
+			await Promise.all(fetchPromises);
+
+			return { status: true, data: { entries } };
+		} catch (e) {
+			return { status: false, error: e.message };
+		}
+	}
+
+	async bulkSave(data) {
+		try {
+			const entries = [];
+			const promises = [];
+			data.forEach(item => promises.push(this.collection.add(item)));
+			await Promise.all(promises).then(i => i.map((chat, j) => entries.push({ id: chat.id, ...data[j] })));
+
+			return { status: true, data: { entries } };
+		} catch (e) {
+			return { status: false, error: e.message };
+		}
+	}
 }
