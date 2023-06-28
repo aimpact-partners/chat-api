@@ -1,23 +1,24 @@
-import { DBManager } from '@beyond-js/reactive/database';
+import {DBManager} from '@beyond-js/reactive/database';
 
 async function create() {
-    try {
-        const db = await DBManager.config('chat-api@5', {
-            Chat: 'id, userId, category, knowledgeBoxId',
-            User: 'id',
-            Messages: 'id, chatId, userId, content, role, timestamp',
-            AudioRecords: 'id, messageId',
-            KnowledgeBases: 'id, userId',
-            KnowledgeBoxes: 'id, path, identifier, userId',
-            SharedKnowledgeBases: 'id, knowledgeBaseId, sharedWithUserId',
-            Documents: 'id, knowledgeBaseId',
-        });
+	try {
+		const db = await DBManager.config('chat-api@5', {
+			Chat: 'id, userId, category, knowledgeBoxId',
+			User: 'id',
+			Messages: 'id, chatId, userId, text, role, timestamp',
+			AudioRecords: 'id, messageId',
+			KnowledgeBases: 'id, userId',
+			KnowledgeBoxes: 'id, userId',
+			SharedKnowledgeBases: 'id, knowledgeBaseId, sharedWithUserId',
+			Documents: 'id, knowledgeBaseId',
+			Classes: 'id, title, objectives',
+		});
 
-        // For example, if you have user data to add you can use:
-        // db.Chat.bulkAdd(chats);
-    } catch (e) {
-        console.trace('error', e);
-    }
+		// For example, if you have user data to add you can use:
+		// db.Chat.bulkAdd(chats);
+	} catch (e) {
+		console.trace('error', e);
+	}
 }
 
 export /*bundle */ const createDB = create;
