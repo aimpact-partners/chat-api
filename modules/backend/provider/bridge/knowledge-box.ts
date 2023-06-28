@@ -53,10 +53,13 @@ export /*actions*/ /*bundle*/ class KnowledgeBoxProvider {
 		}
 	}
 
-	async list({ userI }) {
+	async list({ userId }) {
 		try {
 			const entries = [];
-			const items = await this.collection.get();
+			if (!userId) {
+				return { statue: false, error: 'userId is required' };
+			}
+			const items = await this.collection.where('userId', '==', userId).get();
 
 			// Create an array of promises to fetch each subcollection
 			const fetchPromises = items.docs.map(async item => {
