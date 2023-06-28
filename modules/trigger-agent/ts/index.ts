@@ -4,6 +4,14 @@ import { ChatStore, KnowledgeBoxesStore } from '@aimpact/chat-api/backend-store'
 import * as dotenv from 'dotenv';
 dotenv.config();
 
+interface IMessage {
+    chatId: string;
+    userId: string;
+    content: string;
+    role: string;
+    timestamp: number;
+}
+
 export /*bundle*/ class TriggerAgent {
     #url = config.params.AGENTS_SERVER;
     #options = {
@@ -14,7 +22,7 @@ export /*bundle*/ class TriggerAgent {
         },
     };
 
-    async call(message: string, chatId: string, prompt: string, knowledgeBoxId: string) {
+    async call(message: IMessage, chatId: string, prompt: string, knowledgeBoxId: string) {
         try {
             const chat = new ChatStore();
             var chatResponse = await chat.load({ id: chatId });
@@ -33,18 +41,21 @@ export /*bundle*/ class TriggerAgent {
                 filter = { container: KBResponse.data.path };
             }
 
-            const { messages } = chatResponse.data;
+            let { messages } = chatResponse.data;
+            const items = messages.map(({ role, content }) => Object.assign({}, { role, content }));
 
             // TODO @ftovar8 se hace la insercion del mensaje reciente en el array de mensajes
             // Hay que ajustar el guardado en backend cuando se manda un audio
             // de momento se esta haciendo en el cliente
-            messages.push(message);
+            console.log('AGENT CALL: message ', message);
 
-            // console.log('AGENT CALL: messages', messages);
+            items.push({ role: message.role, content: message.content });
+
+            console.log('AGENT CALL: messages-items', items);
             // console.log('AGENT CALL: prompt', prompt);
             // console.log('AGENT CALL: filter', filter);
 
-            const options = { ...this.#options, body: JSON.stringify({ messages, prompt, filter }) };
+            const options = { ...this.#options, body: JSON.stringify({ messages: items, prompt, filter }) };
             const response = await fetch(this.#url, options);
             const responseJson = await response.json();
 

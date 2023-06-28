@@ -44,7 +44,7 @@ export /*bundle*/ const uploader = async function (req, res) {
             return;
         }
 
-        const message = { role: 'user', text: response.data.text };
+        const message = { role: 'user', content: response.data.text };
         const { knowledgeBoxId, chatId } = req.body;
         const agentResponse = await triggerAgent.call(message, chatId, prompt, knowledgeBoxId);
         if (!agentResponse.status) {

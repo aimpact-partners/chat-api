@@ -40,7 +40,7 @@ export class ChatMessages {
             if (!data.chatId) {
                 throw new Error('chatId is required');
             }
-            if (!data.text) {
+            if (!data.content) {
                 throw new Error('message is required');
             }
 
@@ -54,8 +54,9 @@ export class ChatMessages {
             const KBDoc = await KB.get();
             const KBData = KBDoc.data();
 
-            const response = await this.#agent.call(data, chatData.id, data.prompt, KBData?.id);
+            const { prompt } = data;
             delete data.prompt;
+            const response = await this.#agent.call(data, chatData.id, prompt, KBData?.id);
 
             if (!response.status) {
                 return response;
@@ -81,7 +82,7 @@ export class ChatMessages {
             const agentMessage = {
                 id: agentMsgId,
                 chatId: data.chatId,
-                text: response.data.output,
+                content: response.data.output,
                 role: 'system',
                 timestamp: admin.firestore.FieldValue.serverTimestamp(),
             };

@@ -36,17 +36,15 @@ export /*actions*/ /*bundle*/ class MessageProvider {
             }
             const chatProvider = db.collection('Chat');
             const chat = await chatProvider.doc(data.chatId);
-            const chatDoc = await chat.get();
-
-            const messageRef = await chat
-                .collection('messages')
+            await chat
+                .collection(this.table)
                 .doc(data.id)
                 .set({
                     ...data,
                     timestamp: admin.firestore.FieldValue.serverTimestamp(),
                 });
 
-            const savedMessage = await messageRef.get();
+            const savedMessage = await chat.collection(this.table).doc(data.id).get();
             const responseData = savedMessage.exists ? savedMessage.data() : undefined;
 
             return { status: true, data: responseData };

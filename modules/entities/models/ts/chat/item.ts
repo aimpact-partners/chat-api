@@ -31,14 +31,11 @@ export /*bundle*/ class Chat extends Item<IChat> {
             response.data.messages.forEach(message => messages.set(message.id, message));
         }
         this.#messages = messages;
-
-        //@ts-ignore
     };
 
     async setAudioMessage({ user, response }) {
         const messageItem = new Message();
         const responseItem = new Message();
-        const promises = [];
 
         await messageItem.publish(user);
         await responseItem.publish(response);
@@ -47,11 +44,7 @@ export /*bundle*/ class Chat extends Item<IChat> {
         this.#messages.delete('temporal.audio');
         this.#messages.set(messageItem.id, finalData);
         this.#messages.set(responseItem.id, response);
-
         this.triggerEvent();
-        // await Promise.all(promises);
-
-        // const response = await this.provider.bulkSave(messages);
 
         return response;
     }
@@ -73,7 +66,7 @@ export /*bundle*/ class Chat extends Item<IChat> {
         };
         if (transcription) {
             //@ts-ignore
-            specs.text = transcription;
+            specs.content = transcription;
         }
         //@ts-ignore
         this.#messages.set('temporal.audio', specs);
@@ -81,19 +74,23 @@ export /*bundle*/ class Chat extends Item<IChat> {
         //@ts-ignore
         this.triggerEvent();
     }
-    async sendMessage(text: string, prompt: string) {
+    async sendMessage(content: string, prompt: string) {
         try {
             this.fetching = true;
             const item = new Message();
 
             item.setOffline(true);
 
-            this.#messages.set('temporal', { id: item.id, chatId: this.id, text, role: 'user', timestamp: Date.now() });
+            this.#messages.set('temporal', {
+                id: item.id,
+                chatId: this.id,
+                content,
+                role: 'user',
+                timestamp: Date.now(),
+            });
             this.triggerEvent();
 
-            //TODO no se guarda el chatID en el cliente?
-
-            await item.publish({ chatId: this.id, text, role: 'user', timestamp: Date.now() });
+            await item.publish({ chatId: this.id, content, role: 'user', timestamp: Date.now() });
 
             this.triggerEvent();
 

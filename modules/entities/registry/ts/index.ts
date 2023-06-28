@@ -5,10 +5,10 @@ async function create() {
         const db = await DBManager.config('chat-api@5', {
             Chat: 'id, userId, category, knowledgeBoxId',
             User: 'id',
-            Messages: 'id, chatId, userId, text, role, timestamp',
+            Messages: 'id, chatId, userId, content, role, timestamp',
             AudioRecords: 'id, messageId',
             KnowledgeBases: 'id, userId',
-            KnowledgeBoxes: 'id, userId',
+            KnowledgeBoxes: 'id, path, identifier, userId',
             SharedKnowledgeBases: 'id, knowledgeBaseId, sharedWithUserId',
             Documents: 'id, knowledgeBaseId',
         });
