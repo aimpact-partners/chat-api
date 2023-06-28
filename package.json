@@ -21,8 +21,7 @@
         "path": "modules"
     },
     "params": {
-        "AGENTS_SERVER": "http://localhost:5010/agent",
-        "AGENTS_SERVER_CLOUD": "https://basic-agent-rb5caohzgq-uc.a.run.app/agent"
+        "AGENTS_SERVER": "http://localhost:5010/agent"
     },
     "deployment": {
         "distributions": [

@@ -3,4 +3,5 @@ import { listen } from '@beyond-js/backend/listen';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-listen();
+const port = parseInt(process.env.PORT) || 5090;
+listen(port);

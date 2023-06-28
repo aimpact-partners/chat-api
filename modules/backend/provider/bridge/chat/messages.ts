@@ -1,8 +1,9 @@
 import type { Server } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
-import { db } from '../db';
+import { db } from '@aimpact/chat-api/backend-db';
 import * as admin from 'firebase-admin';
 import { TriggerAgent } from '@aimpact/chat-api/trigger-agent';
+
 interface Message {
     id: string;
     chatId: string;
@@ -53,7 +54,9 @@ export class ChatMessages {
             const KBDoc = await KB.get();
             const KBData = KBDoc.data();
 
-            const response = await this.#agent.call(data.text, KBData?.name);
+            const response = await this.#agent.call(data, chatData.id, data.prompt, KBData?.id);
+            delete data.prompt;
+
             if (!response.status) {
                 return response;
             }
@@ -61,16 +64,14 @@ export class ChatMessages {
             /**
              * user message
              */
-
-            const userMsgId = uuidv4();
             await chat
                 .collection(this.table)
-                .doc(userMsgId)
+                .doc(data.id)
                 .set({
                     ...data,
                     timestamp: admin.firestore.FieldValue.serverTimestamp(),
                 });
-            const savedMessage = await chat.collection(this.table).doc(userMsgId).get();
+            const savedMessage = await chat.collection(this.table).doc(data.id).get();
             const responseData = savedMessage.exists ? savedMessage.data() : undefined;
 
             /**

@@ -25,7 +25,7 @@ export /*bundle*/ const uploader = async function (req, res) {
         const { path, originalname, mimetype } = req.file;
         const name = `${generateCustomName(originalname)}${getExtension(mimetype)}`;
 
-        const { project, container, userId } = req.body;
+        const { project, container, userId, prompt } = req.body;
         let dest = join(project, userId, container, name);
         dest = dest.replace(/\\/g, '/');
 
@@ -44,15 +44,17 @@ export /*bundle*/ const uploader = async function (req, res) {
             return;
         }
 
-        const agentResponse = await triggerAgent.call(response.data.text, req.body.knowledgeBoxId);
-
-        if (!response.status) {
+        const message = { role: 'user', text: response.data.text };
+        const { knowledgeBoxId, chatId } = req.body;
+        const agentResponse = await triggerAgent.call(message, chatId, prompt, knowledgeBoxId);
+        if (!agentResponse.status) {
             res.json({
                 status: false,
-                error: `Error saving file: ${response.error}`,
+                error: `Error saving file: ${agentResponse.error}`,
             });
             return;
         }
+
         res.json({
             status: true,
             data: {

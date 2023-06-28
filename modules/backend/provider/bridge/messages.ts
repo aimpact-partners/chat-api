@@ -1,78 +1,82 @@
-import type {Server} from 'socket.io';
-import {db} from './db';
+import type { Server } from 'socket.io';
+import { db } from '@aimpact/chat-api/backend-db';
 import * as admin from 'firebase-admin';
 interface Message {
-	id: string;
-	userId: string;
-	timestamp: number;
+    id: string;
+    userId: string;
+    timestamp: number;
 }
 
 export /*actions*/ /*bundle*/ class MessageProvider {
-	socket: Server;
-	private collection;
-	private table = 'messages';
+    socket: Server;
+    private collection;
+    private table = 'messages';
 
-	constructor(socket: Server) {
-		this.socket = socket;
-		this.collection = db.collection(this.table);
-	}
+    constructor(socket: Server) {
+        this.socket = socket;
+        this.collection = db.collection(this.table);
+    }
 
-	async load(id: string) {
-		try {
-			if (!id) {
-				return {status: false, error: true, message: 'id is required'};
-			}
-			const response = await this.collection.doc(id).get();
-			return {status: true, data: response.data() as Message};
-		} catch (e) {
-			return {status: false, error: e.message};
-		}
-	}
+    async load(id: string) {
+        try {
+            if (!id) {
+                return { status: false, error: true, message: 'id is required' };
+            }
+            const response = await this.collection.doc(id).get();
+            return { status: true, data: response.data() as Message };
+        } catch (e) {
+            return { status: false, error: e.message };
+        }
+    }
 
-	async publish(data) {
-		try {
-			if (!data.chatId) {
-				throw new Error('chatId is required');
-			}
-			const chatProvider = db.collection('Chat');
-			const chat = await chatProvider.doc(data.chatId);
-			const chatDoc = await chat.get();
-			const messageRef = await chat.collection('messages').add({
-				...data,
-				timestamp: admin.firestore.FieldValue.serverTimestamp(),
-			});
+    async publish(data) {
+        try {
+            if (!data.chatId) {
+                throw new Error('chatId is required');
+            }
+            const chatProvider = db.collection('Chat');
+            const chat = await chatProvider.doc(data.chatId);
+            const chatDoc = await chat.get();
 
-			const savedMessage = await messageRef.get();
-			const responseData = savedMessage.exists ? savedMessage.data() : undefined;
+            const messageRef = await chat
+                .collection('messages')
+                .doc(data.id)
+                .set({
+                    ...data,
+                    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+                });
 
-			return {status: true, data: responseData};
-		} catch (e) {
-			console.error(e);
-			return {status: false, error: e.message};
-		}
-	}
+            const savedMessage = await messageRef.get();
+            const responseData = savedMessage.exists ? savedMessage.data() : undefined;
 
-	async list() {
-		try {
-			const entries = [];
-			const items = await this.collection.get();
-			items.forEach(item => entries.push(item.data()));
-			return {status: true, data: {entries}};
-		} catch (e) {
-			return {status: false, error: e.message};
-		}
-	}
+            return { status: true, data: responseData };
+        } catch (e) {
+            console.error(e);
+            return { status: false, error: e.message };
+        }
+    }
 
-	async bulkSave(data) {
-		try {
-			const entries = [];
-			const promises = [];
-			data.forEach(item => promises.push(this.collection.add(item)));
-			await Promise.all(promises).then(i => i.map((chat, j) => entries.push({id: chat.id, ...data[j]})));
+    async list() {
+        try {
+            const entries = [];
+            const items = await this.collection.get();
+            items.forEach(item => entries.push(item.data()));
+            return { status: true, data: { entries } };
+        } catch (e) {
+            return { status: false, error: e.message };
+        }
+    }
 
-			return {status: true, data: {entries}};
-		} catch (e) {
-			return {status: false, error: e.message};
-		}
-	}
+    async bulkSave(data) {
+        try {
+            const entries = [];
+            const promises = [];
+            data.forEach(item => promises.push(this.collection.add(item)));
+            await Promise.all(promises).then(i => i.map((chat, j) => entries.push({ id: chat.id, ...data[j] })));
+
+            return { status: true, data: { entries } };
+        } catch (e) {
+            return { status: false, error: e.message };
+        }
+    }
 }

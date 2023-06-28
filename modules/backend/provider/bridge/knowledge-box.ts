@@ -1,5 +1,5 @@
 import type { Server } from 'socket.io';
-import { db } from './db';
+import { db } from '@aimpact/chat-api/backend-db';
 // TODO [1] @ftovar integrar la llamada aqui para obtener los files de un KnowledgeBox
 // esa llamada debe ir en la libreria de coumentos y debe poder recibir los parametros
 // user y project
