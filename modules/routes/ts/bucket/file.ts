@@ -14,7 +14,6 @@ export class FilestoreFile {
 
 	getFile(destination: string) {
 		const bucketName = this.firebaseConfig.storageBucket;
-		console.log(11, bucketName);
 		const file = this.storage.bucket(bucketName).file(destination);
 		return file;
 	}
