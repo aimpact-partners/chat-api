@@ -1,16 +1,19 @@
 import type { Server } from 'socket.io';
 import { db } from '@aimpact/chat-api/backend-db';
 import * as admin from 'firebase-admin';
-interface IMessage {
+
+interface IClass {
 	id: string;
 	userId: string;
-	timestamp: number;
+	createdAt: number;
+	title: string;
+	description: string;
+	bulletPoints: string[];
 }
-
-export /*actions*/ /*bundle*/ class MessageProvider {
+export /*bundle*/ /*actions*/ class ClassesProvider {
 	socket: Server;
 	private collection;
-	private table = 'messages';
+	private table = 'classes';
 
 	constructor(socket: Server) {
 		this.socket = socket;
@@ -23,7 +26,7 @@ export /*actions*/ /*bundle*/ class MessageProvider {
 				return { status: false, error: true, message: 'id is required' };
 			}
 			const response = await this.collection.doc(id).get();
-			return { status: true, data: response.data() as IMessage };
+			return { status: true, data: response.data() as IClass };
 		} catch (e) {
 			return { status: false, error: e.message };
 		}
@@ -31,23 +34,10 @@ export /*actions*/ /*bundle*/ class MessageProvider {
 
 	async publish(data) {
 		try {
-			if (!data.chatId) {
-				throw new Error('chatId is required');
-			}
-			const chatProvider = db.collection('Chat');
-			const chat = await chatProvider.doc(data.chatId);
-			await chat
-				.collection(this.table)
-				.doc(data.id)
-				.set({
-					...data,
-					timestamp: admin.firestore.FieldValue.serverTimestamp(),
-				});
+			await this.collection.doc(data.id).set(data);
+			const item = await this.collection.doc(data.id).get();
 
-			const savedMessage = await chat.collection(this.table).doc(data.id).get();
-			const responseData = savedMessage.exists ? savedMessage.data() : undefined;
-
-			return { status: true, data: responseData };
+			return { status: true, data: item.data() };
 		} catch (e) {
 			console.error(e);
 			return { status: false, error: e.message };
