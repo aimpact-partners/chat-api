@@ -69,7 +69,7 @@ export class ChatMessages {
 			}
 
 			/**
-			 * user message
+			 * Store user message
 			 */
 			await chat
 				.collection(this.table)
@@ -81,18 +81,25 @@ export class ChatMessages {
 			const savedMessage = await chat.collection(this.table).doc(data.id).get();
 			const responseData = savedMessage.exists ? savedMessage.data() : undefined;
 
+			const usage = { totalTokens: response.data.usage.total_tokens };
 			/**
-			 * agent message
+			 * Store agent message
 			 */
 			const agentMsgId = uuidv4();
 			const agentMessage = {
 				id: agentMsgId,
 				chatId: data.chatId,
-				content: response.data.output,
 				role: 'system',
+				content: response.data.output,
+				usage,
 				timestamp: admin.firestore.FieldValue.serverTimestamp(),
 			};
 			await chat.collection(this.table).doc(agentMsgId).set(agentMessage);
+
+			/**
+			 * Update the "usage" in chat
+			 */
+			await chat.set({ ...chatData, usage });
 
 			return { status: true, data: { message: responseData, response: agentMessage } };
 		} catch (e) {
