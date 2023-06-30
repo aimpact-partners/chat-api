@@ -22,30 +22,43 @@ interface IFileSpecs {
 
 function process(req, res) {
 	const promise = new PendingPromise();
-
 	const fields: IFileSpecs = {};
-	const promises = [];
 	const bb = Busboy({ headers: req.headers });
-	const files = File[];
+	const files = [];
 	bb.on('field', (name, val) => (fields[name] = val));
-	bb.on('file', (nameV, file) => {
-		 files.push(file)
-        
+	bb.on('file', (nameV, file, info) => {
+		let size = 0;
+		file.on('data', data => (size += data.length));
+		const pass = new stream.PassThrough();
+		file.pipe(pass);
+		files.push({ file: pass, info });
 	});
 	bb.on('finish', async () => {
-		console.log("in finish...");
-        const [file] = files;
-        const fileManager = new FilestoreFile();
-        const { project, container, userId} = fields;
-        let dest = join(project, userId, container, file.name);
-        const blob = fileManager.getFile(dest);
-        const blobStream = blob.createWriteStream();
-        file.pipe(blobStream);
-        dest = dest.replace(/\\/g, '/');
-		const response = await oaiBackend.transcription(files[0], 'es');
-        promise.resolve(response)
-        console.log("aja")
+		const [item] = files;
+		const {
+			file,
+			info: { filename, mimeType },
+		} = item;
+
+		const fileManager = new FilestoreFile();
+		const { project, container, userId } = fields;
+		const name = `${generateCustomName(filename)}${getExtension(mimeType)}`;
+		let dest = join(project, userId, container, name);
+		dest = dest.replace(/\\/g, '/');
+
+		const blob = fileManager.getFile(dest);
+
+		const blobStream = blob.createWriteStream();
+		Error.stackTraceLimit = 50;
+
+		file.pipe(blobStream);
+
+		const response = await oaiBackend.transcription(file, 'es');
+		promise.resolve(response);
 	});
+
+	req.pipe(bb);
+
 	return promise;
 }
 
@@ -58,7 +71,7 @@ export /*bundle*/ const uploader = async function (req, res) {
 	} */
 
 	try {
-        console.log("llamada")
+		console.log('llamada 1');
 		/* 		const convertable = ['audio/x-m4a', 'audio/mp4'];
 		const fileManager = new FilestoreFile();
 
