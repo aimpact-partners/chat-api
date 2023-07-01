@@ -14,6 +14,10 @@ import { createReadStream } from 'fs';
 const oaiBackend = new OpenAIBackend();
 const triggerAgent = new TriggerAgent();
 
+
+const oaiBackend = new OpenAIBackend();
+const triggerAgent = new TriggerAgent();
+
 interface IFileSpecs {
 	project?: string;
 	type?: string;
@@ -66,6 +70,8 @@ function process(req, res) {
 		promise.resolve(response);
 	});
 
+	// TODO @ftovar8 @jircdev validar el funcionamiento de estos metodos
+	process.env?.CLOUD_FUNCTION ? bb.end(req.rawBody) : req.pipe(bb);
 	// TODO @ftovar8 @jircdev validar el funcionamiento de estos metodos
 	process.env?.CLOUD_FUNCTION ? bb.end(req.rawBody) : req.pipe(bb);
 
@@ -124,6 +130,7 @@ export /*bundle*/ const uploader = async function (req, res) {
 				file: dest,
 				transcription: response.data.text,
 				output: agentResponse.data.output,
+				usage: agentResponse.usage,
 				message: 'File uploaded successfully',
 			},
 		});
