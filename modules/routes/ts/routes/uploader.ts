@@ -7,11 +7,13 @@ import { generateCustomName } from './utils/generate-name';
 import { TriggerAgent } from '@aimpact/chat-api/trigger-agent';
 import { OpenAIBackend } from '@aimpact/chat-api/backend-openai';
 import { PendingPromise } from '@beyond-js/kernel/core';
-const oaiBackend = new OpenAIBackend();
-const triggerAgent = new TriggerAgent();
 import * as Busboy from 'busboy';
 import * as stream from 'stream';
 import { createReadStream } from 'fs';
+
+const oaiBackend = new OpenAIBackend();
+const triggerAgent = new TriggerAgent();
+
 interface IFileSpecs {
 	project?: string;
 	type?: string;
@@ -20,6 +22,9 @@ interface IFileSpecs {
 	knowledgeBoxId?: string;
 }
 
+function isReadableStream(obj) {
+	return obj instanceof stream.Readable;
+}
 function process(req, res) {
 	const promise = new PendingPromise();
 	const fields: IFileSpecs = {};
@@ -51,13 +56,18 @@ function process(req, res) {
 		const blobStream = blob.createWriteStream();
 		Error.stackTraceLimit = 50;
 
+		blobStream.on('error', e => console.error(e));
+		blobStream.on('finish', a => console.log('finished...', a));
 		file.pipe(blobStream);
+		console.log(2, isReadableStream(file));
 
-		const response = await oaiBackend.transcription(file, 'es');
+		const response = await oaiBackend.transcriptionStream(file, 'es');
+
 		promise.resolve(response);
 	});
 
-	req.pipe(bb);
+	// TODO @ftovar8 @jircdev validar el funcionamiento de estos metodos
+	process.env?.CLOUD_FUNCTION ? bb.end(req.rawBody) : req.pipe(bb);
 
 	return promise;
 }

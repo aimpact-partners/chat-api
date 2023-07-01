@@ -14,8 +14,9 @@ export class FilestoreFile {
 
 	getFile(destination: string) {
 		const bucketName = this.firebaseConfig.storageBucket;
-		console.log(11, bucketName);
+		console.log(11, bucketName, destination);
 		const file = this.storage.bucket(bucketName).file(destination);
+		console.log(11.2, file);
 		return file;
 	}
 	async upload(path: string, destination: string): Promise<string> {
