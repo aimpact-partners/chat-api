@@ -1,5 +1,5 @@
 import { Storage } from '@google-cloud/storage';
-import { getFirebaseConfig } from './credentials';
+import { getFirebaseConfig } from '@aimpact/chat-api/firebase-config';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';

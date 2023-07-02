@@ -26,6 +26,11 @@ Hay 2 opciones
 
 ## Deploy
 
--   Configurar archivo `app.yaml` en la raiz de la compilacion con las variables de entorno correspondientes, tomar plantilla del archivo `/sample-files/app.yaml`
+Dirigete a la raiz del repositorio `chat-api-engine`
+
+[https://github.com/aimpact-partners/chat-api-engine.git]
+
+-   Configurar archivo `app.yaml` en la raiz de la compilacion con las variables de entorno correspondientes, tomar
+    plantilla del archivo `/sample-files/app.yaml`
 
 -   Ubicarse en la raiz de la compilacion y ejecutar el comando `gcloud app deploy`
