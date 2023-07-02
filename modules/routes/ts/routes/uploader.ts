@@ -14,10 +14,6 @@ import { createReadStream } from 'fs';
 const oaiBackend = new OpenAIBackend();
 const triggerAgent = new TriggerAgent();
 
-
-const oaiBackend = new OpenAIBackend();
-const triggerAgent = new TriggerAgent();
-
 interface IFileSpecs {
 	project?: string;
 	type?: string;
@@ -29,17 +25,20 @@ interface IFileSpecs {
 function isReadableStream(obj) {
 	return obj instanceof stream.Readable;
 }
-function process(req, res) {
+function process(req, res): Promise<any> {
 	const promise = new PendingPromise();
 	const fields: IFileSpecs = {};
 	const bb = Busboy({ headers: req.headers });
 	const files = [];
+	console.log(0.1);
+	let transcription = new PendingPromise();
 	bb.on('field', (name, val) => (fields[name] = val));
 	bb.on('file', (nameV, file, info) => {
 		let size = 0;
 		file.on('data', data => (size += data.length));
 		const pass = new stream.PassThrough();
 		file.pipe(pass);
+		oaiBackend.transcriptionStream(pass, 'es').then(response => transcription.resolve(response));
 		files.push({ file: pass, info });
 	});
 	bb.on('finish', async () => {
@@ -54,20 +53,10 @@ function process(req, res) {
 		const name = `${generateCustomName(filename)}${getExtension(mimeType)}`;
 		let dest = join(project, userId, container, name);
 		dest = dest.replace(/\\/g, '/');
+		console.log(0.2, transcription);
+		const response = await transcription;
 
-		const blob = fileManager.getFile(dest);
-
-		const blobStream = blob.createWriteStream();
-		Error.stackTraceLimit = 50;
-
-		blobStream.on('error', e => console.error(e));
-		blobStream.on('finish', a => console.log('finished...', a));
-		file.pipe(blobStream);
-		console.log(2, isReadableStream(file));
-
-		const response = await oaiBackend.transcriptionStream(file, 'es');
-
-		promise.resolve(response);
+		promise.resolve({ transcription: response, fields, file: { name, dest, mimeType } });
 	});
 
 	// TODO @ftovar8 @jircdev validar el funcionamiento de estos metodos
@@ -79,43 +68,22 @@ function process(req, res) {
 }
 
 export /*bundle*/ const uploader = async function (req, res) {
-	/* if (!fields.file) {
-		return res.status(400).send({ status: false, error: 'No file was uploaded' });
-	}
-	if (!supportedMimetypes.includes(req.file.mimetype)) {
-		return res.status(400).send(`Only MP3, MP4, MPEG, MPGA, M4A, WAV, and WEBM files are allowed`);
-	} */
-
 	try {
-		console.log('llamada 1');
-		/* 		const convertable = ['audio/x-m4a', 'audio/mp4'];
-		const fileManager = new FilestoreFile();
-
-		const { path, originalname, mimetype } = req.file;
-		const name = `${generateCustomName(originalname)}${getExtension(mimetype)}`;
-
-		const { project, container, userId, prompt } = req.body;
-		let dest = join(project, userId, container, name);
-		dest = dest.replace(/\\/g, '/'); 
-
-		let origin = path;
-		if (convertable.includes(mimetype)) {
-			origin = await convertFile(path, 'mp3');
-		}*/
-
-		const response = await process(req, res);
-
-		if (!response.status) {
+		const { transcription, fields, file } = await process(req, res);
+		console.log(1, transcription);
+		if (!transcription.status) {
 			res.json({
 				status: false,
-				error: `Error transcribing audio: ${response.error}`,
+				error: `Error transcribing audio: ${transcription.error}`,
 			});
 			return;
 		}
 
-		const message = { role: 'user', content: response.data.text };
-		const { knowledgeBoxId, chatId } = req.body;
-		const agentResponse = await triggerAgent.call(message, chatId, prompt, knowledgeBoxId);
+		const message = { role: 'user', content: transcription.data?.text };
+
+		const { knowledgeBoxId, chatId } = fields;
+		const agentResponse = await triggerAgent.call(message, chatId, 'Eres un profesor', knowledgeBoxId);
+
 		if (!agentResponse.status) {
 			res.json({
 				status: false,
@@ -127,8 +95,8 @@ export /*bundle*/ const uploader = async function (req, res) {
 		res.json({
 			status: true,
 			data: {
-				file: dest,
-				transcription: response.data.text,
+				file: file.dest,
+				transcription: transcription.data.text,
 				output: agentResponse.data.output,
 				usage: agentResponse.usage,
 				message: 'File uploaded successfully',
