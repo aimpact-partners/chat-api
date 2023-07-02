@@ -25,7 +25,8 @@ interface IFileSpecs {
 function isReadableStream(obj) {
 	return obj instanceof stream.Readable;
 }
-function process(req, res): Promise<any> {
+
+function processRequest(req, res): Promise<any> {
 	const promise = new PendingPromise();
 	const fields: IFileSpecs = {};
 	const bb = Busboy({ headers: req.headers });
@@ -61,15 +62,13 @@ function process(req, res): Promise<any> {
 
 	// TODO @ftovar8 @jircdev validar el funcionamiento de estos metodos
 	process.env?.CLOUD_FUNCTION ? bb.end(req.rawBody) : req.pipe(bb);
-	// TODO @ftovar8 @jircdev validar el funcionamiento de estos metodos
-	process.env?.CLOUD_FUNCTION ? bb.end(req.rawBody) : req.pipe(bb);
 
 	return promise;
 }
 
 export /*bundle*/ const uploader = async function (req, res) {
 	try {
-		const { transcription, fields, file } = await process(req, res);
+		const { transcription, fields, file } = await processRequest(req, res);
 		console.log(1, transcription);
 		if (!transcription.status) {
 			res.json({
