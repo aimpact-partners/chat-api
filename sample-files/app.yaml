@@ -25,5 +25,4 @@ env_variables:
     MESSAGINGSENDERID: ''
     APPID: ''
     MEASURAMENTID: ''
-    SERPAPI_API_KEY: ''
-    GCLOUD_IDENTITY_TOKEN: ''
+    GCLOUD_INVOKER: ''

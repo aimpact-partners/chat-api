@@ -1,9 +1,8 @@
 {
-  "name": "entities/models",
-  "ts": {
-    "path": "ts",
-    "files": [
-      "*"
-    ]
-  }
+	"name": "entities/models",
+	"platforms": ["web", "android", "ios"],
+	"ts": {
+		"path": "ts",
+		"files": ["*"]
+	}
 }

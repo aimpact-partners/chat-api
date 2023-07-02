@@ -31,7 +31,7 @@ function processRequest(req, res): Promise<any> {
 	const fields: IFileSpecs = {};
 	const bb = Busboy({ headers: req.headers });
 	const files = [];
-	console.log(0.1);
+
 	let transcription = new PendingPromise();
 	bb.on('field', (name, val) => (fields[name] = val));
 	bb.on('file', (nameV, file, info) => {
@@ -54,7 +54,6 @@ function processRequest(req, res): Promise<any> {
 		const name = `${generateCustomName(filename)}${getExtension(mimeType)}`;
 		let dest = join(project, userId, container, name);
 		dest = dest.replace(/\\/g, '/');
-		console.log(0.2, transcription);
 		const response = await transcription;
 
 		promise.resolve({ transcription: response, fields, file: { name, dest, mimeType } });
@@ -69,7 +68,6 @@ function processRequest(req, res): Promise<any> {
 export /*bundle*/ const uploader = async function (req, res) {
 	try {
 		const { transcription, fields, file } = await processRequest(req, res);
-		console.log(1, transcription);
 		if (!transcription.status) {
 			res.json({
 				status: false,
@@ -78,9 +76,11 @@ export /*bundle*/ const uploader = async function (req, res) {
 			return;
 		}
 
+		console.log(12, transcription.data);
 		const message = { role: 'user', content: transcription.data?.text };
 
 		const { knowledgeBoxId, chatId } = fields;
+		console.log('knowledgeBoxId', knowledgeBoxId);
 		const agentResponse = await triggerAgent.call(message, chatId, 'Eres un profesor', knowledgeBoxId);
 
 		if (!agentResponse.status) {

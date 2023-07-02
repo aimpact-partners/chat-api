@@ -16,10 +16,7 @@ export /*bundle*/ class TriggerAgent {
 	#url = config.params.AGENTS_SERVER;
 	#options = {
 		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			Authorization: `Bearer ${process.env.GCLOUD_IDENTITY_TOKEN}`,
-		},
+		headers: { 'Content-Type': 'application/json' },
 	};
 
 	async call(message: IMessage, chatId: string, prompt: string, knowledgeBoxId: string) {
@@ -31,7 +28,6 @@ export /*bundle*/ class TriggerAgent {
 			}
 
 			let filter;
-
 			if (!['default', undefined, 'undefined'].includes(knowledgeBoxId)) {
 				const knowledgeBox = new KnowledgeBoxesStore();
 				var KBResponse = await knowledgeBox.load({ id: knowledgeBoxId });
@@ -46,7 +42,10 @@ export /*bundle*/ class TriggerAgent {
 
 			items.push({ role: message.role, content: message.content });
 
-			const options = { ...this.#options, body: JSON.stringify({ messages: items, prompt, filter }) };
+			const options = {
+				...this.#options,
+				body: JSON.stringify({ messages: items, prompt, filter, token: process.env.GCLOUD_INVOKER }),
+			};
 			const response = await fetch(this.#url, options);
 			const responseJson = await response.json();
 

@@ -1,9 +1,0 @@
-{
-  "name": "configs/service-token",
-  "ts": {
-    "path": "ts",
-    "files": [
-      "*"
-    ]
-  }
-}
