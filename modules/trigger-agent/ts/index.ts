@@ -31,7 +31,8 @@ export /*bundle*/ class TriggerAgent {
 			}
 
 			let filter;
-			if (knowledgeBoxId) {
+
+			if (!['default', undefined, 'undefined'].includes(knowledgeBoxId)) {
 				const knowledgeBox = new KnowledgeBoxesStore();
 				var KBResponse = await knowledgeBox.load({ id: knowledgeBoxId });
 				if (!KBResponse.status) {
@@ -41,18 +42,9 @@ export /*bundle*/ class TriggerAgent {
 			}
 
 			let { messages } = chatResponse.data;
-			const items = messages.map(({ role, content }) => Object.assign({}, { role, content }));
-
-			// TODO @ftovar8 se hace la insercion del mensaje reciente en el array de mensajes
-			// Hay que ajustar el guardado en backend cuando se manda un audio
-			// de momento se esta haciendo en el cliente
-			// console.log('AGENT CALL: message ', message);
+			const items = messages.map(({ role, content }) => Object.assign({}, { role, content: content ?? '' }));
 
 			items.push({ role: message.role, content: message.content });
-
-			// console.log('AGENT CALL: messages-items', items);
-			// console.log('AGENT CALL: prompt', prompt);
-			// console.log('AGENT CALL: filter', filter);
 
 			const options = { ...this.#options, body: JSON.stringify({ messages: items, prompt, filter }) };
 			const response = await fetch(this.#url, options);
