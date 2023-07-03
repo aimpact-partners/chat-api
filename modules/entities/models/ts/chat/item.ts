@@ -117,4 +117,8 @@ export /*bundle*/ class Chat extends Item<IChat> {
 			this.fetching = false;
 		}
 	}
+
+	getMessage(id) {
+		return this.#messages.get(id);
+	}
 }
