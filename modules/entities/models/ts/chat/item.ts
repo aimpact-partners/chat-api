@@ -13,7 +13,7 @@ interface IChat {
 }
 
 export /*bundle*/ class Chat extends Item<IChat> {
-	protected properties = ['id', 'name', 'userId', 'category', 'knowledgeBoxId', 'usage'];
+	protected properties = ['id', 'autoplay', 'name', 'userId', 'category', 'knowledgeBoxId', 'usage'];
 
 	#messages: Map<string, any> = new Map();
 	get messages() {
@@ -109,6 +109,7 @@ export /*bundle*/ class Chat extends Item<IChat> {
 			//@ts-ignore
 
 			this.triggerEvent();
+			return { response: response.data.response, message: response.data.message };
 		} catch (e) {
 			console.error(e);
 		} finally {
