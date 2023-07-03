@@ -76,7 +76,6 @@ export /*bundle*/ const uploader = async function (req, res) {
 			return;
 		}
 
-		console.log(12, transcription.data);
 		const message = { role: 'user', content: transcription.data?.text };
 
 		const { knowledgeBoxId, chatId } = fields;
