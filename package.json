@@ -45,6 +45,7 @@
 				"name": "node",
 				"environment": "development",
 				"platform": "node",
+				"backend": "backend",
 				"ports": {
 					"bundles": 6583,
 					"http": 6584,

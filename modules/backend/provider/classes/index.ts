@@ -11,7 +11,8 @@ interface IClass {
 	description: string;
 	bulletPoints: string[];
 }
-export /*bundle*/ /*actions*/ class ClassesProvider {
+
+export /*actions*/ /*bundle*/ class ClassesProvider {
 	socket: Server;
 	private collection;
 	private table = 'classes';
@@ -21,8 +22,8 @@ export /*bundle*/ /*actions*/ class ClassesProvider {
 		this.collection = db.collection(this.table);
 	}
 
-	generator(promt, objetives) {
-		return generator(promt, objetives);
+	generator(curriculumObjective: string, topics: string[]) {
+		return generator(curriculumObjective, topics);
 	}
 
 	async load(id: string) {

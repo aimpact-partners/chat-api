@@ -1,8 +1,12 @@
 {
 	"name": "backend-provider",
 	"bridge": {
-		"path": "bridge",
-		"files": ["*"]
+		"path": "./",
+		"files": [
+			"*"
+		]
 	},
-	"platforms": ["*"]
+	"platforms": [
+		"*"
+	]
 }

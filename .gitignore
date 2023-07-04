@@ -3,5 +3,6 @@ node_modules
 .vscode
 .idea
 .env
+runners/.env
 uploads
 package-lock.json
