@@ -10,6 +10,7 @@ interface IClass {
 	description: string;
 	bulletPoints: string[];
 }
+
 export /*bundle*/ /*actions*/ class ClassesProvider {
 	socket: Server;
 	private collection;
