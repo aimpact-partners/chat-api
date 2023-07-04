@@ -17,8 +17,8 @@ export /*bundle*/ class User extends Item<IUser> {
 	get logged() {
 		return this.#logged;
 	}
-	constructor({ id = undefined } = {}) {
-		super({ id, db: 'chat-api', storeName: 'User', provider: UserProvider });
+	constructor(specs) {
+		super({ id: specs.id, db: 'chat-api', storeName: 'User', provider: UserProvider });
 	}
 
 	async login(data) {
