@@ -1,6 +1,8 @@
 import type { Server } from 'socket.io';
 import { db } from '@aimpact/chat-api/backend-db';
 import { ChatMessages } from './messages';
+import { FirestoreService } from '../firestore/service';
+import { BatchDeleter } from '../firestore/delete';
 
 interface Chat {
 	id: string;
@@ -14,9 +16,10 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 	private collection;
 	private table = 'Chat';
 	#messages;
-
+	firestoreService: FirestoreService;
 	constructor(socket: Server) {
 		this.socket = socket;
+		this.firestoreService = new FirestoreService(this.table);
 		this.collection = db.collection(this.table);
 		this.#messages = new ChatMessages();
 	}
@@ -65,8 +68,8 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 			if (!specs.userId) {
 				throw new Error('userId is required');
 			}
-			const items = await this.collection.where('userId', '==', specs.userId).get();
 
+			const items = await this.collection.where('userId', '==', specs.userId).get();
 			items.forEach(item => entries.push(item.data()));
 
 			return { status: true, data: { entries } };
@@ -90,5 +93,24 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 
 	async sendMessage(data) {
 		return this.#messages.publish(data);
+	}
+
+	async delete({ id }: { id: string }) {
+		try {
+			if (!id) {
+				return { status: false, error: 'id is required' };
+			}
+
+			const docRef = this.firestoreService.getDocumentRef(id);
+			const subcollectionRef = docRef.collection('messages');
+			const batchDeleter = new BatchDeleter(subcollectionRef);
+
+			await batchDeleter.deleteAll();
+			await docRef.delete();
+
+			return { status: true, data: { id } };
+		} catch (e) {
+			return { status: false, error: e.message };
+		}
 	}
 }
