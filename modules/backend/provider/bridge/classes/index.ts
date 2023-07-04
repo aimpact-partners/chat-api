@@ -1,6 +1,7 @@
 import type { Server } from 'socket.io';
 import { db } from '@aimpact/chat-api/backend-db';
-import * as admin from 'firebase-admin';
+import { OpenAIBackend } from '@aimpact/chat-api/backend-openai';
+import { generator } from './generator';
 
 interface IClass {
 	id: string;
@@ -10,7 +11,8 @@ interface IClass {
 	description: string;
 	bulletPoints: string[];
 }
-export /*bundle*/ /*actions*/ class ClassesProvider {
+const openia = new OpenAIBackend();
+export /*actions*/ /*bundle*/ class ClassesProvider {
 	socket: Server;
 	private collection;
 	private table = 'classes';
@@ -18,6 +20,10 @@ export /*bundle*/ /*actions*/ class ClassesProvider {
 	constructor(socket: Server) {
 		this.socket = socket;
 		this.collection = db.collection(this.table);
+	}
+
+	generator(promt, objetives) {
+		return generator(promt, objetives);
 	}
 
 	async load(id: string) {
