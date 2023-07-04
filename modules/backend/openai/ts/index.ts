@@ -1,13 +1,10 @@
 import { Configuration, OpenAIApi } from 'openai';
 import type { ChatCompletionRequestMessage } from 'openai';
-import { getFile } from './buckets/read';
-import * as Stream from 'stream';
-import { gptTurboPlus, davinci3, whisper } from './utils/models';
-import axios, { AxiosResponse } from 'axios';
 import * as FormData from 'form-data';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import fetch from 'node-fetch';
+import { gptTurboPlus, davinci3, whisper } from './utils/models';
 dotenv.config();
 
 interface IResponse {
