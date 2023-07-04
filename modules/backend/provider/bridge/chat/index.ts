@@ -68,11 +68,10 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 			if (!specs.userId) {
 				throw new Error('userId is required');
 			}
-			console.log(1, specs.userId);
-			const items = await this.collection.where('userId', '==', specs.userId).get();
 
+			const items = await this.collection.where('userId', '==', specs.userId).get();
 			items.forEach(item => entries.push(item.data()));
-			console.log(2, entries);
+
 			return { status: true, data: { entries } };
 		} catch (e) {
 			return { status: false, error: e.message };
