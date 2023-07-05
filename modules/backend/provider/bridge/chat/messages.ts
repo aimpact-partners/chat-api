@@ -63,11 +63,11 @@ export class ChatMessages {
 
 			const { prompt } = data;
 			delete data.prompt;
-			if (!chatData.system) {
-				return { status: false, error: 'No hay un system definido' };
-			}
+			// if (!chatData.system) {
+			// 	return { status: false, error: 'No hay un system definido' };
+			// }
 
-			const response = await this.#agent.call(data, chatData.id, chatData.system, knowledgeBoxId);
+			const response = await this.#agent.call(data, chatData.id, prompt, knowledgeBoxId);
 			if (!response.status) {
 				return response;
 			}
