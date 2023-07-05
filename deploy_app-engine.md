@@ -16,7 +16,7 @@ Hay 2 opciones
 {
     "params": {
 		...
-        "AGENTS_SERVER": "https://southamerica-west1-aimpact-partners-dev.cloudfunctions.net/agent"
+        "AGENTS_SERVER": "https://us-central1-aimpact-partners-dev.cloudfunctions.net/agent"
 		...
     }
 }
