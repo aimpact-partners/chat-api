@@ -34,7 +34,7 @@ const executePrompt: (prompt: string, format?: string) => Promise<PromptExecutio
 				JSON.stringify(JSON.parse(content));
 			}
 			catch (exc) {
-				console.log(`JSON cannot be parsed:\n${content}`)
+				console.warn(`JSON cannot be parsed:\n${content}`)
 
 				// TODO: Probably it would be required to scrap the json inside the message
 				const error = `It was expected a JSON, but it couldn't be parsed`;
@@ -66,12 +66,7 @@ export async function generator(curriculumObjective: string, topics: string[], s
 		emit(element, is, false, topic);
 
 		const prompt = prompts[element][is](curriculumObjective, topic ? topic : topics);
-		console.log('PROMPT:');
-		console.log(prompt);
 		const processed = await executePrompt(prompt, format);
-
-		console.log('PROCESSED:');
-		console.log(processed);
 
 		emit(element, is, true, topic);
 
