@@ -1,11 +1,14 @@
 import type { Server } from 'socket.io';
 import { db } from '@aimpact/chat-api/backend-db';
 import { ChatMessages } from './messages';
-import { FirestoreService } from '../firestore/service';
 import { BatchDeleter } from '../firestore/delete';
+import { FirestoreService } from '../firestore/service';
+import { chatAPI } from '@aimpact/chat-api/backend/api';
 
-interface Chat {
+interface IChat {
 	id: string;
+	name: string;
+	usage: string;
 	userId: string;
 	category: string;
 	knowledgeBoxId: string;
@@ -15,49 +18,39 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 	socket: Server;
 	private collection;
 	private table = 'Chat';
-	#messages;
+	#messages = new ChatMessages();
 	firestoreService: FirestoreService;
+
 	constructor(socket: Server) {
 		this.socket = socket;
-		this.firestoreService = new FirestoreService(this.table);
 		this.collection = db.collection(this.table);
-		this.#messages = new ChatMessages();
+		this.firestoreService = new FirestoreService(this.table);
 	}
 
 	async load({ id }: { id: string }) {
 		try {
-			if (!id) {
-				return { status: false, error: 'id is required' };
-			}
-
-			const chatRef = await this.collection.doc(id);
-			const doc = await chatRef.get();
-
-			const messagesSnapshot = await chatRef.collection('messages').orderBy('timestamp').get();
-
-			const messages = messagesSnapshot.docs.map(doc => doc.data());
-
-			return {
-				status: true,
-				data: {
-					...doc.data(),
-					messages,
-				},
-			};
+			return chatAPI.get(id);
 		} catch (e) {
-			return { status: false, error: e.message };
+			console.error(e);
+			return { status: false, error: `Error loading chat` };
 		}
 	}
 
-	async publish(data) {
+	async publish(data: IChat) {
 		try {
-			await this.collection.doc(data.id).set(data);
-			const item = await this.collection.doc(data.id).get();
-
-			return { status: true, data: item.data() };
+			return chatAPI.save(data);
 		} catch (e) {
 			console.error(e);
-			return { status: false, error: e.message };
+			return { status: false, error: `Error saving chat` };
+		}
+	}
+
+	async delete({ id }: { id: string }) {
+		try {
+			return chatAPI.delete(id);
+		} catch (e) {
+			console.error(e);
+			return { status: false, error: `Error deleting chat` };
 		}
 	}
 
@@ -93,24 +86,5 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 
 	async sendMessage(data) {
 		return this.#messages.publish(data);
-	}
-
-	async delete({ id }: { id: string }) {
-		try {
-			if (!id) {
-				return { status: false, error: 'id is required' };
-			}
-
-			const docRef = this.firestoreService.getDocumentRef(id);
-			const subcollectionRef = docRef.collection('messages');
-			const batchDeleter = new BatchDeleter(subcollectionRef);
-
-			await batchDeleter.deleteAll();
-			await docRef.delete();
-
-			return { status: true, data: { id } };
-		} catch (e) {
-			return { status: false, error: e.message };
-		}
 	}
 }
