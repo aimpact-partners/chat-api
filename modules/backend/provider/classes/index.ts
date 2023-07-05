@@ -1,4 +1,4 @@
-import type { Server } from 'socket.io';
+import type { Socket } from 'socket.io';
 import { db } from '@aimpact/chat-api/backend-db';
 import { OpenAIBackend } from '@aimpact/chat-api/backend-openai';
 import { generator } from './generator';
@@ -13,17 +13,17 @@ interface IClass {
 }
 
 export /*actions*/ /*bundle*/ class ClassesProvider {
-	socket: Server;
+	#socket: Socket;
 	private collection;
 	private table = 'classes';
 
-	constructor(socket: Server) {
-		this.socket = socket;
+	constructor(socket: Socket) {
+		this.#socket = socket;
 		this.collection = db.collection(this.table);
 	}
 
-	generator(curriculumObjective: string, topics: string[]) {
-		return generator(curriculumObjective, topics);
+	async generator(curriculumObjective: string, topics: string[]) {
+		return await generator(curriculumObjective, topics, this.#socket);
 	}
 
 	async load(id: string) {
@@ -31,6 +31,7 @@ export /*actions*/ /*bundle*/ class ClassesProvider {
 			if (!id) {
 				return { status: false, error: true, message: 'id is required' };
 			}
+
 			const response = await this.collection.doc(id).get();
 			return { status: true, data: response.data() as IClass };
 		} catch (e) {
