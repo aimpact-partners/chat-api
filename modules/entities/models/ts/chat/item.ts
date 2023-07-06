@@ -109,17 +109,14 @@ export /*bundle*/ class Chat extends Item<IChat> {
 			if (!response.status) {
 				throw new Error(response.error);
 			}
-			this.#messages.set(response.data.response.id, response.data.message);
-			this.#messages.set(response.data.message.id, response.data.response);
-
-			//@ts-ignore
+			this.#messages.set(response.data.response.id, response.data.response);
+			this.#messages.set(response.data.message.id, response.data.message);
 
 			this.triggerEvent();
 			return { response: response.data.response, message: response.data.message };
 		} catch (e) {
 			console.error(e);
 		} finally {
-			//@ts-ignore
 			this.fetching = false;
 		}
 	}
