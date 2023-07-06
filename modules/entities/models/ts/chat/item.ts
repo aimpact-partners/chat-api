@@ -42,7 +42,7 @@ export /*bundle*/ class Chat extends Item<IChat> {
 		const responseItem = new Message();
 		await Promise.all([messageItem.isReady, responseItem.isReady]);
 		await messageItem.publish(user);
-		console.log(0.2, messageItem.id, responseItem.id);
+
 		await responseItem.publish(response);
 
 		const finalData = { ...user };
