@@ -1,7 +1,8 @@
 import type { Socket } from 'socket.io';
 import { db } from '@aimpact/chat-api/backend-db';
 import { OpenAIBackend } from '@aimpact/chat-api/backend-openai';
-import { generator } from './generator';
+import { generateAll, generate } from './generator';
+import { GenerationParams } from './prompts';
 
 interface IClass {
 	id: string;
@@ -22,8 +23,12 @@ export /*actions*/ /*bundle*/ class ClassesProvider {
 		this.collection = db.collection(this.table);
 	}
 
-	async generator(curriculumObjective: string, topics: string[]) {
-		return await generator(curriculumObjective, topics, this.#socket);
+	async generate(curriculumObjective: string, params: GenerationParams) {
+		return await generate(curriculumObjective, params, this.#socket);
+	}
+
+	async generateAll(curriculumObjective: string, topics: string[]) {
+		return await generateAll(curriculumObjective, topics, this.#socket);
 	}
 
 	async load(id: string) {

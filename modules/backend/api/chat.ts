@@ -7,6 +7,8 @@ interface IChat {
 	name: string;
 	usage: string;
 	userId: string;
+	parent: string;
+	children: string;
 	category: string;
 	knowledgeBoxId: string;
 }
@@ -47,6 +49,9 @@ class ChatAPI {
 
 	async save(data: IChat) {
 		try {
+			// if the parent is not received, we set it to root by default
+			data.parent === undefined && (data.parent = '0');
+
 			await this.collection.doc(data.id).set(data);
 			const item = await this.collection.doc(data.id).get();
 
