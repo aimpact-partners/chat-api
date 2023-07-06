@@ -1,9 +1,5 @@
 # Para publicar la cloud function `/upload`
 
-## URL de la aplicacion web
-
-[https://cheerful-treacle-e0b3f4.netlify.app]
-
 La funcion se encarga de:
 
 -   Cargar un audio al bucket
@@ -14,13 +10,13 @@ Parametros de retorno
 
 ```json
 {
-    "status": true,
-    "data": {
-        "file": "path on storage",
-        "transcription": "transcription text",
-        "output": "agent response",
-        "message": "File uploaded successfully"
-    }
+	"status": true,
+	"data": {
+		"file": "path on storage",
+		"transcription": "transcription text",
+		"output": "agent response",
+		"message": "File uploaded successfully"
+	}
 }
 ```
 
@@ -28,9 +24,9 @@ Parametros de retorno
 
 ```json
 {
-    "params": {
-        "AGENTS_SERVER": "https://southamerica-west1-aimpact-partners-dev.cloudfunctions.net/agent"
-    }
+	"params": {
+		"AGENTS_SERVER": "https://us-central1-aimpact-partners-dev.cloudfunctions.net/agent"
+	}
 }
 ```
 

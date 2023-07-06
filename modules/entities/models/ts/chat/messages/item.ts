@@ -13,6 +13,9 @@ interface IMessage {
 export /*bundle*/ class Message extends Item<IMessage> {
 	protected properties = ['id', 'chatId', 'userId', 'content', 'timestamp', 'role'];
 	declare autoplay: boolean;
+	declare id: string;
+	declare triggerEvent: () => void;
+	declare publish: (any) => Promise<any>;
 	constructor({ id = undefined } = {}) {
 		super({ id, db: 'chat-api', storeName: 'Messages', provider: MessageProvider });
 		//@ts-ignore

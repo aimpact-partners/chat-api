@@ -4,7 +4,7 @@ import { serviceAccountConfig } from '@aimpact/chat-api/configs/service-accounts
 
 // Construye la URL de la Cloud Function
 const cloudFunctionUrl = config.params.AGENTS_SERVER;
-console.log('update = ', cloudFunctionUrl);
+// console.log('update = ', cloudFunctionUrl);
 
 // Genera un token de acceso y realiza la llamada a la Cloud Function
 export async function token(req, res) {

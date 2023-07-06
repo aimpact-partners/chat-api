@@ -14,7 +14,9 @@ interface IChat {
 
 export /*bundle*/ class Chat extends Item<IChat> {
 	protected properties = ['id', 'autoplay', 'name', 'userId', 'category', 'knowledgeBoxId', 'usage'];
-
+	declare fetching: boolean;
+	declare triggerEvent: () => void;
+	declare provider: any;
 	#messages: Map<string, any> = new Map();
 	get messages() {
 		return [...this.#messages.values()];
@@ -38,27 +40,31 @@ export /*bundle*/ class Chat extends Item<IChat> {
 	async setAudioMessage({ user, response }) {
 		const messageItem = new Message();
 		const responseItem = new Message();
-
+		await Promise.all([messageItem.isReady, responseItem.isReady]);
 		await messageItem.publish(user);
+
 		await responseItem.publish(response);
-		const audio = this.#messages.get('temporal.audio');
-		const finalData = { ...audio, ...user };
-		this.#messages.delete('temporal.audio');
-		this.#messages.set(messageItem.id, finalData);
-		this.#messages.set(responseItem.id, response);
+
+		const finalData = { ...user };
+		const data = this.#messages.get('temporal');
+		this.#messages.set(messageItem.id, { ...finalData, id: messageItem.id, audio: data.audio });
+		this.#messages.delete('temporal');
+
+		this.#messages.set(responseItem.id, { ...response, id: responseItem.id });
 		this.triggerEvent();
 
-		return response;
+		return responseItem;
 	}
 
-	sendAudio(audio, transcription = undefined) {
+	async sendAudio(audio, transcription = undefined) {
 		const item = new Message();
+		await item.isReady;
 		//@ts-ignore
 		item.setOffline(true);
 
 		const specs = {
 			//@ts-ignore
-			id: item.id,
+			id: 'temporal',
 			//@ts-ignore
 			chatId: this.id,
 			type: 'audio',
@@ -70,8 +76,9 @@ export /*bundle*/ class Chat extends Item<IChat> {
 			//@ts-ignore
 			specs.content = transcription;
 		}
+
 		//@ts-ignore
-		this.#messages.set('temporal.audio', specs);
+		this.#messages.set('temporal', specs);
 
 		//@ts-ignore
 		this.triggerEvent();
@@ -80,10 +87,10 @@ export /*bundle*/ class Chat extends Item<IChat> {
 		try {
 			this.fetching = true;
 			const item = new Message();
-
+			await item.isReady;
 			item.setOffline(true);
 
-			this.#messages.set('temporal', {
+			this.#messages.set(item.id, {
 				id: item.id,
 				chatId: this.id,
 				content,
@@ -102,10 +109,9 @@ export /*bundle*/ class Chat extends Item<IChat> {
 			if (!response.status) {
 				throw new Error(response.error);
 			}
-
 			this.#messages.set(response.data.response.id, response.data.message);
 			this.#messages.set(response.data.message.id, response.data.response);
-			this.#messages.delete('temporal');
+
 			//@ts-ignore
 
 			this.triggerEvent();
