@@ -1,0 +1,18 @@
+{
+	"name": "ui-chat",
+	"widget": {
+		"route": "/ui-chat",
+		"is": "page",
+		"sass": {
+			"path": "/widget/sass",
+			"files": ["*"]
+		},
+		"ts": {
+			"path": "/widget/ts",
+			"files": ["*"]
+		},
+		"element": {
+			"name": "chat-page"
+		}
+	}
+}
