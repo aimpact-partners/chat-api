@@ -8,15 +8,25 @@ interface IChat {
 	name: string;
 	userId: string;
 	category: string;
+	system: string;
+	parent: string;
 	knowledgeBoxId: string;
 	usage: { totalTokens: number };
 }
 
 export /*bundle*/ class Chat extends Item<IChat> {
-	protected properties = ['id', 'autoplay', 'name', 'userId', 'category', 'knowledgeBoxId', 'usage'];
-	declare fetching: boolean;
-	declare triggerEvent: () => void;
-	declare provider: any;
+	protected properties = [
+		'id',
+		'autoplay',
+		'name',
+		'userId',
+		'system',
+		'parent',
+		'category',
+		'usage',
+		'knowledgeBoxId',
+	];
+
 	#messages: Map<string, any> = new Map();
 	get messages() {
 		return [...this.#messages.values()];
