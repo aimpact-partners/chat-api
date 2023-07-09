@@ -9,6 +9,8 @@ const topics = ['Hipótesis Clovis', 'Desafío Monteverde a Hipótesis Clovis'];
     const { ClassesProvider } = await bimport("@aimpact/chat-api/backend-provider")
     const course = new ClassesProvider();
 
-    const response = await course.generator(curriculumObjective, topics);
-    void response;
+    const params = { is: 'class', element: 'synthesis', topics };
+    const {prompt, response} = await course.generate(curriculumObjective, params);
+    console.log(`PROMPT:\n${prompt}\n\n`);
+    console.log(`RESPONSE:\n${response}`);
 })();
