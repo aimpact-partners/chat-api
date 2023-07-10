@@ -6,37 +6,45 @@ interface IClass {
 }
 
 export /*bundle*/ class Class extends Item<IClass> {
-	protected properties = ['curriculumObjective', 'topics'];
+	protected properties = ['id', 'curriculumObjective', 'topics', 'status', 'content', 'assessments', 'synthesis'];
 	declare curriculumObjective: string;
 	declare topics: string[];
 	declare isReady: Promise<boolean>;
 	declare provider: any;
-
+	declare triggerEvent: (string) => void;
+	declare fetching: boolean;
+	declare id: string;
 	constructor({ id = undefined } = {}) {
 		super({ id, db: 'chat-api', storeName: 'Classes', provider: ClassesProvider });
 	}
 
-	async generateTopicActivity(topic, element) {
-		await this.isReady;
+	async #generate(specs) {
 		try {
-			const specs = {
-				is: 'topic',
-				element,
-				topic,
-				topics: [topic],
-			};
-			console.log(9, topic, element, specs);
-			const response = await this.provider.generate(this.curriculumObjective, specs);
-			console.log(10, response);
+			this.fetching = true;
+			await this.isReady;
+			const response = this.provider.generate(this.id, this.curriculumObjective, specs);
+			this.fetching = false;
 			return response;
-		} catch (err) {
-			console.log(err);
+		} catch {
+			console.error('error generating', specs);
 		}
-
-		return new Promise((resolve, reject) => {
-			setTimeout(() => {
-				resolve(true);
-			}, 2000);
+	}
+	async generateTopicActivity(topic, element) {
+		return this.#generate({
+			is: 'topic',
+			element,
+			topic,
 		});
+	}
+	async generateClassAction(element) {
+		const response = await this.#generate({
+			is: 'class',
+			element,
+			topics: this.topics,
+		});
+		if (!response) throw new Error('error generating');
+
+		this.triggerEvent('class.generate.content');
+		return response;
 	}
 }

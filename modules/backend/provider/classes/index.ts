@@ -3,6 +3,7 @@ import { db } from '@aimpact/chat-api/backend-db';
 import { OpenAIBackend } from '@aimpact/chat-api/backend-openai';
 import { generateAll, generate } from './generator';
 import { GenerationParams } from './prompts';
+import { Model } from './model';
 
 interface IClass {
 	id: string;
@@ -23,12 +24,12 @@ export /*actions*/ /*bundle*/ class ClassesProvider {
 		this.collection = db.collection(this.table);
 	}
 
-	async generate(curriculumObjective: string, params: GenerationParams) {
-		return await generate(curriculumObjective, params, this.#socket);
+	async generate(id, curriculumObjective: string, params: GenerationParams) {
+		return await generate(id, curriculumObjective, params, this.#socket);
 	}
 
-	async generateAll(curriculumObjective: string, topics: string[]) {
-		return await generateAll(curriculumObjective, topics, this.#socket);
+	async generateAll(id, curriculumObjective: string, topics: string[]) {
+		return await generateAll(id, curriculumObjective, topics, this.#socket);
 	}
 
 	async load(id: string) {
@@ -46,10 +47,14 @@ export /*actions*/ /*bundle*/ class ClassesProvider {
 
 	async publish(data) {
 		try {
-			await this.collection.doc(data.id).set(data);
-			const item = await this.collection.doc(data.id).get();
+			if (!data.id) {
+				throw new Error('id is required');
+			}
+			//@todo: validate permissions
+			const model = new Model(data.id);
+			const item = await model.set(data);
 
-			return { status: true, data: item.data() };
+			return { status: true, data: item };
 		} catch (e) {
 			console.error(e);
 			return { status: false, error: e.message };

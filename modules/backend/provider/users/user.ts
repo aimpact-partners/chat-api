@@ -22,7 +22,7 @@ export /*actions*/ /*bundle*/ class UserProvider {
 	async updateUser(user) {
 		try {
 			const userRef = await this.collection.doc(user.id);
-			console.log(11, user);
+
 			const userSnapshot = await userRef.get();
 			if (userSnapshot.exists) {
 				// If the user already exists in the database, update the lastLogin field
