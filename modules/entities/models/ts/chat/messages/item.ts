@@ -8,10 +8,15 @@ interface IMessage {
 	content: string;
 	role: string;
 	timestamp: number;
+	usage: {
+		completionTokens: number;
+		promptTokens: number;
+		totalTokens: number;
+	};
 }
 
 export /*bundle*/ class Message extends Item<IMessage> {
-	protected properties = ['id', 'chatId', 'userId', 'content', 'timestamp', 'role'];
+	protected properties = ['id', 'chatId', 'userId', 'role', 'content', 'usage', 'timestamp'];
 	declare autoplay: boolean;
 	declare id: string;
 	declare triggerEvent: () => void;

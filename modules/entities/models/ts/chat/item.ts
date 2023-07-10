@@ -9,7 +9,11 @@ interface IChat {
 	system: string;
 	parent: string;
 	knowledgeBoxId: string;
-	usage: { totalTokens: number };
+	usage: {
+		completionTokens: number;
+		promptTokens: number;
+		totalTokens: number;
+	};
 }
 
 export /*bundle*/ class Chat extends Item<IChat> {
@@ -52,8 +56,8 @@ export /*bundle*/ class Chat extends Item<IChat> {
 		const messageItem = new Message();
 		const responseItem = new Message();
 		await Promise.all([messageItem.isReady, responseItem.isReady]);
-		await messageItem.publish(user);
 
+		await messageItem.publish(user);
 		await responseItem.publish(response);
 
 		const finalData = { ...user };
@@ -70,13 +74,10 @@ export /*bundle*/ class Chat extends Item<IChat> {
 	async sendAudio(audio, transcription = undefined) {
 		const item = new Message();
 		await item.isReady;
-		//@ts-ignore
 		item.setOffline(true);
 
 		const specs = {
-			//@ts-ignore
 			id: 'temporal',
-			//@ts-ignore
 			chatId: this.id,
 			type: 'audio',
 			audio,
@@ -84,14 +85,10 @@ export /*bundle*/ class Chat extends Item<IChat> {
 			timestamp: Date.now(),
 		};
 		if (transcription) {
-			//@ts-ignore
 			specs.content = transcription;
 		}
 
-		//@ts-ignore
 		this.#messages.set('temporal', specs);
-
-		//@ts-ignore
 		this.triggerEvent();
 	}
 	async sendMessage(content: string) {

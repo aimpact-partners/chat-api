@@ -1,15 +1,12 @@
 import { join } from 'path';
+import * as stream from 'stream';
+import * as Busboy from 'busboy';
 import { FilestoreFile } from '../bucket/file';
-import { convertFile } from './utils/convert';
 import { getExtension } from './utils/get-extension';
-import { supportedMimetypes } from './utils/mimetypes';
 import { generateCustomName } from './utils/generate-name';
+import { PendingPromise } from '@beyond-js/kernel/core';
 import { TriggerAgent } from '@aimpact/chat-api/trigger-agent';
 import { OpenAIBackend } from '@aimpact/chat-api/backend-openai';
-import { PendingPromise } from '@beyond-js/kernel/core';
-import * as Busboy from 'busboy';
-import * as stream from 'stream';
-import { createReadStream } from 'fs';
 
 const oaiBackend = new OpenAIBackend();
 const triggerAgent = new TriggerAgent();
@@ -95,7 +92,7 @@ export /*bundle*/ const uploader = async function (req, res) {
 				file: file.dest,
 				transcription: transcription.data.text,
 				output: agentResponse.data.output,
-				usage: agentResponse.usage,
+				usage: agentResponse.data.usage,
 				message: 'File uploaded successfully',
 			},
 		});

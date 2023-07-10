@@ -1,6 +1,7 @@
 import type { Server } from 'socket.io';
 import { db } from '@aimpact/chat-api/backend-db';
 import * as admin from 'firebase-admin';
+
 interface IMessage {
 	id: string;
 	userId: string;

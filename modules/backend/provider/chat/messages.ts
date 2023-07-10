@@ -79,7 +79,6 @@ export class ChatMessages {
 			const savedMessage = await chat.collection(this.table).doc(data.id).get();
 			const responseData = savedMessage.exists ? savedMessage.data() : undefined;
 
-			const usage = { totalTokens: response.data.usage.total_tokens };
 			/**
 			 * Store agent message
 			 */
@@ -89,7 +88,7 @@ export class ChatMessages {
 				chatId: data.chatId,
 				role: 'system',
 				content: response.data.output,
-				usage,
+				usage: response.data.usage,
 				timestamp: admin.firestore.FieldValue.serverTimestamp(),
 			};
 			await chat.collection(this.table).doc(agentMsgId).set(agentMessage);
@@ -97,7 +96,7 @@ export class ChatMessages {
 			/**
 			 * Update the "usage" in chat
 			 */
-			await chat.set({ ...chatData, usage });
+			await chat.set({ ...chatData, ...{ usage: response.data.usage } });
 
 			return { status: true, data: { message: responseData, response: agentMessage } };
 		} catch (e) {
