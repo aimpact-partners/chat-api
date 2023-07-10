@@ -22,8 +22,8 @@ export class Model {
 	}
 
 	async saveTopic(topic, data) {
-		const classDocRef = this.collection(this.#id).doc(topic);
-		const topics = classDocRef.get('topics');
+		const classDocRef = this.collection.doc(this.#id);
+		const topics = classDocRef.collection('topics');
 
 		return db.runTransaction(async transaction => {
 			return transaction.get(topics.doc(topic)).then(topicDoc => {
