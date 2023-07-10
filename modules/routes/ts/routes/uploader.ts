@@ -79,8 +79,7 @@ export /*bundle*/ const uploader = async function (req, res) {
 		const message = { role: 'user', content: transcription.data?.text };
 
 		const { knowledgeBoxId, chatId } = fields;
-		console.log('knowledgeBoxId', knowledgeBoxId);
-		const agentResponse = await triggerAgent.call(message, chatId, 'Eres un profesor', knowledgeBoxId);
+		const agentResponse = await triggerAgent.call(message, chatId, knowledgeBoxId);
 
 		if (!agentResponse.status) {
 			res.json({

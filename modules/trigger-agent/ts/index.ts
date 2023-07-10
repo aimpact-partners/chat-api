@@ -19,7 +19,7 @@ export /*bundle*/ class TriggerAgent {
 		headers: { 'Content-Type': 'application/json' },
 	};
 
-	async call(message: IMessage, chatId: string, prompt: string, knowledgeBoxId: string) {
+	async call(message: IMessage, chatId: string, knowledgeBoxId: string) {
 		try {
 			const chat = new ChatStore();
 			var chatResponse = await chat.load({ id: chatId });
@@ -37,14 +37,19 @@ export /*bundle*/ class TriggerAgent {
 				filter = { container: KBResponse.data.path };
 			}
 
-			let { messages } = chatResponse.data;
+			let { messages, system } = chatResponse.data;
 			const items = messages.map(({ role, content }) => Object.assign({}, { role, content: content ?? '' }));
 
 			items.push({ role: message.role, content: message.content });
 
 			const options = {
 				...this.#options,
-				body: JSON.stringify({ messages: items, prompt, filter, token: process.env.GCLOUD_INVOKER }),
+				body: JSON.stringify({
+					messages: items,
+					prompt: system,
+					filter,
+					token: process.env.GCLOUD_INVOKER,
+				}),
 			};
 			const response = await fetch(this.#url, options);
 			const responseJson = await response.json();

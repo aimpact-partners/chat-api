@@ -94,7 +94,7 @@ export /*bundle*/ class Chat extends Item<IChat> {
 		//@ts-ignore
 		this.triggerEvent();
 	}
-	async sendMessage(content: string, prompt: string) {
+	async sendMessage(content: string) {
 		try {
 			this.fetching = true;
 			const item = new Message();
@@ -116,7 +116,7 @@ export /*bundle*/ class Chat extends Item<IChat> {
 
 			const data = { ...item.getProperties() };
 
-			const response = await this.provider.sendMessage({ chatId: this.id, ...data, prompt });
+			const response = await this.provider.sendMessage({ chatId: this.id, ...data });
 			if (!response.status) {
 				throw new Error(response.error);
 			}
