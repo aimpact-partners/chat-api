@@ -6,7 +6,16 @@ interface IClass {
 }
 
 export /*bundle*/ class Class extends Item<IClass> {
-	protected properties = ['id', 'curriculumObjective', 'topics', 'status', 'content', 'assessments', 'synthesis'];
+	protected properties = [
+		'id',
+		'curriculumObjective',
+		'topics',
+		'status',
+		'content',
+		'assessment',
+		'synthesis',
+		'relevance',
+	];
 	declare curriculumObjective: string;
 	declare topics: string[];
 	declare isReady: Promise<boolean>;

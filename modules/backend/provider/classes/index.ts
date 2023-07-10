@@ -32,12 +32,14 @@ export /*actions*/ /*bundle*/ class ClassesProvider {
 		return await generateAll(id, curriculumObjective, topics, this.#socket);
 	}
 
-	async load(id: string) {
+	async load(specs) {
 		try {
+			if (!specs) return { status: false };
+			let { id } = specs;
 			if (!id) {
 				return { status: false, error: true, message: 'id is required' };
 			}
-
+			console.log(15, id);
 			const response = await this.collection.doc(id).get();
 			return { status: true, data: response.data() as IClass };
 		} catch (e) {
