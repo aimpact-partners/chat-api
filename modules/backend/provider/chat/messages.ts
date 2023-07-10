@@ -56,15 +56,9 @@ export class ChatMessages {
 				const KBDoc = await KB.get();
 				const KBData = KBDoc.data();
 				if (!KBData) {
-					return { status: false, error: 'knowledgeBox not exist' };
+					return { status: false, error: 'the current knowledgeBox not exist' };
 				}
 				knowledgeBoxId = KBData.id;
-			}
-
-			const { prompt } = data;
-			delete data.prompt;
-			if (!chatData.system) {
-				return { status: false, error: 'No hay un system definido' };
 			}
 
 			const response = await this.#agent.call(data, chatData.id, chatData.system, knowledgeBoxId);
