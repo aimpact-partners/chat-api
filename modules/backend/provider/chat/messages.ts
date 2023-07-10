@@ -61,7 +61,7 @@ export class ChatMessages {
 				knowledgeBoxId = KBData.id;
 			}
 
-			const response = await this.#agent.call(data, chatData.id, chatData.system, knowledgeBoxId);
+			const response = await this.#agent.call(data, chatData.id, knowledgeBoxId);
 			if (!response.status) {
 				return response;
 			}
