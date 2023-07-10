@@ -1,9 +1,0 @@
-{
-	"name": "system-config",
-	"code": {
-		"ts": {
-			"path": "/code",
-			"files": ["*"]
-		}
-	}
-}
