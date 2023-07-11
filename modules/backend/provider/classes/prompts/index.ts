@@ -26,8 +26,12 @@ export class Prompts {
 	}
 
 	#emit(is: string, element: string, item: object, done: boolean, topic?: string) {
-		this.#socket?.emit('class-generation', { is, element, done, topic, item });
-
+		
+		if(is === "topic")  {
+			this.#socket?.emit('class-generation', { is, element, done, topic, item });
+		}else {
+			this.#socket?.emit('class-generation', { is, element, done, topic, item });
+		}
 		const generation = done ? 'generation done' : 'generation started';
 		LOCAL && console.log(`${is} ${element} ${generation}`);
 	}
