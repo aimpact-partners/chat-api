@@ -1,7 +1,8 @@
+import admin from 'firebase-admin';
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-import { getFirebaseConfig } from '@aimpact/chat-api/firebase-config';
+import { credential } from '@aimpact/chat-api/config/service-account';
 
-initializeApp(getFirebaseConfig());
+initializeApp({ credential: admin.credential.cert(credential) });
 
 export /*bundle*/ const db = getFirestore();

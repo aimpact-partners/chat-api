@@ -1,6 +1,6 @@
 import { GoogleAuth } from 'google-auth-library';
 import config from '@aimpact/chat-api/config';
-import { serviceAccountConfig } from '@aimpact/chat-api/configs/service-accounts';
+import { serviceAccountConfig } from '@aimpact/chat-api/config/service-account';
 
 // Construye la URL de la Cloud Function
 const cloudFunctionUrl = config.params.AGENTS_SERVER;

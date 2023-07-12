@@ -1,5 +1,5 @@
 {
-	"name": "configs/service-accounts",
+	"name": "config/service-account",
 	"platforms": ["node", "backend"],
 	"ts": {
 		"path": "ts",
