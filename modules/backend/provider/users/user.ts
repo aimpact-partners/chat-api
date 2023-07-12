@@ -27,7 +27,7 @@ export /*actions*/ /*bundle*/ class UserProvider {
 			if (userSnapshot.exists) {
 				// If the user already exists in the database, update the lastLogin field
 				await userRef.update({
-					latLsogin: dayjs().unix(),
+					lastLogin: dayjs().unix(),
 				});
 			} else {
 				// If the user doesn't exist in the database, create a new document for them
