@@ -39,7 +39,7 @@ export /*actions*/ /*bundle*/ class ClassesProvider {
 			if (!id) {
 				return { status: false, error: true, message: 'id is required' };
 			}
-			console.log(15, id);
+
 			const response = await this.collection.doc(id).get();
 			return { status: true, data: response.data() as IClass };
 		} catch (e) {
