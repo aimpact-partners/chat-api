@@ -1,8 +1,7 @@
 {
-    "name": "backend-db",
-    "platforms": ["node", "backend"],
-    "ts": {
-        "path": "ts",
-        "files": ["*"]
-    }
+	"name": "backend-db",
+	"platforms": ["node", "backend"],
+	"ts": {
+		"files": ["*"]
+	}
 }

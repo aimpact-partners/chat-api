@@ -1,8 +1,0 @@
-{
-    "name": "firebase-config",
-    "platforms": ["node", "backend"],
-    "ts": {
-        "path": "ts",
-        "files": ["*"]
-    }
-}

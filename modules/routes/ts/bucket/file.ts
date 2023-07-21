@@ -1,26 +1,23 @@
-import { initializeApp } from 'firebase/app';
+import { join } from 'path';
 import { Storage } from '@google-cloud/storage';
-import { getFirebaseConfig } from '@aimpact/chat-api/firebase-config';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 export class FilestoreFile {
-	private app;
 	private storage;
-	firebaseConfig;
+	#storageBucket = process.env.STORAGEBUCKET;
+
 	constructor() {
-		this.firebaseConfig = getFirebaseConfig();
-		this.app = initializeApp(this.firebaseConfig);
-		this.storage = new Storage();
+		const credentials = join(__dirname, './credentials.json');
+		this.storage = new Storage({ keyFilename: credentials });
 	}
 
 	getFile(destination: string) {
-		const bucketName = this.firebaseConfig.storageBucket;
-		const file = this.storage.bucket(bucketName).file(destination);
+		const file = this.storage.bucket(this.#storageBucket).file(destination);
 		return file;
 	}
 	async upload(path: string, destination: string): Promise<string> {
-		const bucketName = this.firebaseConfig.storageBucket;
-		await this.storage.bucket(bucketName).upload(path, { destination });
-
+		await this.storage.bucket(this.#storageBucket).upload(path, { destination });
 		return destination;
 	}
 }
