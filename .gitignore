@@ -1,8 +1,9 @@
-node_modules
 .beyond
 .vscode
 .idea
 .env
+node_modules
 runners/.env
 uploads
 package-lock.json
+credentials.json
