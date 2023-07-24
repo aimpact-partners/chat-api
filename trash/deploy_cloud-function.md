@@ -25,7 +25,7 @@ Parametros de retorno
 ```json
 {
 	"params": {
-		"AGENTS_SERVER": "https://us-central1-aimpact-partners-dev.cloudfunctions.net/agent"
+		"AGENT_API": "https://us-central1-aimpact-partners-dev.cloudfunctions.net/agent"
 	}
 }
 ```

@@ -13,7 +13,7 @@ interface IMessage {
 }
 
 export /*bundle*/ class TriggerAgent {
-	#url = config.params.AGENTS_SERVER;
+	#url = config.params.AGENT_API;
 	#options = {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
