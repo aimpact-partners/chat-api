@@ -1,13 +1,15 @@
 import * as express from 'express';
-import {Connections} from './connections';
-import {routes, hmr} from '@aimpact/chat-api/routes';
+import { Connections } from './connections';
+import { routes, hmr } from '@aimpact/chat-api/routes';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 export class Server {
+	#app;
+	#router;
 	#instance;
 	#connections;
-	#app;
-	#port = 5040;
-	#router;
+	#port = process.env.PORT || 5040;
 
 	constructor() {
 		this.#start();
