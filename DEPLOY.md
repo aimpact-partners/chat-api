@@ -1,6 +1,6 @@
 # Para publicar las `Cloud Run` utilizando un repositorio de compilacion
 
-## Crear Cloud Run
+## Cloud Run
 
 -   Ubicarte en el url del proyecto de googleCloud [https://console.cloud.google.com/run?project=aimpact-partners-dev]
 
@@ -14,31 +14,23 @@
     -   Validar configuraciones por defecto
     -   Agregar variables de entorno (Usar como guia `.env-example`)
 
-## Informacion de Repositorios
+## Repositorios
 
-`chat-api-http-build`: compilacion con distribucion `node` del paquete, contiene el express que se encarga de la carga
-de audios
+### `chat-api-http-build`
 
-URL: [https://aimpact-partners-dev.ue.r.appspot.com/]
+Compilacion con distribucion `node` del paquete, contiene el express que se encarga de la carga de audios
 
-`chat-api-ws-build`: compilacion con distribucion `backend` del paquete, contiene los providers que utiliza el paquete
-`@aimpact/chat-sdk`
+-   Repositorio remoto: [https://github.com/aimpact-partners/chat-api-http-build]
 
-URL: [https://aimpact-partners-dev.ue.r.appspot.com/]
+-   Cloud run: [https://chat-api-http-rb5caohzgq-uc.a.run.app]
 
-## Actualizar propiedades de urls cloud en la propiedad "params" del package.json
+### `chat-api-ws-build`
 
-Hay 2 opciones
+Compilacion con distribucion `backend` del paquete, contiene las APIs que utiliza el paquete `@aimpact/chat-sdk`
 
--   Actualizarlas en el `package.json`, previo a la compilacion
+-   Repositorio remoto: [https://github.com/aimpact-partners/chat-api-ws-build]
 
--   Actualizarlas en el archivo `config.js`, luego de la compilacion
-
-```json
-{
-	"AGENTS_SERVER": "https://agent-api-rb5caohzgq-uc.a.run.app/agent"
-}
-```
+-   Cloud run: [https://chat-api-ws-rb5caohzgq-uc.a.run.app]
 
 ## Compilar y Publicar
 
@@ -47,4 +39,4 @@ Hay 2 opciones
 -   Validar que esten agregados los archivos:
     -   Dockerfile en la ruta especificada en la configuracion del cloud run
     -   credentials.json con la informacion de la cuenta de servicio
--   Actualizar el repositorio remoto git push origin <configured-branch>
+-   Actualizar el repositorio remoto: `git push origin <configured-branch>`

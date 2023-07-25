@@ -1,9 +1,7 @@
 {
-  "name": "models/chats",
-  "ts": {
-    "path": "ts",
-    "files": [
-      "*"
-    ]
-  }
+	"name": "models/chats",
+	"platforms": ["node", "backend"],
+	"ts": {
+		"files": ["*"]
+	}
 }
