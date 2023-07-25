@@ -22,7 +22,8 @@
 	},
 	"libraries": {
 		"imports": [
-			"@beyond-js/reactive"
+			"@beyond-js/reactive",
+			"@aimpact/ailearn-sdk"
 		]
 	},
 	"deployment": {
