@@ -13,7 +13,7 @@ interface IChat {
 	knowledgeBoxId: string;
 }
 
-export class Chats {
+export /*bundle*/ class Chats {
 	private collection;
 	private table = 'Chat';
 	firestoreService: FirestoreService;

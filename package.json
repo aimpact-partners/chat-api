@@ -80,6 +80,7 @@
 		"dexie": "^3.2.4",
 		"dotenv": "^16.0.3",
 		"express": "^4.17.1",
+		"express-openapi-validator": "^5.0.4",
 		"firebase": "^8.6.8",
 		"firebase-admin": "^11.4.1",
 		"fluent-ffmpeg": "^2.1.2",
