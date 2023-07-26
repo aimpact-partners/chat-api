@@ -6,4 +6,4 @@ node_modules
 runners/.env
 uploads
 package-lock.json
-credentials.json
+credentials
