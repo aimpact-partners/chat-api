@@ -32,8 +32,7 @@ export class Chats {
 
 	async list(req: Request, res: Response) {
 		try {
-			console.log(6);
-			console.log(6);
+	
 			const data = await this.#model.list();
 
 			res.json({
@@ -50,7 +49,7 @@ export class Chats {
 			return { status: false, error: e.message };
 		}
 	}
-
+	
 	get(req: Request, res: Response) {
 		// Logic to retrieve a specific chat by ID
 		const { id } = req.params;

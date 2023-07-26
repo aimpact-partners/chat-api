@@ -48,6 +48,36 @@ export /*bundle*/ class Chats {
 		}
 	}
 
+	
+	async list(specs) {
+		try {
+			const entries = [];
+
+			if (!specs.userId) {
+				throw new Error('userId is required');
+			}
+
+			let query = this.collection;
+
+			const { limit } = specs;
+			delete specs.limit;
+
+			// TODO @ftovar8 @jircdev pendiente agregar condicion por cada parametro de filtro
+			for (let [k, v] of Object.entries(specs)) {
+				query = query.where(k, '==', v);
+			}
+			query = query.limit(limit);
+
+			const items = await query.get();
+			items.forEach(item => entries.push(item.data()));
+
+			return { status: true, data: { entries } };
+		} catch (e) {
+			return { status: false, error: e.message };
+		}
+	}
+
+
 	async save(data: IChat) {
 		try {
 			// if the parent is not received, we set it to root by default
