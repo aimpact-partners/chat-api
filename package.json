@@ -18,11 +18,17 @@
 		"path": "modules"
 	},
 	"params": {
-		"AGENTS_SERVER": "http://localhost:5010/agent"
+		"development": {
+			"AGENT_API": "https://agent-api-rb5caohzgq-uc.a.run.app/agent"
+		},
+		"production": {
+			"AGENT_API": "https://agent-api-rb5caohzgq-uc.a.run.app/agent"
+		}
 	},
 	"libraries": {
 		"imports": [
-			"@beyond-js/reactive"
+			"@beyond-js/reactive",
+			"@aimpact/ailearn-sdk"
 		]
 	},
 	"deployment": {
@@ -31,7 +37,7 @@
 				"name": "backend",
 				"environment": "development",
 				"platform": "backend",
-				"host": "https://aimpact-partners-dev.ue.r.appspot.com/",
+				"host": "https://chat-api-ws-rb5caohzgq-uc.a.run.app",
 				"ports": {
 					"bundles": 6580,
 					"http": 6581,

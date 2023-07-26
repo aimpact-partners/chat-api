@@ -1,7 +1,19 @@
-# How to run chat-api project.
+# How to run the `chat-api` package
 
-1. copy and rename `.env-example` file to `.env`
-2. Add all credentials values.
-3. Go to BeyondJS workspace(https://workspace.beyondjs.com)
-4. Select chat-api package.
-5. Run `node` distribution.
+## Copy Environment File
+
+Locate the `.env-example` file in the root of the project. Create a copy of this file and rename it to `.env`.
+
+## Add Credentials
+
+Open the `.env` file in a text editor. Fill in all the necessary credential values that the application requires.
+
+## Google Cloud Service Account
+
+Make sure you have a service account set up in your Google Cloud project with the appropriate permissions to access the
+required APIs. Obtain the service account credentials JSON file.
+
+## Configure Google Cloud Service Account
+
+Place the service account credentials JSON file you obtained in the previous step into the root of the project. Rename
+the file to `credentials.json`.
