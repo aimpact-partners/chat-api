@@ -1,6 +1,6 @@
 {
-	"name": "models/chats",
-	"bundle": "ts",
+	"name": "backend-store",
 	"platforms": ["node", "backend"],
+	"bundle": "ts",
 	"files": "*"
 }

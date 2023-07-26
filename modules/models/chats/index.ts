@@ -26,7 +26,7 @@ export class Chats {
 	async get(id: string) {
 		try {
 			if (!id) {
-				return { status: false, error: 'id is required' };
+				throw new Error('id is required');
 			}
 
 			const chatRef = await this.collection.doc(id);
@@ -38,6 +38,7 @@ export class Chats {
 			const messagesSnapshot = await chatRef.collection('messages').orderBy('timestamp').get();
 			const messages = messagesSnapshot.docs.map(doc => doc.data());
 
+			return;
 			return {
 				status: true,
 				data: { ...doc.data(), messages },
