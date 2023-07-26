@@ -7,17 +7,17 @@ export class Chats {
 	constructor(app: Application) {
 		this.#app = app;
 		this.#model = new Model();
-	/* 	app.use(
+		/* 	app.use(
 			OpenApiValidator(
 				apiSpec: `${process.cwd()/docs/api/Chats.yaml}`
 			)
 		) */
-		app.get('/chat', this.list.bind(this));
-		app.get('/chat/:id', this.get.bind(this));
-		app.post('/chat', this.validateParams, this.create.bind(this));
-		app.put('/chat/:id', this.validateParams, this.update.bind(this));
-		app.delete('/chat/:id', this.validateParams, this.delete.bind(this));
-		
+		console.log(4);
+		app.get('/chats', this.list.bind(this));
+		app.get('/chats/:id', this.get.bind(this));
+		app.post('/chats', this.validateParams, this.create.bind(this));
+		app.put('/chats/:id', this.validateParams, this.update.bind(this));
+		app.delete('/chats/:id', this.validateParams, this.delete.bind(this));
 	}
 
 	private validateParams(req: Request, res: Response, next: Function) {
@@ -32,6 +32,8 @@ export class Chats {
 
 	async list(req: Request, res: Response) {
 		try {
+			console.log(6);
+			console.log(6);
 			const data = await this.#model.list();
 
 			res.json({
@@ -41,6 +43,10 @@ export class Chats {
 				},
 			});
 		} catch (e) {
+			console.log(e);
+			res.json({
+				error: e.message,
+			});
 			return { status: false, error: e.message };
 		}
 	}
@@ -52,7 +58,8 @@ export class Chats {
 	}
 
 	create(req: Request, res: Response) {
-		// Logic to create a new chat
+		// Logic to create a new chat}
+		console.log(5);
 		const paramsReceived = req.body;
 		res.json({ paramsReceived });
 	}
