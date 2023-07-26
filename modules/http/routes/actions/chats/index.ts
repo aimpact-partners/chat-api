@@ -1,17 +1,23 @@
 import type { Request, Response, Application } from 'express';
-import { Chat as Model } from '@aimpact/ailearn-api/models/chat';
-
-export class Chat {
+import { Chats as Model } from '@aimpact/chat-api/models/chats';
+import * as OpenApiValidator from 'express-openapi-validator';
+export class Chats {
 	#app: Application;
 	#model: Model;
 	constructor(app: Application) {
 		this.#app = app;
 		this.#model = new Model();
+	/* 	app.use(
+			OpenApiValidator(
+				apiSpec: `${process.cwd()/docs/api/Chats.yaml}`
+			)
+		) */
 		app.get('/chat', this.list.bind(this));
 		app.get('/chat/:id', this.get.bind(this));
 		app.post('/chat', this.validateParams, this.create.bind(this));
 		app.put('/chat/:id', this.validateParams, this.update.bind(this));
 		app.delete('/chat/:id', this.validateParams, this.delete.bind(this));
+		
 	}
 
 	private validateParams(req: Request, res: Response, next: Function) {
