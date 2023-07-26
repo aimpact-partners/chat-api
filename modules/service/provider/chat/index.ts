@@ -1,7 +1,7 @@
 import type { Server } from 'socket.io';
 import { db } from '@aimpact/chat-api/backend-db';
 import { ChatMessages } from './messages';
-import { BatchDeleter } from '../firestore/delete';
+
 import { FirestoreService } from '../firestore/service';
 import { chatAPI } from '@aimpact/chat-api/backend/api';
 

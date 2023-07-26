@@ -1,9 +1,5 @@
 {
-  "name": "models/chats",
-  "ts": {
-    "path": "ts",
-    "files": [
-      "*"
-    ]
-  }
+	"name": "models/chats",
+	"bundle": "ts",
+	"files": "*"
 }
