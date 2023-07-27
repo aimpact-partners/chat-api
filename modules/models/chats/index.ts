@@ -25,30 +25,21 @@ export /*bundle*/ class Chats {
 
 	async get(id: string) {
 		try {
-			if (!id) {
-				throw new Error('id is required');
-			}
-
 			const chatRef = await this.collection.doc(id);
 			const doc = await chatRef.get();
 
 			// Chat not exists
-			if (!doc.exists) return { status: true };
+			if (!doc.exists) return false;
 
 			const messagesSnapshot = await chatRef.collection('messages').orderBy('timestamp').get();
 			const messages = messagesSnapshot.docs.map(doc => doc.data());
 
-			return;
-			return {
-				status: true,
-				data: { ...doc.data(), messages },
-			};
+			return { ...doc.data(), messages };
 		} catch (e) {
 			return { status: false, error: e.message };
 		}
 	}
 
-	
 	async list(specs) {
 		try {
 			const entries = [];
@@ -59,7 +50,8 @@ export /*bundle*/ class Chats {
 
 			let query = this.collection;
 
-			const { limit } = specs;
+			let limit = specs.limit ? specs.limit : 30;
+
 			delete specs.limit;
 
 			// TODO @ftovar8 @jircdev pendiente agregar condicion por cada parametro de filtro
@@ -71,12 +63,11 @@ export /*bundle*/ class Chats {
 			const items = await query.get();
 			items.forEach(item => entries.push(item.data()));
 
-			return { status: true, data: { entries } };
+			return entries;
 		} catch (e) {
-			return { status: false, error: e.message };
+			return { status: false, error: e };
 		}
 	}
-
 
 	async save(data: IChat) {
 		try {

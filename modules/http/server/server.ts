@@ -24,9 +24,7 @@ export class Server {
 			routes(this.#app);
 			//subscription to listen routes module changes.
 			hmr.on('change', this.onChange);
-			console.log(0.2)
 			this.#instance = this.#app.listen(this.#port);
-			console.log(0.3)
 			this.#connections = new Connections(this.#instance);
 		} catch (exc) {
 			console.error('Error', exc);

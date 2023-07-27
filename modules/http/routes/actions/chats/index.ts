@@ -7,12 +7,14 @@ export class Chats {
 	constructor(app: Application) {
 		this.#app = app;
 		this.#model = new Model();
-		/* 	app.use(
-			OpenApiValidator(
-				apiSpec: `${process.cwd()/docs/api/Chats.yaml}`
-			)
-		) */
-		console.log(4);
+		app.use(
+			OpenApiValidator.middleware({
+				apiSpec: `${process.cwd()}/docs/api/chats.yaml`,
+				validateRequests: true, // (default)
+				validateResponses: true, // false by default
+			})
+		);
+
 		app.get('/chats', this.list.bind(this));
 		app.get('/chats/:id', this.get.bind(this));
 		app.post('/chats', this.validateParams, this.create.bind(this));
@@ -32,9 +34,10 @@ export class Chats {
 
 	async list(req: Request, res: Response) {
 		try {
-	
-			const data = await this.#model.list();
-
+			const data = await this.#model.list({ userId: req.query.userId });
+			if (!data) {
+				return res.status(404).json({ error: 'Chats not found.' });
+			}
 			res.json({
 				status: true,
 				data: {
@@ -49,11 +52,20 @@ export class Chats {
 			return { status: false, error: e.message };
 		}
 	}
-	
-	get(req: Request, res: Response) {
-		// Logic to retrieve a specific chat by ID
-		const { id } = req.params;
-		res.json({ id });
+
+	async get(req: Request, res: Response) {
+		try {
+			// Logic to retrieve a specific chat by ID
+			const { id } = req.params;
+
+			const data = await this.#model.get(id);
+
+			return res.json({ status: true, data });
+		} catch (e) {
+			res.json({
+				error: e.message,
+			});
+		}
 	}
 
 	create(req: Request, res: Response) {
