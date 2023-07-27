@@ -1,6 +1,7 @@
-import { db } from '@aimpact/chat-api/backend-db';
-import { BatchDeleter } from './firestore/delete';
-import { FirestoreService } from './firestore/service';
+import {db} from '@aimpact/chat-api/backend-db';
+import {BatchDeleter} from './firestore/delete';
+import {FirestoreService} from './firestore/service';
+import {v4 as uuidv4} from 'uuid';
 
 interface IChat {
 	id: string;
@@ -34,9 +35,9 @@ export /*bundle*/ class Chats {
 			const messagesSnapshot = await chatRef.collection('messages').orderBy('timestamp').get();
 			const messages = messagesSnapshot.docs.map(doc => doc.data());
 
-			return { ...doc.data(), messages };
+			return {...doc.data(), messages};
 		} catch (e) {
-			return { status: false, error: e.message };
+			return {status: false, error: e.message};
 		}
 	}
 
@@ -65,7 +66,7 @@ export /*bundle*/ class Chats {
 
 			return entries;
 		} catch (e) {
-			return { status: false, error: e };
+			throw Error(e.message);
 		}
 	}
 
@@ -73,21 +74,25 @@ export /*bundle*/ class Chats {
 		try {
 			// if the parent is not received, we set it to root by default
 			data.parent === undefined && (data.parent = '0');
+			const id = data.id ?? uuidv4();
 
-			await this.collection.doc(data.id).set(data);
-			const item = await this.collection.doc(data.id).get();
+			const snapshot = await this.collection.doc(id);
 
-			return { status: true, data: item.data() as IChat };
+			await snapshot.set({...data, id}, {update: true});
+
+			const item = await this.collection.doc(id).get();
+
+			return item.data() as IChat;
 		} catch (e) {
 			console.error(e);
-			return { status: false, error: e.message };
+			throw new Error('Error saving item');
 		}
 	}
 
 	async delete(id: string) {
 		try {
 			if (!id) {
-				return { status: false, error: 'id is required' };
+				return {status: false, error: 'id is required'};
 			}
 
 			const docRef = this.firestoreService.getDocumentRef(id);
@@ -97,21 +102,33 @@ export /*bundle*/ class Chats {
 			await batchDeleter.deleteAll();
 			await docRef.delete();
 
-			return { status: true, data: { id } };
+			return true;
 		} catch (e) {
-			return { status: false, error: e.message };
+			console.error(e);
+			throw new Error('Error saving item');
 		}
 	}
 
-	async saveAll(items) {
-		if (items.length) {
+	async saveAll(items: IChat[]) {
+		console.log(17);
+		if (!items.length) {
 			throw new Error('items are required');
 		}
+		console.log(18);
 		const batch = db.batch();
-		const collection = this.collection('chats');
+		const collection = this.collection;
 		items.forEach(item => {
-			batch.set(collection.doc(item.id), item);
+			console.log(18.1, item.id, item);
+			const id = item.id ?? uuidv4();
+			batch.set(collection.doc(id), item);
 		});
+		console.log(19, 'almost ready');
 		await batch.commit();
+		console.log(20, 'ready', batch._operations);
+		return true;
+	}
+
+	validate(item) {
+		return true;
 	}
 }

@@ -1,93 +1,226 @@
 openapi: 3.0.0
 info:
-    title: Chat API
-    version: 1.0.0
+  title: Chat API
+  version: 1.0.0
 paths:
-    /chats/{id}:
-        get:
-            summary: Retrieves a chat based on a single ID
-            parameters:
-                - name: id
-                  in: path
-                  description: ID of the chat to fetch
-                  required: true
-                  schema:
-                      type: string
-            responses:
-                '200':
-                    description: Chat object returned successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Chat'
-                '400':
-                    description: Error occurred, missing or invalid chat ID
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
-    /chats:
-        get:
-            summary: Retrieves a list of chats
-            parameters:
-                - name: userId
-                  in: query
-                  description: ID of the user whose chats to fetch
-                  required: true
-                  schema:
-                      type: string
-                - name: limit
-                  in: query
-                  description: Limit on the number of chats to return
-                  schema:
-                      type: integer
-                      minimum: 1
-                      default: 30
-            responses:
-                '200':
-                    description: List of Chat objects returned successfully
-                    content:
-                        application/json:
-                            schema:
-                                type: array
-                                items:
-                                    $ref: '#/components/schemas/Chat'
-                '400':
-                    description: Error occurred, missing or invalid user ID
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
-components:
-    schemas:
-        Chat:
-            type: object
-            properties:
-                id:
-                    type: string
-                name:
-                    type: string
-                usage:
-                    type: string
-                userId:
-                    type: string
-                parent:
-                    type: string
-                children:
-                    type: string
-                category:
-                    type: string
-                knowledgeBoxId:
-                    type: string
-                messages:
-                    type: array
-                    items:
-                        type: object
-                        additionalProperties: true
-        Error:
-            type: object
-            properties:
-                status:
+  /chats:
+    get:
+      summary: Retrieves a list of chats
+      parameters:
+        - name: userId
+          in: query
+          description: ID of the user whose chats to fetch
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of Chat objects returned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                    status:
+                        type: boolean
+                    data:
+                        type: array
+        '404':
+          description: No chats found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Creates a new chat
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+              schema:
+                $ref: '#/components/schemas/IChat'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ICreateChatSpecs'
+      responses:
+        '200':
+          description: Chat object returned successfully
+          content:
+   
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IChat'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /chats/bulk:
+   post:
+    summary: Bulk create chats
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            $ref: '#/components/schemas/BulkChat'
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BulkChat'
+    responses:
+      '200':
+        description: List of Chat objects returned successfully
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/IChat'
+      '400':
+        description: Invalid request parameters
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+  /chats/{id}:
+    get:
+      summary: Retrieves a chat based on a single ID
+      parameters:
+        - name: id
+          in: path
+          description: ID of the chat to fetch
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Chat object returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IChat'
+        '400':
+          description: Invalid chat ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Updates a chat
+      parameters:
+        - name: id
+          in: path
+          description: ID of the chat to update
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IChat'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/IChat'
+      responses:
+        '200':
+          description: Chat object returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IChat'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Deletes a chat
+      parameters:
+        - name: id
+          in: path
+          description: ID of the chat to delete
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
                     type: boolean
-                error:
+                  data:
                     type: string
+        '400':
+          description: Invalid chat ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    IChat:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        usage:
+          type: string
+        userId:
+          type: string
+        parent:
+          type: string
+        children:
+          type: string
+        category:
+          type: string
+        knowledgeBoxId:
+          type: string
+        messages:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+    ICreateChatSpecs:
+      type: object
+      properties:
+        name:
+          type: string
+        usage:
+          type: string
+        userId:
+          type: string
+        parent:
+          type: string
+        children:
+          type: string
+        category:
+          type: string
+        knowledgeBoxId:
+          type: string
+    BulkChat:
+      type: object
+      properties:
+        chats:
+          type: array
+          items:
+            $ref: '#/components/schemas/IChat'
+      required:
+        - chats
+
+    Error:
+      type: object
+      properties:
+        status:
+          type: boolean
+        error:
+          type: string
