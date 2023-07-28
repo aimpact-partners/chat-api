@@ -1,13 +1,27 @@
-import { db } from '@aimpact/chat-api/backend-db';
-
+import {db} from '@aimpact/chat-api/backend-db';
+import type {firestore} from 'firebase-admin';
+// jircdev id  > OQ1RCIvQxUhozvpO6hCLYDfS0Bw2
 export class BatchDeleter {
-	constructor(private collectionRef: FirebaseFirestore.CollectionReference<FirebaseFirestore.DocumentData>) {}
+	constructor(private collectionRef: FirebaseFirestore.CollectionReference) {}
 
-	async deleteAll() {
-		const snapshot = await this.collectionRef.get();
-		const batch = db.batch();
-		snapshot.docs.forEach(doc => batch.delete(doc.ref));
+	async deleteAll(property?: string, value?: any | any[]): Promise<any> {
+		let query: firestore.Query<firestore.DocumentData> = this.collectionRef;
 
-		return batch.commit();
+		if (property && value !== undefined) {
+			query = Array.isArray(value)
+				? this.collectionRef.where(property, 'in', value)
+				: this.collectionRef.where(property, '==', value);
+		}
+
+		const snapshot = await query.get();
+		const batch = this.collectionRef.firestore.batch();
+		const ids = [];
+		snapshot.docs.forEach(doc => {
+			ids.push(doc.id);
+			batch.delete(doc.ref);
+		});
+		console.log(ids);
+		await batch.commit();
+		return ids;
 	}
 }

@@ -8,6 +8,7 @@ export class Chats {
 	constructor(app: Application) {
 		this.#app = app;
 		this.#model = new Model();
+
 		app.use(
 			OpenApiValidator.middleware({
 				apiSpec: `${process.cwd()}/docs/api/chats.yaml`,
@@ -28,12 +29,13 @@ export class Chats {
 		app.post('/chats/bulk', this.bulk.bind(this));
 		app.put('/chats/:id', this.update.bind(this));
 		app.delete('/chats/:id', this.delete.bind(this));
+		app.delete('/chats/', this.delete.bind(this));
 	}
 
 	async list(req: Request, res: Response) {
 		try {
 			const data: [] = await this.#model.list({userId: req.query.userId});
-			console.log(10, data);
+
 			if (!data) {
 				return res.status(404).json({error: 'Chats not found.'});
 			}
@@ -100,19 +102,18 @@ export class Chats {
 			// Logic to create a new chat}
 			const params: IChat[] = req.body.chats;
 
-			const invalid = params.some(item => this.#model.validate(item));
+			const invalid = params.some(item => !this.#model.validate(item));
+
 			if (invalid) {
-				res.json({
+				return res.json({
 					status: false,
 					data: {
 						error: 'invalid fields',
 					},
 				});
 			}
-			console.log(0.3, params, req.body);
-			const data = await this.#model.saveAll(params);
-			console.log(0.3);
 
+			const data = await this.#model.saveAll(params);
 			res.json({status: true, data});
 		} catch (e) {
 			res.json({
@@ -125,10 +126,22 @@ export class Chats {
 	async delete(req: Request, res: Response) {
 		try {
 			const {id} = req.params;
+			const {userId} = req.query;
 
-			const data = await this.#model.delete(id);
+			if (!id && !userId) {
+				return res.status(400).json({error: 'id or userId is required'});
+			}
 
-			res.json({status: true, data});
+			if (userId) {
+				const items: string[] = await this.#model.deleteAll('userId', userId);
+				return res.json({
+					status: true,
+					data: {deleted: items},
+				});
+			}
+			await this.#model.delete(id);
+
+			res.json({status: true, data: {deleted: [id]}});
 		} catch (e) {
 			res.json({
 				status: false,

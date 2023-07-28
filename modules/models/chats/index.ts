@@ -2,6 +2,7 @@ import {db} from '@aimpact/chat-api/backend-db';
 import {BatchDeleter} from './firestore/delete';
 import {FirestoreService} from './firestore/service';
 import {v4 as uuidv4} from 'uuid';
+import type {firestore} from 'firebase-admin';
 
 interface IChat {
 	id: string;
@@ -15,12 +16,14 @@ interface IChat {
 }
 
 export /*bundle*/ class Chats {
-	private collection;
+	private collection: firestore.CollectionReference;
 	private table = 'Chat';
 	firestoreService: FirestoreService;
+	#deleter;
 
 	constructor() {
 		this.collection = db.collection(this.table);
+		this.#deleter = new BatchDeleter(this.collection);
 		this.firestoreService = new FirestoreService(this.table);
 	}
 
@@ -109,23 +112,32 @@ export /*bundle*/ class Chats {
 		}
 	}
 
+	async deleteAll(field, values) {
+		try {
+			return this.#deleter.deleteAll(field, values);
+		} catch (e) {
+			console.error(e);
+		}
+	}
+
 	async saveAll(items: IChat[]) {
-		console.log(17);
 		if (!items.length) {
 			throw new Error('items are required');
 		}
-		console.log(18);
+
 		const batch = db.batch();
 		const collection = this.collection;
+		const persisted = [];
 		items.forEach(item => {
-			console.log(18.1, item.id, item);
 			const id = item.id ?? uuidv4();
-			batch.set(collection.doc(id), item);
+			const persistedItem = {...item, id};
+			batch.set(collection.doc(id), persistedItem);
+			persisted.push(persistedItem);
 		});
-		console.log(19, 'almost ready');
+
 		await batch.commit();
-		console.log(20, 'ready', batch._operations);
-		return true;
+
+		return persisted;
 	}
 
 	validate(item) {
