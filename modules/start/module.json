@@ -1,5 +1,5 @@
 {
-	"name": "backend-start",
+	"name": "initialize",
 	"bundle": "start",
 	"platforms": "backend",
 	"ts": {
