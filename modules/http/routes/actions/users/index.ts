@@ -8,15 +8,6 @@ export class Users {
 	constructor(app: Application) {
 		this.#app = app;
 
-		// TODO @ftovar8 @jircdev actualizar respuesta de endpoint
-		// app.use(
-		// 	OpenApiValidator.middleware({
-		// 		apiSpec: `${process.cwd()}/docs/api/users.yaml`,
-		// 		validateRequests: true, // (default)
-		// 		validateResponses: true, // false by default
-		// 	})
-		// );
-
 		app.use((err, req, res, next) => {
 			res.status(err.status || 500).json({
 				message: err.message,
@@ -24,8 +15,13 @@ export class Users {
 			});
 		});
 
+		app.post('/integrations/tokens/get', this.getToken.bind(this));
+		app.post('/integrations/tokens/verify', this.getToken.bind(this));
+
 		app.get('/user/:token', this.get.bind(this));
 	}
+
+	getToken(req: Request, res: Response) {}
 
 	async get(req: Request, res: Response) {
 		try {
