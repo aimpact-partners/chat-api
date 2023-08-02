@@ -1,3 +1,5 @@
+import * as jwt from 'jsonwebtoken';
+import type {JwtPayload} from '@types/jsonwebtoken';
 import type {Request, Response, Application} from 'express';
 import {User as Model} from '@aimpact/chat-api/models/user';
 
@@ -15,30 +17,34 @@ export class Users {
 			});
 		});
 
-		app.post('/integrations/tokens/get', this.getToken.bind(this));
-		app.post('/integrations/tokens/verify', this.getToken.bind(this));
-
-		app.get('/user/:token', this.get.bind(this));
+		app.post('/integrations/tokens/get', this.get.bind(this));
+		app.post('/integrations/tokens/verify', this.verify.bind(this));
 	}
 
-	getToken(req: Request, res: Response) {}
+	get(req: Request, res: Response) {}
 
-	async get(req: Request, res: Response) {
+	async verify(req: Request, res: Response) {
 		try {
-			const {token} = req.params;
+			const token = req.headers.authorization.split(' ')[1];
+			jwt.verify(token, process.env.SECRET_KEY, async (err, decoded: JwtPayload) => {
+				if (err) {
+					return res.json({status: false, error: 'Invalid token'});
+				}
 
-			const user = new Model(token);
-			await user.validate();
-			if (!user.valid) return res.status(401).json({error: 'Access token is invalid'});
+				const user = new Model(decoded.uid);
+				const response = await user.load();
 
-			const {id, displayName, email, photoURL, phoneNumber} = user;
-			const data = {id, displayName, email, photoURL, phoneNumber};
+				if (!response.status) return res.json(response);
+				if (!user.valid) return res.json({status: false, error: 'User not valid'});
 
-			return res.json({status: true, data});
-		} catch (e) {
-			res.json({
-				error: e.message,
+				// Tokens are not returned in the response
+				delete response.data.token;
+				delete response.data.firebaseToken;
+
+				res.json({status: true, data: response.data});
 			});
+		} catch (e) {
+			res.json({status: false, error: e.message});
 		}
 	}
 }

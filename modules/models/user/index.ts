@@ -41,32 +41,34 @@ export /*bundle*/ class User {
 
 	private collection;
 	private table = 'Users';
-	constructor(accessToken: string) {
-		this.#accessToken = accessToken;
+	constructor(id: string) {
+		this.#id = id;
 		this.collection = db.collection(this.table);
 	}
 
-	async validate() {
-		const decodedToken = await admin.auth().verifyIdToken(this.#accessToken);
-
+	async load() {
 		try {
-			// Access token is valid, and 'decodedToken' contains information about the user
-			// You can access user information with 'decodedToken.uid' or other claims
-			const {uid} = decodedToken;
+			if (!this.#id) {
+				this.#valid = false;
+				return {status: false, error: `The user does not have an id to be loaded`};
+			}
 
-			const userRef = await this.collection.doc(uid);
+			const userRef = await this.collection.doc(this.#id);
 			const userSnapshot = await userRef.get();
 			const {displayName, email, photoURL, phoneNumber} = userSnapshot.data();
 
-			this.#uid = uid;
+			this.#valid = true;
+
+			this.#uid = this.#id;
 			this.#email = email;
 			this.#displayName = displayName;
 			this.#phoneNumber = phoneNumber;
 			this.#photoURL = photoURL;
 
-			this.#valid = true;
+			return {status: true, data: userSnapshot.data()};
 		} catch (error) {
 			this.#valid = false;
+			return {status: false, error: `Error loading user`};
 		}
 	}
 }
