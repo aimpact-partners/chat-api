@@ -26,7 +26,7 @@ export /*actions*/ /*bundle*/ class UserProvider {
 			const userRef = await this.collection.doc(user.id);
 
 			const userSnapshot = await userRef.get();
-			console.log(100, user);
+
 			if (userSnapshot.exists) {
 				// If the user already exists in the database, update the lastLogin field
 				await userRef.update({
@@ -41,14 +41,15 @@ export /*actions*/ /*bundle*/ class UserProvider {
 					email: user.email,
 					firebaseToken: user.firebaseToken,
 					token: user.token,
+					custom: user.token,
 					photoURL: user.photoURL,
 					phoneNumber: user.phoneNumber,
 					createdOn: dayjs().unix(),
 					lastLogin: dayjs().unix(),
 				});
 			}
-			console.log(22, userSnapshot.data());
-			return {status: true, data: {user: userSnapshot.data()}};
+			let updatedUser = await userRef.get();
+			return {status: true, data: {user: updatedUser.data()}};
 		} catch (e) {
 			console.error(e);
 		}
@@ -62,6 +63,7 @@ export /*actions*/ /*bundle*/ class UserProvider {
 			const decodedToken = await admin.auth().verifyIdToken(user.firebaseToken);
 			const customToken = jwt.sign({uid: decodedToken.uid}, process.env.SECRET_KEY);
 			user.token = customToken;
+
 			return this.updateUser(user);
 		} catch (e) {
 			console.log(13, e);
