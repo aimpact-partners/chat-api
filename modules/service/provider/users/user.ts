@@ -22,7 +22,6 @@ export /*actions*/ /*bundle*/ class UserProvider {
 
 	async updateUser(user) {
 		try {
-			console.log(200, user);
 			const userRef = await this.collection.doc(user.id);
 
 			const userSnapshot = await userRef.get();
@@ -49,6 +48,7 @@ export /*actions*/ /*bundle*/ class UserProvider {
 				});
 			}
 			let updatedUser = await userRef.get();
+
 			return {status: true, data: {user: updatedUser.data()}};
 		} catch (e) {
 			console.error(e);
@@ -66,7 +66,7 @@ export /*actions*/ /*bundle*/ class UserProvider {
 
 			return this.updateUser(user);
 		} catch (e) {
-			console.log(13, e);
+			console.error(e);
 			return {status: false, error: 'INVALID_TOKEN'};
 		}
 	}
