@@ -1,9 +1,8 @@
 import type { Server } from 'socket.io';
 import { db } from '@aimpact/chat-api/backend-db';
-import { ChatMessages } from './messages';
-
-import { FirestoreService } from '../firestore/service';
 import { chatAPI } from '@aimpact/chat-api/backend/api';
+import { ChatMessages } from './messages';
+import { FirestoreService } from '../firestore/service';
 
 interface IChat {
 	id: string;
@@ -12,6 +11,7 @@ interface IChat {
 	userId: string;
 	category: string;
 	knowledgeBoxId: string;
+	metadata: {};
 }
 
 export /*actions*/ /*bundle*/ class ChatProvider {
