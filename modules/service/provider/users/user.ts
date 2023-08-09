@@ -1,7 +1,7 @@
-import type {Server} from 'socket.io';
-import {db} from '@aimpact/chat-api/backend-db';
+import type { Server } from 'socket.io';
+import { db } from '@aimpact/chat-api/backend-db';
 import * as dayjs from 'dayjs';
-import {doc, setDoc, getDoc, updateDoc, serverTimestamp} from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import * as jwt from 'jsonwebtoken';
 import * as admin from 'firebase-admin';
 interface Chat {
@@ -23,10 +23,8 @@ export /*actions*/ /*bundle*/ class UserProvider {
 	async updateUser(user) {
 		try {
 			const userRef = await this.collection.doc(user.id);
-
-			const userSnapshot = await userRef.get();
-
-			if (userSnapshot.exists) {
+			const { exists } = await userRef.get();
+			if (exists) {
 				// If the user already exists in the database, update the lastLogin field
 				await userRef.update({
 					...user,
@@ -47,9 +45,9 @@ export /*actions*/ /*bundle*/ class UserProvider {
 					lastLogin: dayjs().unix(),
 				});
 			}
-			let updatedUser = await userRef.get();
 
-			return {status: true, data: {user: updatedUser.data()}};
+			const updatedUser = await userRef.get();
+			return { status: true, data: { user: updatedUser.data() } };
 		} catch (e) {
 			console.error(e);
 		}
@@ -61,13 +59,13 @@ export /*actions*/ /*bundle*/ class UserProvider {
 				throw new Error('INVALID_USER');
 			}
 			const decodedToken = await admin.auth().verifyIdToken(user.firebaseToken);
-			const customToken = jwt.sign({uid: decodedToken.uid}, process.env.SECRET_KEY);
+			const customToken = jwt.sign({ uid: decodedToken.uid }, process.env.SECRET_KEY);
 			user.token = customToken;
 
 			return this.updateUser(user);
 		} catch (e) {
 			console.error(e);
-			return {status: false, error: 'INVALID_TOKEN'};
+			return { status: false, error: 'INVALID_TOKEN' };
 		}
 	}
 }
