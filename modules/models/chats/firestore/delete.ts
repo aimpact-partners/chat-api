@@ -1,5 +1,4 @@
-import {db} from '@aimpact/chat-api/backend-db';
-import type {firestore} from 'firebase-admin';
+import type { firestore } from 'firebase-admin';
 // jircdev id  > OQ1RCIvQxUhozvpO6hCLYDfS0Bw2
 export class BatchDeleter {
 	constructor(private collectionRef: FirebaseFirestore.CollectionReference) {}
@@ -20,7 +19,7 @@ export class BatchDeleter {
 			ids.push(doc.id);
 			batch.delete(doc.ref);
 		});
-		console.log(ids);
+
 		await batch.commit();
 		return ids;
 	}

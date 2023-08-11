@@ -1,7 +1,7 @@
-import type {Request, Response, Application} from 'express';
-import {Chats as Model} from '@aimpact/chat-api/models/chats';
+import type { Request, Response, Application } from 'express';
+import { Chats as Model } from '@aimpact/chat-api/models/chats';
 import * as OpenApiValidator from 'express-openapi-validator';
-import {IChat, ICreateChatSpecs} from './interfaces';
+import { IChat, ICreateChatSpecs } from './interfaces';
 export class Chats {
 	#app: Application;
 	#model: Model;
@@ -35,32 +35,32 @@ export class Chats {
 
 	async list(req: Request, res: Response) {
 		try {
-			const data: [] = await this.#model.list({userId: req.query.userId});
+			const data: [] = await this.#model.list({ userId: req.query.userId });
 
 			if (!data) {
-				return res.status(404).json({error: 'Chats not found.'});
+				return res.status(404).json({ error: 'Chats not found.' });
 			}
 			res.json({
 				status: true,
 				data,
 			});
 		} catch (e) {
-			console.log(e);
+			console.error(e);
 			res.json({
 				error: e.message,
 			});
-			return {status: false, error: e.message};
+			return { status: false, error: e.message };
 		}
 	}
 
 	async get(req: Request, res: Response) {
 		try {
 			// Logic to retrieve a specific chat by ID
-			const {id} = req.params;
+			const { id } = req.params;
 
 			const data = await this.#model.get(id);
 
-			return res.json({status: true, data});
+			return res.json({ status: true, data });
 		} catch (e) {
 			res.json({
 				error: e.message,
@@ -74,7 +74,7 @@ export class Chats {
 			const params: ICreateChatSpecs = req.body;
 
 			const data = await this.#model.save(params);
-			res.json({status: true, data});
+			res.json({ status: true, data });
 		} catch (e) {
 			res.json({
 				status: false,
@@ -85,11 +85,10 @@ export class Chats {
 
 	update(req: Request, res: Response) {
 		try {
-			const {id} = req.params;
-			console.log(0.2, id);
+			const { id } = req.params;
 			const params: IChat = req.body;
-			const data = this.#model.save({id, ...params});
-			res.json({status: true, data});
+			const data = this.#model.save({ id, ...params });
+			res.json({ status: true, data });
 		} catch (e) {
 			res.json({
 				status: false,
@@ -115,7 +114,7 @@ export class Chats {
 			}
 
 			const data = await this.#model.saveAll(params);
-			res.json({status: true, data});
+			res.json({ status: true, data });
 		} catch (e) {
 			res.json({
 				status: false,
@@ -126,23 +125,23 @@ export class Chats {
 
 	async delete(req: Request, res: Response) {
 		try {
-			const {id} = req.params;
-			const {userId} = req.query;
+			const { id } = req.params;
+			const { userId } = req.query;
 
 			if (!id && !userId) {
-				return res.status(400).json({error: 'id or userId is required'});
+				return res.status(400).json({ error: 'id or userId is required' });
 			}
 
 			if (userId) {
 				const items: string[] = await this.#model.deleteAll('userId', userId);
 				return res.json({
 					status: true,
-					data: {deleted: items},
+					data: { deleted: items },
 				});
 			}
 			await this.#model.delete(id);
 
-			res.json({status: true, data: {deleted: [id]}});
+			res.json({ status: true, data: { deleted: [id] } });
 		} catch (e) {
 			res.json({
 				status: false,

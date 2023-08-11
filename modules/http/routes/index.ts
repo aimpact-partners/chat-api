@@ -1,6 +1,6 @@
-import {Chats} from './actions/chats';
-import {Users} from './actions/users';
-import {uploader} from './actions/uploader';
+import { Chats } from './actions/chats';
+import { Users } from './actions/users';
+import { uploader } from './actions/uploader';
 
 export /*bundle*/
 function routes(app) {
@@ -11,7 +11,6 @@ function routes(app) {
 		new Chats(app);
 		new Users(app);
 	} catch (e) {
-		console.log('error catched');
-		console.error(e);
+		console.error('error catched', e);
 	}
 }
