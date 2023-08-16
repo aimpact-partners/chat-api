@@ -37,7 +37,7 @@
 				"name": "backend",
 				"environment": "development",
 				"platform": "backend",
-				"host": "https://chat-api-ws-6dlchqr2za-uc.a.run.app",
+				"host": "https://chat-api-ws-rb5caohzgq-uc.a.run.app",
 				"ports": {
 					"bundles": 6580,
 					"http": 6581,
