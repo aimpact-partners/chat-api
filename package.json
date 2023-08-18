@@ -21,7 +21,7 @@
 		"development": {
 			"AGENT_API": "https://agent-api-rb5caohzgq-uc.a.run.app/agent"
 		},
-		"production": {
+		"testing": {
 			"AGENT_API": "https://agent-api-rb5caohzgq-uc.a.run.app/agent"
 		}
 	},
@@ -33,6 +33,17 @@
 	},
 	"deployment": {
 		"distributions": [
+			{
+				"name": "web",
+				"environment": "development",
+				"platform": "web",
+				"backend": "backend",
+				"ports": {
+					"bundles": 3380,
+					"http": 3581,
+					"inspect": 3282
+				}
+			},
 			{
 				"name": "backend",
 				"environment": "development",
@@ -56,14 +67,25 @@
 				}
 			},
 			{
-				"name": "web",
-				"environment": "development",
-				"platform": "web",
+				"name": "backend-testing",
+				"environment": "testing",
+				"platform": "backend",
+				"host": "https://chat-api-ws-rb5caohzgq-uc.a.run.app",
+				"ports": {
+					"bundles": 6590,
+					"http": 6591,
+					"inspect": 6592
+				}
+			},
+			{
+				"name": "node-testing",
+				"environment": "testing",
+				"platform": "node",
 				"backend": "backend",
 				"ports": {
-					"bundles": 3380,
-					"http": 3581,
-					"inspect": 3282
+					"bundles": 6593,
+					"http": 6594,
+					"inspect": 6595
 				}
 			}
 		]
