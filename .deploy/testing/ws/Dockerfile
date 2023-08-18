@@ -19,7 +19,7 @@ COPY . .
 RUN npm i -g beyond@1.2.0-beta.3
 
 # Build the project
-RUN beyond build --pkg=@aimpact/ailearn-api --distribution=backend-testing --logs
+RUN beyond build --pkg=@aimpact/chat-api --distribution=backend-testing --logs
 
 
 # ------------------------------
