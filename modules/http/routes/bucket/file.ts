@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import { join } from 'path';
 import { Storage } from '@google-cloud/storage';
 import * as dotenv from 'dotenv';
@@ -8,8 +9,10 @@ export class FilestoreFile {
 	#storageBucket = process.env.STORAGEBUCKET;
 
 	constructor() {
-		const credentials = join(__dirname, './credentials.json');
-		this.storage = new Storage({ keyFilename: credentials });
+		const file = join(__dirname, './credentials.json');
+		const specs: { keyFilename? } = {};
+		specs.keyFilename = fs.existsSync(file) ? file : void 0;
+		this.storage = new Storage(specs);
 	}
 
 	getFile(destination: string) {
