@@ -1,5 +1,5 @@
 import type { Server } from 'socket.io';
-import { db } from '@aimpact/chat-api/backend-db';
+import { db } from '@aimpact/chat-api/firestore';
 import { chatAPI } from '@aimpact/chat-api/backend/api';
 import { ChatMessages } from './messages';
 import { FirestoreService } from '../firestore/service';

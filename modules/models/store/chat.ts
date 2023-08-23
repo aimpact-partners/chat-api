@@ -1,42 +1,42 @@
 import type { Server } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 import * as admin from 'firebase-admin';
-import { db } from '@aimpact/chat-api/backend-db';
+import { db } from '@aimpact/chat-api/firestore';
 
 interface IChat {
-    id: string;
-    userId: string;
-    category: string;
-    knowledgeBoxId: string;
+	id: string;
+	userId: string;
+	category: string;
+	knowledgeBoxId: string;
 }
 
 export /*bundle*/ class ChatStore {
-    socket: Server;
-    private collection;
-    private table = 'Chat';
+	socket: Server;
+	private collection;
+	private table = 'Chat';
 
-    constructor(socket: Server) {
-        this.socket = socket;
-        this.collection = db.collection(this.table);
-    }
+	constructor(socket: Server) {
+		this.socket = socket;
+		this.collection = db.collection(this.table);
+	}
 
-    async load({ id }: { id: string }) {
-        try {
-            if (!id) {
-                return { status: false, error: 'id is required' };
-            }
+	async load({ id }: { id: string }) {
+		try {
+			if (!id) {
+				return { status: false, error: 'id is required' };
+			}
 
-            const chatRef = await this.collection.doc(id);
-            const doc = await chatRef.get();
-            const messagesSnapshot = await chatRef.collection('messages').orderBy('timestamp').get();
-            const messages = messagesSnapshot.docs.map(doc => doc.data());
+			const chatRef = await this.collection.doc(id);
+			const doc = await chatRef.get();
+			const messagesSnapshot = await chatRef.collection('messages').orderBy('timestamp').get();
+			const messages = messagesSnapshot.docs.map(doc => doc.data());
 
-            return {
-                status: true,
-                data: { ...doc.data(), messages },
-            };
-        } catch (e) {
-            return { status: false, error: e.message };
-        }
-    }
+			return {
+				status: true,
+				data: { ...doc.data(), messages },
+			};
+		} catch (e) {
+			return { status: false, error: e.message };
+		}
+	}
 }

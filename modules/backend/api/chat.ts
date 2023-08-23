@@ -1,4 +1,4 @@
-import { db } from '@aimpact/chat-api/backend-db';
+import { db } from '@aimpact/chat-api/firestore';
 import { BatchDeleter } from './firestore/delete';
 import { FirestoreService } from './firestore/service';
 

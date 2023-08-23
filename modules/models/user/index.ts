@@ -1,5 +1,5 @@
 import * as admin from 'firebase-admin';
-import {db} from '@aimpact/chat-api/backend-db';
+import { db } from '@aimpact/chat-api/firestore';
 
 export /*bundle*/ class User {
 	#accessToken: string;
@@ -50,12 +50,12 @@ export /*bundle*/ class User {
 		try {
 			if (!this.#id) {
 				this.#valid = false;
-				return {status: false, error: `The user does not have an id to be loaded`};
+				return { status: false, error: `The user does not have an id to be loaded` };
 			}
 
 			const userRef = await this.collection.doc(this.#id);
 			const userSnapshot = await userRef.get();
-			const {displayName, email, photoURL, phoneNumber} = userSnapshot.data();
+			const { displayName, email, photoURL, phoneNumber } = userSnapshot.data();
 
 			this.#valid = true;
 
@@ -65,10 +65,10 @@ export /*bundle*/ class User {
 			this.#phoneNumber = phoneNumber;
 			this.#photoURL = photoURL;
 
-			return {status: true, data: userSnapshot.data()};
+			return { status: true, data: userSnapshot.data() };
 		} catch (error) {
 			this.#valid = false;
-			return {status: false, error: `Error loading user`};
+			return { status: false, error: `Error loading user` };
 		}
 	}
 }

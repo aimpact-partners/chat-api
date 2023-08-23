@@ -1,5 +1,5 @@
 {
-	"name": "backend-db",
+	"name": "firestore",
 	"platforms": ["node", "backend"],
 	"ts": {
 		"files": ["*"]

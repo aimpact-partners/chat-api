@@ -1,5 +1,5 @@
 import type { Server } from 'socket.io';
-import { db } from '@aimpact/chat-api/backend-db';
+import { db } from '@aimpact/chat-api/firestore';
 import * as dayjs from 'dayjs';
 import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import * as jwt from 'jsonwebtoken';

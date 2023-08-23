@@ -1,8 +1,8 @@
-import {db} from '@aimpact/chat-api/backend-db';
-import {BatchDeleter} from './firestore/delete';
-import {FirestoreService} from './firestore/service';
-import {v4 as uuidv4} from 'uuid';
-import type {firestore} from 'firebase-admin';
+import { db } from '@aimpact/chat-api/firestore';
+import { BatchDeleter } from './firestore/delete';
+import { FirestoreService } from './firestore/service';
+import { v4 as uuidv4 } from 'uuid';
+import type { firestore } from 'firebase-admin';
 
 interface IChat {
 	id: string;
@@ -38,9 +38,9 @@ export /*bundle*/ class Chats {
 			const messagesSnapshot = await chatRef.collection('messages').orderBy('timestamp').get();
 			const messages = messagesSnapshot.docs.map(doc => doc.data());
 
-			return {...doc.data(), messages};
+			return { ...doc.data(), messages };
 		} catch (e) {
-			return {status: false, error: e.message};
+			return { status: false, error: e.message };
 		}
 	}
 
@@ -81,7 +81,7 @@ export /*bundle*/ class Chats {
 
 			const snapshot = await this.collection.doc(id);
 
-			await snapshot.set({...data, id}, {update: true});
+			await snapshot.set({ ...data, id }, { update: true });
 
 			const item = await this.collection.doc(id).get();
 
@@ -95,7 +95,7 @@ export /*bundle*/ class Chats {
 	async delete(id: string) {
 		try {
 			if (!id) {
-				return {status: false, error: 'id is required'};
+				return { status: false, error: 'id is required' };
 			}
 
 			const docRef = this.firestoreService.getDocumentRef(id);
@@ -130,7 +130,7 @@ export /*bundle*/ class Chats {
 		const persisted = [];
 		items.forEach(item => {
 			const id = item.id ?? uuidv4();
-			const persistedItem = {...item, id};
+			const persistedItem = { ...item, id };
 			batch.set(collection.doc(id), persistedItem);
 			persisted.push(persistedItem);
 		});

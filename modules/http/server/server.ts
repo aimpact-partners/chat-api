@@ -24,7 +24,10 @@ export class Server {
 			routes(this.#app);
 			//subscription to listen routes module changes.
 			hmr.on('change', this.onChange);
-			this.#instance = this.#app.listen(this.#port);
+			this.#instance = this.#app.listen(this.#port, () =>
+				console.log(`HTTP Server listening on port "${this.#port}"`)
+			);
+
 			this.#connections = new Connections(this.#instance);
 		} catch (exc) {
 			console.error('Error', exc);

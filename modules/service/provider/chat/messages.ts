@@ -1,6 +1,6 @@
 import type { Server } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
-import { db } from '@aimpact/chat-api/backend-db';
+import { db } from '@aimpact/chat-api/firestore';
 import * as admin from 'firebase-admin';
 import { TriggerAgent } from '@aimpact/chat-api/trigger-agent';
 

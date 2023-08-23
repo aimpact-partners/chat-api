@@ -1,4 +1,4 @@
-import { db } from '@aimpact/chat-api/backend-db';
+import { db } from '@aimpact/chat-api/firestore';
 export class FirestoreService {
 	constructor(private collectionName: string) {}
 
