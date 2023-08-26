@@ -1,6 +1,6 @@
-import { PineconeStore } from 'langchain/vectorstores/pinecone';
-import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { PineconeClient } from '@pinecone-database/pinecone';
+import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
+import { PineconeStore } from 'langchain/vectorstores/pinecone';
 import type { Documents } from './documents';
 
 export class Vector {
@@ -20,14 +20,14 @@ export class Vector {
 		return client;
 	}
 
-	static async get(metadata: {} = undefined) {
+	static async get(metadata: {} | undefined = undefined) {
 		const client = await Vector.init();
 
 		try {
 			const pineconeIndex = client.Index(process.env.PINECONE_INDEX_NAME);
 			const embedding = new OpenAIEmbeddings({ openAIApiKey: process.env.OPEN_AI_KEY });
 
-			const specs: ISpecs = { pineconeIndex };
+			const specs = { pineconeIndex, filter: undefined };
 			metadata && (specs.filter = metadata);
 			return await PineconeStore.fromExistingIndex(embedding, specs);
 		} catch (e) {
@@ -44,11 +44,35 @@ export class Vector {
 		}
 
 		const specs = { openAIApiKey: process.env.OPEN_AI_KEY };
-		const embedding = new OpenAIEmbeddings(specs);
+		const embeddings = new OpenAIEmbeddings(specs);
 
 		const pineconeIndex = client.Index(process.env.PINECONE_INDEX_NAME);
-		await PineconeStore.fromDocuments(documents.items, embedding, { pineconeIndex });
+		await PineconeStore.fromDocuments(documents.items, embeddings, { pineconeIndex });
 
 		return { status: true, data: { message: 'Embeddings updated' } };
+	}
+
+	static async fromTexts(texts: string[], metadata) {
+		if (!texts) {
+			throw new Error('no texts to embed');
+		}
+
+		const client = await Vector.init();
+		const specs = { openAIApiKey: process.env.OPEN_AI_KEY };
+		const embeddings = new OpenAIEmbeddings(specs);
+
+		const pineconeIndex = client.Index(process.env.PINECONE_INDEX_NAME);
+		const dbConfig = {
+			pineconeIndex,
+			// namespace: 'chats', //check namespaces
+		};
+
+		try {
+			const pineconeStore = await PineconeStore.fromTexts(texts, metadata, embeddings, dbConfig);
+			return { status: true, data: { message: 'Texts inserted successfully!' } };
+		} catch (e) {
+			console.error('Error[m/kb/fromTexts] :', e);
+			return { status: false, error: e.message };
+		}
 	}
 }

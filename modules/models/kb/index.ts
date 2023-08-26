@@ -8,10 +8,20 @@ export /*bundle*/ class KB {
 		return await Vector.update(documents);
 	}
 
-	static async search(input: string, filters) {
+	static async fromTexts(texts, metadata) {
+		return await Vector.fromTexts(texts, metadata);
+	}
+
+	static async search(input: string, filters, limit = 1) {
 		const vector = await Vector.get();
-		const results = await vector.similaritySearch(input, 1, filters);
+		const results = await vector.similaritySearch(input, limit, filters);
 		return { status: true, data: results[0]?.pageContent };
+	}
+
+	static async similaritySearch(input: string, filters, limit = 1) {
+		const vector = await Vector.get();
+		const results = await vector.similaritySearch(input, limit, filters);
+		return { status: true, data: results };
 	}
 
 	static async query(question: string, filter = undefined) {

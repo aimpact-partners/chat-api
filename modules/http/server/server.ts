@@ -1,6 +1,6 @@
 import * as express from 'express';
 import { Connections } from './connections';
-import { routes, hmr } from '@aimpact/chat-api/routes';
+import { Routes, hmr } from '@aimpact/chat-api/routes';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
@@ -21,7 +21,7 @@ export class Server {
 			this.#app.use(express.json());
 			this.#setHeader();
 			this.#router = express.Router();
-			routes(this.#app);
+			Routes.setup(this.#app);
 			//subscription to listen routes module changes.
 			hmr.on('change', this.onChange);
 			this.#instance = this.#app.listen(this.#port, () =>

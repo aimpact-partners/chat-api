@@ -1,16 +1,12 @@
 import type { Request, Response, Application } from 'express';
 import { db } from '@aimpact/chat-api/firestore';
 import { uploader } from '@aimpact/chat-api/documents-upload';
-import { KB as KBModel, Documents } from '@aimpact/chat-api/models/kb';
+import { KB, Documents } from '@aimpact/chat-api/models/kb';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-export /*bundle*/ class KB {
-	#app: Application;
-
-	constructor(app: Application) {
-		this.#app = app;
-
+export class KBRoutes {
+	static setup(app: Application) {
 		app.use((err, req, res, next) => {
 			res.status(err.status || 500).json({
 				message: err.message,
@@ -18,11 +14,20 @@ export /*bundle*/ class KB {
 			});
 		});
 
-		console.log('uploader', !!uploader);
-
-		app.post('/kb', this.set.bind(this));
 		app.post('/kb/upload', uploader);
-		app.post('/kb/search', this.search.bind(this));
+		app.post('/kb/texts', KBRoutes.texts);
+		app.post('/kb/search', KBRoutes.search);
+		app.post('/kb/documents', KBRoutes.documents);
+	}
+
+	static async texts(req: Request, res: Response) {
+		const { content, metadata, token } = req.body;
+		if (token !== process.env.GCLOUD_INVOKER) {
+			return res.status(400).send({ status: false, error: 'Token request not valid' });
+		}
+
+		const { status, error, data } = await KB.fromTexts([content], [metadata]);
+		res.json({ status, error, data });
 	}
 
 	/**
@@ -32,7 +37,7 @@ export /*bundle*/ class KB {
 	 * @param res
 	 * @returns
 	 */
-	set = async (req: Request, res: Response) => {
+	static async documents(req: Request, res: Response) {
 		const { id } = req.params;
 		const { path, metadata, token } = req.body;
 		if (token !== process.env.GCLOUD_INVOKER) {
@@ -45,9 +50,9 @@ export /*bundle*/ class KB {
 		const documents = new Documents();
 		const response = await documents.prepare(path, metadata);
 
-		const status = !response.status ? 'failed' : 'processed';
+		const statusKB = !response.status ? 'failed' : 'processed';
 		const collection = db.collection('KnowledgeBoxes');
-		await collection.doc(id).update({ status });
+		await collection.doc(id).update({ status: statusKB });
 
 		if (!response.status) {
 			return response;
@@ -57,8 +62,9 @@ export /*bundle*/ class KB {
 			return { status: false, error: `Documents not found in path "${path}"` };
 		}
 
-		return await KBModel.update(documents);
-	};
+		const { status, error, data } = await KB.update(documents);
+		res.json({ status, error, data });
+	}
 
 	/**
 	 * hace una busqueda dentro del vector segun el texto y los filtros pasados como parametros
@@ -66,7 +72,7 @@ export /*bundle*/ class KB {
 	 * @param res
 	 * @returns
 	 */
-	search = async (req: Request, res: Response) => {
+	static async search(req: Request, res: Response) {
 		const { text, filter, token } = req.body;
 
 		console.log('search ', text, filter, token);
@@ -74,7 +80,7 @@ export /*bundle*/ class KB {
 			return res.status(400).send({ status: false, error: 'Token request not valid' });
 		}
 
-		const { status, error, data } = await KBModel.search(text, filter);
+		const { status, error, data } = await KB.search(text, filter);
 		res.json({ status, error, data });
-	};
+	}
 }

@@ -79,9 +79,9 @@ export /*bundle*/ class Chats {
 			data.parent === undefined && (data.parent = '0');
 			const id = data.id ?? uuidv4();
 
-			const snapshot = await this.collection.doc(id);
+			const snapshot = this.collection.doc(id);
 
-			await snapshot.set({ ...data, id }, { update: true });
+			await snapshot.set({ ...data, id }, { merge: true });
 
 			const item = await this.collection.doc(id).get();
 

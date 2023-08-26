@@ -1,0 +1,6 @@
+{
+	"name": "middleware",
+	"platforms": ["node"],
+	"bundle": "ts",
+	"files": "*"
+}

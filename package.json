@@ -18,6 +18,9 @@
 		"path": "modules"
 	},
 	"params": {
+		"local": {
+			"AGENT_API": "http://localhost:5050"
+		},
 		"development": {
 			"AGENT_API": "https://agent-api-rb5caohzgq-uc.a.run.app/agent"
 		},

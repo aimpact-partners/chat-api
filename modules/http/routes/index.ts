@@ -1,18 +1,21 @@
-import { Chats } from './actions/chats';
-import { Users } from './actions/users';
-import { uploader } from './actions/uploader';
-import { KB } from './actions/kb';
+import { KBRoutes } from './actions/KB';
+import { ChatsRoutes } from './actions/Chats';
+import { UsersRoutes } from './actions/Users';
+import { uploader } from './actions/Uploader';
+import { ConversationsRoutes } from './actions/Conversations';
 
-export /*bundle*/
-function routes(app) {
-	try {
-		app.get('/', (req, res) => res.send('AImpact Chat API http server'));
-		app.post('/upload', uploader);
+export /*bundle*/ class Routes {
+	static setup(app) {
+		try {
+			app.get('/', (req, res) => res.send('AImpact Chat API http server'));
+			app.post('/upload', uploader);
 
-		new Chats(app);
-		new Users(app);
-		new KB(app);
-	} catch (e) {
-		console.error('error catched', e);
+			KBRoutes.setup(app);
+			ChatsRoutes.setup(app);
+			UsersRoutes.setup(app);
+			ConversationsRoutes.setup(app);
+		} catch (e) {
+			console.error('error catched', e);
+		}
 	}
 }

@@ -1,9 +1,9 @@
 import { join } from 'path';
 import * as stream from 'stream';
 import * as Busboy from 'busboy';
-import { FilestoreFile } from '../bucket/file';
-import { getExtension } from './utils/get-extension';
-import { generateCustomName } from './utils/generate-name';
+import { FilestoreFile } from '../../bucket/file';
+import { getExtension } from '../../utils/get-extension';
+import { generateCustomName } from '../../utils/generate-name';
 import { PendingPromise } from '@beyond-js/kernel/core';
 import { TriggerAgent } from '@aimpact/chat-api/trigger-agent';
 import { OpenAIBackend } from '@aimpact/chat-api/backend-openai';
@@ -86,7 +86,6 @@ export /*bundle*/ const uploader = async function (req, res) {
 			return;
 		}
 
-		
 		res.json({
 			status: true,
 			data: {
