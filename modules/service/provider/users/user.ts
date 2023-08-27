@@ -1,14 +1,8 @@
 import type { Server } from 'socket.io';
-import { db } from '@aimpact/chat-api/firestore';
 import * as dayjs from 'dayjs';
-import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import * as jwt from 'jsonwebtoken';
 import * as admin from 'firebase-admin';
-interface Chat {
-	id: string;
-	userId: number;
-	category: string;
-}
+import { db } from '@aimpact/chat-api/firestore';
 
 export /*actions*/ /*bundle*/ class UserProvider {
 	socket: Server;
@@ -28,7 +22,7 @@ export /*actions*/ /*bundle*/ class UserProvider {
 				// If the user already exists in the database, update the lastLogin field
 				await userRef.update({
 					...user,
-					lastLogin: dayjs().unix(),
+					lastLogin: dayjs().unix()
 				});
 			} else {
 				// If the user doesn't exist in the database, create a new document for them
@@ -42,7 +36,7 @@ export /*actions*/ /*bundle*/ class UserProvider {
 					photoURL: user.photoURL,
 					phoneNumber: user.phoneNumber,
 					createdOn: dayjs().unix(),
-					lastLogin: dayjs().unix(),
+					lastLogin: dayjs().unix()
 				});
 			}
 

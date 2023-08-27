@@ -6,11 +6,13 @@ export class Messages {
 			const conversationDoc = await db.collection('Conversations').doc(conversationId).get();
 			const messagesSnapshot = await conversationDoc.ref
 				.collection('messages')
-				.orderBy('timestamp')
+				.orderBy('timestamp', 'desc')
 				.limit(limit)
 				.get();
 
-			return messagesSnapshot.docs.map(doc => doc.data());
+			const messages = messagesSnapshot.docs.map(doc => doc.data());
+			messages.sort((a, b) => a.timestamp - b.timestamp);
+			return messages;
 		} catch (e) {
 			console.error(e);
 			throw new Error(e);

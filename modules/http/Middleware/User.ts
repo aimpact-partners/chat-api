@@ -13,14 +13,13 @@ export /*bundle*/ class UserMiddlewareHandler {
 
 		try {
 			const decodedToken = await admin.auth().verifyIdToken(accessToken);
-			console.log('decodedToken', decodedToken);
 			if (!decodedToken) {
 				return res
 					.status(401)
 					.json({ status: false, error: 'Invalid Access token or Access token not provided' });
 			}
 
-			req.user = decodedToken;
+			req.user = { uid: decodedToken.uid, name: decodedToken.name, email: decodedToken.email };
 			next();
 		} catch (e) {
 			console.error(e);
