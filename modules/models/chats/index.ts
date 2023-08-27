@@ -17,7 +17,7 @@ interface IChat {
 
 export /*bundle*/ class Chats {
 	private collection: firestore.CollectionReference;
-	private table = 'Chat';
+	private table = 'Conversations';
 	firestoreService: FirestoreService;
 	#deleter;
 

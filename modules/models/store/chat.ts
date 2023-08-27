@@ -13,7 +13,7 @@ interface IChat {
 export /*bundle*/ class ChatStore {
 	socket: Server;
 	private collection;
-	private table = 'Chat';
+	private table = 'Conversations';
 
 	constructor(socket: Server) {
 		this.socket = socket;
@@ -33,7 +33,7 @@ export /*bundle*/ class ChatStore {
 
 			return {
 				status: true,
-				data: { ...doc.data(), messages },
+				data: { ...doc.data(), messages }
 			};
 		} catch (e) {
 			return { status: false, error: e.message };
