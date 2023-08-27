@@ -10,7 +10,7 @@ export class ConversationsRoutes {
 		app.use((err, req, res, next) => {
 			res.status(err.status || 500).json({
 				message: err.message,
-				errors: err.errors,
+				errors: err.errors
 			});
 		});
 
@@ -31,16 +31,16 @@ export class ConversationsRoutes {
 	static async sendMessage(req: Request, res: Response) {
 		const { id } = req.params;
 		if (!id) {
-			return res.status(400).json({ status: false, error: 'conversationId is required' });
+			return res.status(400).json({ status: false, error: 'Paramter conversation id is required' });
 		}
 
 		const { message } = req.body;
 		if (!message) {
-			return res.status(400).json({ status: false, error: 'message is required' });
+			return res.status(400).json({ status: false, error: 'Parameter message is required' });
 		}
 
 		try {
-			// set user message on firestore
+			// Store the user message as soon as it arrives
 			const userMessage = { content: message, role: 'user' };
 			const response = await Conversation.sendMessage(id, userMessage);
 			if (!response.status) {
@@ -51,9 +51,24 @@ export class ConversationsRoutes {
 			res.setHeader('Transfer-Encoding', 'chunked');
 
 			const { iterator, error } = await Agents.sendMessage(response.data.id, message);
-			for await (const { chunk } of iterator) {
-				res.write(chunk);
+			if (error) {
+				return res.status(500).json({ status: false, error });
 			}
+
+			let answer = '';
+			let stage: { synthesis: string };
+			for await (const part of iterator) {
+				const { chunk } = part;
+				answer += chunk ? chunk : '';
+				chunk && res.write(chunk);
+
+				if (part.stage) {
+					stage = part.stage;
+					break;
+				}
+			}
+
+			console.log(`\n\SYNTHESIS:\n${stage?.synthesis}`);
 
 			// set agent message on firestore
 			// const agentMessage = { content: message, role: 'system' };
