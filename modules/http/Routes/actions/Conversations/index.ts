@@ -1,9 +1,6 @@
 import type { Request, Response, Application } from 'express';
 import { Conversation, IConversation } from '@aimpact/chat-api/models/conversation';
-import { UserMiddlewareHandler, IAuthenticatedRequest } from '@aimpact/chat-api/middleware';
 import { Agents } from '@aimpact/chat-api/agents';
-import * as dotenv from 'dotenv';
-dotenv.config();
 
 export class ConversationsRoutes {
 	static setup(app: Application) {
@@ -67,6 +64,9 @@ export class ConversationsRoutes {
 					break;
 				}
 			}
+
+			res.write('ÿ');
+			res.write(JSON.stringify({ status: true }));
 
 			console.log(`\n\SYNTHESIS:\n${stage?.synthesis}`);
 

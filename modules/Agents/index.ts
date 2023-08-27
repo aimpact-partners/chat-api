@@ -1,8 +1,7 @@
-import fetch from 'node-fetch';
 import { Conversation } from '@aimpact/chat-api/models/conversation';
 import * as dotenv from 'dotenv';
-dotenv.config();
 
+dotenv.config();
 const { AGENT_API_URL, AGENT_API_TOKEN } = process.env;
 
 interface IAnswerStage {
