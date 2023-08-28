@@ -10,13 +10,13 @@ export class KBRoutes {
 		app.use((err, req, res, next) => {
 			res.status(err.status || 500).json({
 				message: err.message,
-				errors: err.errors,
+				errors: err.errors
 			});
 		});
 
 		app.post('/kb/upload', uploader);
 		app.post('/kb/texts', KBRoutes.texts);
-		app.post('/kb/search', KBRoutes.search);
+		app.get('/kb/search', KBRoutes.search);
 		app.post('/kb/documents', KBRoutes.documents);
 	}
 
@@ -73,14 +73,22 @@ export class KBRoutes {
 	 * @returns
 	 */
 	static async search(req: Request, res: Response) {
-		const { text, filter, token } = req.body;
+		const { text, filter, token } = req.query;
 
-		console.log('search ', text, filter, token);
+		let metadata;
+		try {
+			metadata = JSON.parse(filter);
+		} catch (e) {
+			return res.status(400).send({ status: false, error: 'Parameter filter not valid' });
+		}
+
 		if (token !== process.env.GCLOUD_INVOKER) {
 			return res.status(400).send({ status: false, error: 'Token request not valid' });
 		}
 
-		const { status, error, data } = await KB.search(text, filter);
-		res.json({ status, error, data });
+		const { status, error, data } = await KB.similaritySearch(text, metadata, 3);
+		const results = data.map(document => document.pageContent);
+
+		res.json({ status, error, data: { results } });
 	}
 }
