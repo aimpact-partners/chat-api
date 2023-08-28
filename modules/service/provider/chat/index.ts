@@ -17,7 +17,7 @@ interface IChat {
 export /*actions*/ /*bundle*/ class ChatProvider {
 	socket: Server;
 	private collection;
-	private table = 'Chat';
+	private table = 'Conversations';
 	#messages = new ChatMessages();
 	firestoreService: FirestoreService;
 

@@ -15,7 +15,7 @@ interface IChat {
 
 class ChatAPI {
 	private collection;
-	private table = 'Chat';
+	private table = 'Conversations';
 	firestoreService: FirestoreService;
 
 	constructor() {

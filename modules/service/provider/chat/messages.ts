@@ -44,7 +44,7 @@ export class ChatMessages {
 				throw new Error('message is required');
 			}
 
-			const chatProvider = db.collection('Chat');
+			const chatProvider = db.collection('Conversations');
 			const chat = await chatProvider.doc(data.chatId);
 			const chatDoc = await chat.get();
 			const chatData = chatDoc.data();
