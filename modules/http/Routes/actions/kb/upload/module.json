@@ -1,7 +1,0 @@
-{
-	"name": "documents-upload",
-	"platforms": ["node"],
-	"ts": {
-		"files": ["*"]
-	}
-}
