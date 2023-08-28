@@ -56,23 +56,22 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 
 	async list(specs) {
 		try {
-			const entries = [];
-
 			if (!specs.userId) {
 				throw new Error('userId is required');
 			}
 
 			let query = this.collection;
-
 			const { limit } = specs;
 			delete specs.limit;
 
-			// TODO @ftovar8 @jircdev pendiente agregar condicion por cada parametro de filtro
-			for (let [k, v] of Object.entries(specs)) {
-				query = query.where(k, '==', v);
+			if (specs.userId) {
+				query = query.where('user.id', '==', specs.userId);
+				delete specs.userId;
 			}
+
 			query = query.limit(limit);
 
+			const entries = [];
 			const items = await query.get();
 			items.forEach(item => entries.push(item.data()));
 
