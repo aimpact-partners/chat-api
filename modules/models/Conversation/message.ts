@@ -30,13 +30,13 @@ export class Message {
 				id,
 				...message,
 				conversationId: conversationId,
-				timestamp: admin.firestore.FieldValue.serverTimestamp(),
+				timestamp: admin.firestore.FieldValue.serverTimestamp()
 			};
 			await conversation.collection('messages').doc(id).set(specs);
 
 			const data = conversationDoc.data();
+			const count = (data.messages?.count || 0) + 1;
 
-			const count = (data.messages.count || 0) + 1;
 			await conversation.update({ messages: { count } }, { merge: true });
 
 			return { status: true, data: { specs } };

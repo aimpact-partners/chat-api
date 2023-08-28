@@ -24,7 +24,7 @@ export /*bundle*/ class Agents {
 			return { status: false, error: 'Error fetching conversation data from store' };
 		}
 
-		if (!conversation.id) {
+		if (!conversation) {
 			return { status: false, error: 'conversationId not valid' };
 		}
 
