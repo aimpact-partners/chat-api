@@ -5,11 +5,10 @@ import { FilestoreFile } from '../../bucket/file';
 import { getExtension } from '../../utils/get-extension';
 import { generateCustomName } from '../../utils/generate-name';
 import { PendingPromise } from '@beyond-js/kernel/core';
-import { TriggerAgent } from '@aimpact/chat-api/trigger-agent';
+import { Agents } from '@aimpact/chat-api/agents';
 import { OpenAIBackend } from '@aimpact/chat-api/backend-openai';
 
 const oaiBackend = new OpenAIBackend();
-const triggerAgent = new TriggerAgent();
 
 interface IFileSpecs {
 	project?: string;
@@ -43,7 +42,7 @@ function processRequest(req, res): Promise<any> {
 		const [item] = files;
 		const {
 			file,
-			info: { filename, mimeType },
+			info: { filename, mimeType }
 		} = item;
 
 		const fileManager = new FilestoreFile();
@@ -66,41 +65,49 @@ export /*bundle*/ const uploader = async function (req, res) {
 	try {
 		const { transcription, fields, file } = await processRequest(req, res);
 		if (!transcription.status) {
-			res.json({
+			return res.json({
 				status: false,
-				error: `Error transcribing audio: ${transcription.error}`,
+				error: `Error transcribing audio: ${transcription.error}`
 			});
-			return;
 		}
 
-		const message = { role: 'user', content: transcription.data?.text };
-
-		const { knowledgeBoxId, chatId } = fields;
-		const agentResponse = await triggerAgent.call(message, chatId, knowledgeBoxId);
-
-		if (!agentResponse.status) {
-			res.json({
-				status: false,
-				error: `Error saving file: ${agentResponse.error}`,
-			});
-			return;
+		/**
+		 * Pendientes
+		 * Agregar guardado en mensaje desde el backend
+		 * remover el guardado desde el cliente
+		 * agregar captura de la respuesta de manera incremental en el cliente
+		 */
+		const { chatId } = fields;
+		const { iterator, error } = await Agents.sendMessage(chatId, transcription.data?.text);
+		if (error) {
+			return res.status(500).json({ status: false, error });
 		}
 
-		res.json({
+		let answer = '';
+		let stage: { synthesis: string };
+		for await (const part of iterator) {
+			const { chunk } = part;
+			answer += chunk ? chunk : '';
+			if (part.stage) {
+				stage = part.stage;
+				break;
+			}
+		}
+
+		return res.json({
 			status: true,
 			data: {
 				file: file.dest,
 				transcription: transcription.data.text,
-				output: agentResponse.data.output,
-				usage: agentResponse.data.usage,
-				message: 'File uploaded successfully',
-			},
+				output: answer,
+				message: 'File uploaded successfully'
+			}
 		});
 	} catch (error) {
 		console.error(error);
 		res.json({
 			status: false,
-			error: error.message,
+			error: error.message
 		});
 	}
 };

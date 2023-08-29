@@ -50,7 +50,7 @@ export class ConversationsRoutes {
 
 			const { iterator, error } = await Agents.sendMessage(id, message);
 			if (error) {
-				return res.status(500).json({ status: false, error: error });
+				return res.status(500).json({ status: false, error });
 			}
 
 			let answer = '';
@@ -76,10 +76,11 @@ export class ConversationsRoutes {
 				return res.status(400).json({ status: false, error: response.error });
 			}
 
+			// update synthesis on conversation
 			const data = { id, synthesis: stage?.synthesis };
 			await Conversation.publish(data);
 
-			// setea last interaction on conversation
+			// set last interaction on conversation
 			await Conversation.setLastInteractions(id, 4);
 
 			res.end();
