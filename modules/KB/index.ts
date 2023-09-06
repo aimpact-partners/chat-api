@@ -1,6 +1,7 @@
 import { PineconeClient } from '@pinecone-database/pinecone';
 import type { VectorOperationsApi } from '@pinecone-database/pinecone/dist/pinecone-generated-ts-fetch';
 import type { Vector } from '@pinecone-database/pinecone/dist/pinecone-generated-ts-fetch/models/Vector';
+import type { ScoredVector } from '@pinecone-database/pinecone/dist/pinecone-generated-ts-fetch/models/ScoredVector';
 import * as dotenv from 'dotenv';
 import OpenAI from 'openai';
 
@@ -11,7 +12,7 @@ const model = 'text-embedding-ada-002';
 
 export /*bundle*/ class KB {
 	static #error: string;
-	static #initialization: Promise<void>;
+	static #initialization: Promise<{}>;
 	static #index: VectorOperationsApi;
 	static #openai: OpenAI;
 
@@ -22,7 +23,7 @@ export /*bundle*/ class KB {
 			return this.#error ? { error: this.#error } : {};
 		}
 
-		let resolve: () => void;
+		let resolve: (value: {}) => void;
 		this.#initialization = new Promise(r => (resolve = r));
 
 		try {
@@ -31,13 +32,15 @@ export /*bundle*/ class KB {
 				apiKey: PINECONE_API_KEY,
 				environment: PINECONE_ENVIRONMENT
 			});
-			this.#index = pinecone.Index('testing');
+			this.#index = pinecone.Index(PINECONE_INDEX_NAME);
 
 			this.#openai = new OpenAI({ apiKey: OPEN_AI_KEY });
 		} catch (exc) {
 			const error = `Error on KB initialization`;
 			this.#error = error;
 			return { error };
+		} finally {
+			resolve({});
 		}
 
 		return {};
@@ -65,22 +68,114 @@ export /*bundle*/ class KB {
 		return text.split(/\n\n+/).map(paragraph => cleaner(paragraph));
 	}
 
-	static async upsert(id: string, text: string, namespace: string, metadata: object) {
-		const { error } = await this.#initialise();
-		if (error) return { error };
+	static async upsert(
+		namespace: string,
+		metadata: object,
+		id: string,
+		text: string
+	): Promise<{ status: boolean; error?: string }> {
+		// Check parameters
+		if (
+			!namespace ||
+			!metadata ||
+			!id ||
+			!text ||
+			typeof namespace !== 'string' ||
+			typeof metadata !== 'object' ||
+			typeof id !== 'string' ||
+			typeof text !== 'string'
+		) {
+			throw new Error('Invalid parameters');
+		}
 
+		// Initialise OpenAI & Pinecone
+		const { error } = await this.#initialise();
+		if (error) return { status: false, error };
+
+		// Split the text in paragraphs
 		const paragraphs = this.#splitter(text);
-		const response = await this.#openai.embeddings.create({ input: paragraphs, model });
+
+		// Get the embeddings and create the vectors
+		let embeddings: number[][] = [];
+		try {
+			const response = await this.#openai.embeddings.create({ input: paragraphs, model });
+			response.data?.forEach(({ embedding, index }) => (embeddings[index] = embedding));
+		} catch (exc) {
+			const error = 'Error getting embeddings from OpenAI';
+			console.error(error, exc);
+			return { status: false, error };
+		}
 
 		const vectors: Vector[] = [];
 		paragraphs.forEach((paragraph, index) => {
-			const values = response.data[index].embedding;
-			const vector = { id, values, metadata };
+			const values = embeddings[index];
+			const vector = { id: `${id}:${index}`, values, metadata: Object.assign({ paragraph }, metadata) };
 
 			vectors.push(vector);
 		});
 
+		// Store the vectors in pinecone
+		namespace = void 0; // Namespaces are not available in free tier
 		const request = { vectors, namespace };
-		await this.#index.upsert({ upsertRequest: request });
+		try {
+			await this.#index.upsert({ upsertRequest: request });
+		} catch (exc) {
+			const error = 'Error storing embeddings in the knowledge base';
+			console.error(error, exc);
+			return { status: false, error };
+		}
+
+		return { status: true };
+	}
+
+	static async query(
+		namespace: string,
+		filter: object,
+		query: string,
+		topK?: number
+	): Promise<{ status: boolean; error?: string; matches?: ScoredVector[] }> {
+		// Check parameters
+		if (
+			!namespace ||
+			!filter ||
+			!query ||
+			typeof namespace !== 'string' ||
+			typeof filter !== 'object' ||
+			typeof query !== 'string'
+		) {
+			throw new Error('Invalid parameters');
+		}
+
+		// Initialise OpenAI & Pinecone
+		const { error } = await this.#initialise();
+		if (error) return { status: false, error };
+
+		topK = !topK || typeof topK !== 'number' || topK > 30 ? 3 : topK;
+
+		// Get the embedding of the query in place
+		let vector: number[];
+		try {
+			const response = await this.#openai.embeddings.create({ input: query, model });
+			vector = response.data[0].embedding;
+		} catch (exc) {
+			const error = 'Error getting embeddings from OpenAI';
+			console.error(error, exc);
+			return { status: false, error };
+		}
+
+		let matches: ScoredVector[];
+		try {
+			namespace = void 0; // Namespaces are not available in free tier
+			const request = { vector, topK, includeMetadata: true, filter, namespace };
+
+			// Store the vectors in pinecone
+			({ matches } = await this.#index.query({ queryRequest: request }));
+		} catch (exc) {
+			const error = 'Error querying knowledge base';
+			console.error(error, exc);
+			return { status: false, error };
+		}
+
+		return { status: true, matches };
 	}
 }
