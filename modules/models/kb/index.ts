@@ -31,12 +31,12 @@ export /*bundle*/ class KB {
 			openAIApiKey: process.env.OPEN_AI_KEY,
 			temperature: 0.2,
 			language: 'es',
-			modelName: 'gpt-3.5-turbo',
+			modelName: 'gpt-3.5-turbo'
 		};
 		const model = new OpenAI(specs);
 		const chain = VectorDBQAChain.fromLLM(model, vector, {
 			k: 1,
-			returnSourceDocuments: false,
+			returnSourceDocuments: false
 		});
 
 		const response = await chain.call({ query: question });
@@ -51,7 +51,7 @@ export /*bundle*/ class KB {
 				openAIApiKey: process.env.OPEN_AI_KEY,
 				temperature: 0.2,
 				language: 'es',
-				modelName: 'gpt-3.5-turbo',
+				modelName: 'gpt-3.5-turbo'
 			};
 			model = new OpenAI(specs);
 		}

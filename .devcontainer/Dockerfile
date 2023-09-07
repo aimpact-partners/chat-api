@@ -31,4 +31,4 @@ RUN apt-get install nodejs -y
 RUN yes | unminimize 2>&1
 
 # Install beyond
-RUN npm i -g beyond@1.1.0-beta.dts.9 @beyond-js/packages-templates
+RUN npm i -g beyond@1.2.0-beta.4 @beyond-js/scaffolding
