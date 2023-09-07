@@ -2,8 +2,14 @@ import type { Request, Response, Application } from 'express';
 import { db } from '@aimpact/chat-api/firestore';
 import { uploader } from '@aimpact/chat-api/documents-upload';
 import { KB, Documents } from '@aimpact/chat-api/models/kb';
+import { KB as KBPinecone } from '@aimpact/chat-api/kb';
 import * as dotenv from 'dotenv';
 dotenv.config();
+
+interface IMetadata {
+	id: string;
+	as?: string;
+}
 
 export class KBRoutes {
 	static setup(app: Application) {
@@ -15,6 +21,7 @@ export class KBRoutes {
 		});
 
 		app.post('/kb/upload', uploader);
+		app.get('/kb/query', KBRoutes.query);
 		app.post('/kb/texts', KBRoutes.texts);
 		app.get('/kb/search', KBRoutes.search);
 		app.post('/kb/documents', KBRoutes.documents);
@@ -26,8 +33,27 @@ export class KBRoutes {
 			return res.status(400).send({ status: false, error: 'Token request not valid' });
 		}
 
-		const { status, error, data } = await KB.fromTexts([content], [metadata]);
-		res.json({ status, error, data });
+		await KBPinecone.upsert('ailearn', metadata, metadata.id, content);
+
+		res.json({ status: true });
+	}
+
+	static async query(req: Request, res: Response) {
+		const { text, token } = req.query;
+		if (token !== process.env.GCLOUD_INVOKER) {
+			return res.status(400).send({ status: false, error: 'Token request not valid' });
+		}
+
+		const filter = <string>req.query.filter;
+		let metadata: IMetadata;
+		try {
+			metadata = JSON.parse(filter);
+		} catch (e) {
+			return res.status(400).send({ status: false, error: 'Parameter filter not valid' });
+		}
+
+		const { status, error, matches } = await KBPinecone.query('ailearn', metadata, text);
+		res.json({ status, error, data: { matches } });
 	}
 
 	/**
@@ -73,9 +99,10 @@ export class KBRoutes {
 	 * @returns
 	 */
 	static async search(req: Request, res: Response) {
-		const { text, filter, token } = req.query;
+		const { text, token } = req.query;
+		const filter = <string>req.query.filter;
 
-		let metadata;
+		let metadata: IMetadata;
 		try {
 			metadata = JSON.parse(filter);
 		} catch (e) {

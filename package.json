@@ -99,7 +99,7 @@
 		"@google-cloud/storage": "^6.10.1",
 		"@google-cloud/tasks": "^3.1.2",
 		"@pinecone-database/pinecone": "^0.1.6",
-		"langchain": "^0.0.96",
+		"langchain": "^0.0.145",
 		"axios": "^1.4.0",
 		"busboy": "^1.6.0",
 		"dayjs": "^1.11.7",
@@ -114,7 +114,7 @@
 		"google-auth-library": "^8.9.0",
 		"jsonwebtoken": "^9.0.1",
 		"node-fetch": "^2.6.12",
-		"openai": "~4.4.0",
+		"openai": "~4.5.0",
 		"socket.io-client": "^4.5.4",
 		"uuid": "^9.0.0"
 	},

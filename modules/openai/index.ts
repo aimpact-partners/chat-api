@@ -1,5 +1,4 @@
-import { Configuration, OpenAIApi } from 'openai';
-import type { ChatCompletionRequestMessage } from 'openai';
+import OpenAI from 'openai';
 import * as fs from 'fs';
 import fetch from 'node-fetch';
 import * as FormData from 'form-data';
@@ -14,35 +13,34 @@ interface IResponse {
 }
 export /*bundle*/
 class OpenAIBackend {
-	#configuration = new Configuration({ apiKey: process.env.OPEN_AI_KEY });
-	#openai = new OpenAIApi(this.#configuration);
+	#openai = new OpenAI({ apiKey: process.env.OPEN_AI_KEY });
 
 	async completions(prompt: string, text: string) {
 		const content: string = prompt + `\n` + text;
 
 		try {
-			const response = await this.#openai.createCompletion({
+			const response = await this.#openai.completions.create({
 				model: davinci3,
 				prompt: content,
-				temperature: 0.2,
+				temperature: 0.2
 			});
 
-			return { status: true, data: response.data.choices[0].text };
+			return { status: true, data: response.choices[0].text };
 		} catch (e) {
 			console.error(e.message);
 			return { status: false, error: e.message };
 		}
 	}
 
-	async chatCompletions(messages: ChatCompletionRequestMessage[]) {
+	async chatCompletions(messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[]) {
 		try {
-			const response = await this.#openai.createChatCompletion({
+			const response = await this.#openai.chat.completions.create({
 				model: gptTurboPlus,
 				messages: messages,
-				temperature: 0.2,
+				temperature: 0.2
 			});
 
-			return { status: true, data: response.data.choices[0].message.content };
+			return { status: true, data: response.choices[0].message.content };
 		} catch (e) {
 			console.error(e.message);
 			return { status: false, error: e.message };
@@ -63,15 +61,15 @@ class OpenAIBackend {
 				: 'Por favor, transcribe el siguiente texto en Español';
 
 		try {
-			const response = (await this.#openai.createTranscription(
-				//@ts-ignore
-				blob,
-				whisper,
+			const body = {
+				file,
+				model: whisper,
+				language: lang,
 				prompt,
-				'json',
-				0.2,
-				lang
-			)) as IResponse;
+				response_format: 'json',
+				temperature: 0.2
+			};
+			const response = await this.#openai.audio.transcriptions.create(body);
 
 			return { status: true, data: response.data };
 		} catch (e) {
@@ -95,14 +93,14 @@ class OpenAIBackend {
 
 		let headers = {
 			Authorization: `Bearer ${process.env.OPEN_AI_KEY}`,
-			...form.getHeaders(),
+			...form.getHeaders()
 		};
 
 		try {
 			const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
 				method: 'POST',
 				body: form,
-				headers,
+				headers
 			});
 			const data = await response.json();
 
