@@ -10,7 +10,7 @@ export class Vector {
 		try {
 			await client.init({
 				apiKey: process.env.PINECONE_API_KEY,
-				environment: process.env.PINECONE_ENVIRONMENT,
+				environment: process.env.PINECONE_ENVIRONMENT
 			});
 		} catch (e) {
 			console.error(e);
@@ -63,7 +63,7 @@ export class Vector {
 
 		const pineconeIndex = client.Index(process.env.PINECONE_INDEX_NAME);
 		const dbConfig = {
-			pineconeIndex,
+			pineconeIndex
 			// namespace: 'chats', //check namespaces
 		};
 

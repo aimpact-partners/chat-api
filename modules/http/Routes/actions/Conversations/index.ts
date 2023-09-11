@@ -85,10 +85,11 @@ export class ConversationsRoutes {
 				return done({ status: false, error: 'Error saving agent response' });
 			}
 
+			// update synthesis on conversation
 			const data = { id, synthesis: stage?.synthesis };
 			await Conversation.publish(data);
 
-			// setea last interaction on conversation
+			// set last interaction on conversation
 			await Conversation.setLastInteractions(id, 4);
 
 			done({ status: true });
