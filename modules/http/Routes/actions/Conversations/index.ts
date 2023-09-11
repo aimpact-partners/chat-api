@@ -37,6 +37,15 @@ export class ConversationsRoutes {
 			return res.status(400).json({ status: false, error: 'Parameter message is required' });
 		}
 
+		const done = (specs: { status: boolean; error?: string; synthesis?: string }) => {
+			const { status, error, synthesis } = specs;
+			res.write('ÿ');
+			res.write(JSON.stringify({ status, error, synthesis }));
+			res.end();
+		};
+
+		let answer = '';
+		let stage: { synthesis: string };
 		try {
 			// Store the user message as soon as it arrives
 			const userMessage = { content: message, role: 'user' };
@@ -50,11 +59,9 @@ export class ConversationsRoutes {
 
 			const { iterator, error } = await Agents.sendMessage(id, message);
 			if (error) {
-				return res.status(500).json({ status: false, error: error });
+				return done({ status: false, error: error });
 			}
 
-			let answer = '';
-			let stage: { synthesis: string };
 			for await (const part of iterator) {
 				const { chunk } = part;
 				answer += chunk ? chunk : '';
@@ -65,15 +72,17 @@ export class ConversationsRoutes {
 					break;
 				}
 			}
+		} catch (exc) {
+			console.error(exc);
+			return done({ status: false, error: 'Error processing agent response' });
+		}
 
-			res.write('ÿ');
-			res.write(JSON.stringify({ status: true }));
-
+		try {
 			// set agent message on firestore
 			const agentMessage = { content: answer, role: 'system' };
-			response = await Conversation.sendMessage(id, agentMessage);
+			const response = await Conversation.sendMessage(id, agentMessage);
 			if (response.error) {
-				return res.status(400).json({ status: false, error: response.error });
+				return done({ status: false, error: 'Error saving agent response' });
 			}
 
 			const data = { id, synthesis: stage?.synthesis };
@@ -82,9 +91,9 @@ export class ConversationsRoutes {
 			// setea last interaction on conversation
 			await Conversation.setLastInteractions(id, 4);
 
-			res.end();
-		} catch (e) {
-			res.json({ status: false, error: e.message });
+			done({ status: true });
+		} catch (exc) {
+			return done({ status: false, error: 'Error saving agent response' });
 		}
 	}
 }
