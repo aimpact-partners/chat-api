@@ -10,6 +10,7 @@ export /*bundle*/ interface IConversation {
 	name: string;
 	metadata: {};
 	parent: string;
+	language: { default: string };
 	user: { id: string; name: string };
 	usage: { completionTokens: number; promptTokens: number; totalTokens: number };
 }
