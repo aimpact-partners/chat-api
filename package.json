@@ -47,6 +47,17 @@
 				}
 			},
 			{
+				"name": "web-testing",
+				"environment": "testing",
+				"platform": "web",
+				"backend": "backend-testing",
+				"ports": {
+					"bundles": 3385,
+					"http": 3586,
+					"inspect": 3287
+				}
+			},
+			{
 				"name": "backend",
 				"environment": "development",
 				"platform": "backend",
@@ -58,10 +69,9 @@
 				}
 			},
 			{
-				"name": "node",
+				"name": "http",
 				"environment": "development",
 				"platform": "node",
-				"backend": "backend",
 				"ports": {
 					"bundles": 6583,
 					"http": 6584,
@@ -80,10 +90,9 @@
 				}
 			},
 			{
-				"name": "node-testing",
+				"name": "http-testing",
 				"environment": "testing",
 				"platform": "node",
-				"backend": "backend",
 				"ports": {
 					"bundles": 6593,
 					"http": 6594,
