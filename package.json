@@ -72,7 +72,7 @@
 				"name": "backend-testing",
 				"environment": "testing",
 				"platform": "backend",
-				"host": "https://chat-api-ws-rb5caohzgq-uc.a.run.app",
+				"host": "https://chat-api-ws-skvkre4apq-uc.a.run.app",
 				"ports": {
 					"bundles": 6590,
 					"http": 6591,
