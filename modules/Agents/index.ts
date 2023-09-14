@@ -28,14 +28,6 @@ export /*bundle*/ class Agents {
 			return { status: false, error: 'conversationId not valid' };
 		}
 
-		if (!conversation.language) {
-			return { status: false, error: 'the conversation has no established language' };
-		}
-		const language = conversation.language.default;
-		if (!language) {
-			return { status: false, error: 'the conversation has no established default language' };
-		}
-
 		const { user, metadata, synthesis, message: msgs } = conversation;
 		const messages = { last: msgs ? msgs.lastTwo : [], count: msgs ? msgs.count : 0 };
 
@@ -47,7 +39,7 @@ export /*bundle*/ class Agents {
 		};
 
 		// Prepare the parameters
-		const body = JSON.stringify({ metadata, language, user, messages, synthesis, prompt });
+		const body = JSON.stringify({ metadata, user, messages, synthesis, prompt });
 
 		// Fetch the agent
 		let response: any;
