@@ -47,17 +47,6 @@
 				}
 			},
 			{
-				"name": "web-testing",
-				"environment": "testing",
-				"platform": "web",
-				"backend": "backend-testing",
-				"ports": {
-					"bundles": 3385,
-					"http": 3586,
-					"inspect": 3287
-				}
-			},
-			{
 				"name": "backend",
 				"environment": "development",
 				"platform": "backend",
@@ -76,6 +65,17 @@
 					"bundles": 6583,
 					"http": 6584,
 					"inspect": 6585
+				}
+			},
+			{
+				"name": "web-testing",
+				"environment": "testing",
+				"platform": "web",
+				"backend": "backend-testing",
+				"ports": {
+					"bundles": 3385,
+					"http": 3586,
+					"inspect": 3287
 				}
 			},
 			{
