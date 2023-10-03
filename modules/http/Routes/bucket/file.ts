@@ -9,7 +9,7 @@ export class FilestoreFile {
 	#storageBucket = process.env.STORAGEBUCKET;
 
 	constructor() {
-		const file = join(__dirname, './credentials.json');
+		const file = join(__dirname, './credentials/gcloud.json');
 		const specs: { keyFilename? } = {};
 		specs.keyFilename = fs.existsSync(file) ? file : void 0;
 		this.storage = new Storage(specs);
@@ -19,6 +19,7 @@ export class FilestoreFile {
 		const file = this.storage.bucket(this.#storageBucket).file(destination);
 		return file;
 	}
+
 	async upload(path: string, destination: string): Promise<string> {
 		await this.storage.bucket(this.#storageBucket).upload(path, { destination });
 		return destination;

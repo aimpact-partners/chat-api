@@ -37,8 +37,8 @@ function processRequest(req, res): Promise<any> {
 		file.on('data', data => (size += data.length));
 		const pass = new stream.PassThrough();
 		file.pipe(pass);
-		oaiBackend.transcriptionStream(pass, 'es').then(response => transcription.resolve(response));
 		files.push({ file: pass, info });
+		oaiBackend.transcriptionStream(file, 'es').then(response => transcription.resolve(response));
 	});
 	bb.on('finish', async () => {
 		const [item] = files;
@@ -47,15 +47,16 @@ function processRequest(req, res): Promise<any> {
 			info: { filename, mimeType }
 		} = item;
 
-		const fileManager = new FilestoreFile();
-
 		const { project, container, userId } = fields;
 		const name = `${generateCustomName(filename)}${getExtension(mimeType)}`;
 		let dest = join(project, userId, container, name);
 		dest = dest.replace(/\\/g, '/');
 		const response = await transcription;
 
-		file.pipe(join(process.env.STORAGEBUCKET, dest));
+		const fileManager = new FilestoreFile();
+		const bucketFile = fileManager.getFile(dest);
+		const write = bucketFile.createWriteStream();
+		file.pipe(write);
 
 		promise.resolve({ transcription: response, fields, file: { name, dest, mimeType } });
 	});
