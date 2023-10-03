@@ -7,6 +7,8 @@ import { generateCustomName } from '../../utils/generate-name';
 import { PendingPromise } from '@beyond-js/kernel/core';
 import { Agents } from '@aimpact/chat-api/agents';
 import { OpenAIBackend } from '@aimpact/chat-api/backend-openai';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 const oaiBackend = new OpenAIBackend();
 
@@ -46,11 +48,14 @@ function processRequest(req, res): Promise<any> {
 		} = item;
 
 		const fileManager = new FilestoreFile();
+
 		const { project, container, userId } = fields;
 		const name = `${generateCustomName(filename)}${getExtension(mimeType)}`;
 		let dest = join(project, userId, container, name);
 		dest = dest.replace(/\\/g, '/');
 		const response = await transcription;
+
+		file.pipe(join(process.env.STORAGEBUCKET, dest));
 
 		promise.resolve({ transcription: response, fields, file: { name, dest, mimeType } });
 	});
