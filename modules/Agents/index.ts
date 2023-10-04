@@ -47,7 +47,7 @@ export /*bundle*/ class Agents {
 		};
 
 		// Prepare the parameters
-		const body = JSON.stringify({ metadata, user, messages, synthesis, prompt });
+		const body = JSON.stringify({ metadata, language, user, messages, synthesis, prompt });
 
 		// Fetch the agent
 		let response: any;
