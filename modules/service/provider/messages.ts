@@ -1,6 +1,6 @@
 import type { Server } from 'socket.io';
-import { db } from '@aimpact/chat-api/firestore';
 import * as admin from 'firebase-admin';
+import { db } from '@aimpact/chat-api/firestore';
 
 interface IMessage {
 	id: string;
@@ -35,7 +35,7 @@ export /*actions*/ /*bundle*/ class MessageProvider {
 			if (!data.chatId) {
 				throw new Error('chatId is required');
 			}
-			const chatProvider = db.collection('Chat');
+			const chatProvider = db.collection('Conversations');
 			const chat = await chatProvider.doc(data.chatId);
 			await chat
 				.collection(this.table)
