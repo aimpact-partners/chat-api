@@ -42,7 +42,7 @@ export /*actions*/ /*bundle*/ class MessageProvider {
 				.doc(data.id)
 				.set({
 					...data,
-					timestamp: admin.firestore.FieldValue.serverTimestamp(),
+					timestamp: admin.firestore.FieldValue.serverTimestamp()
 				});
 
 			const savedMessage = await chat.collection(this.table).doc(data.id).get();

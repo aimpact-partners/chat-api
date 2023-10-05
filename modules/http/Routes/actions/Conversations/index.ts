@@ -37,15 +37,16 @@ export class ConversationsRoutes {
 			return res.status(400).json({ status: false, error: 'Parameter message is required' });
 		}
 
-		const done = (specs: { status: boolean; error?: string; synthesis?: string }) => {
-			const { status, error, synthesis } = specs;
+		const done = (specs: { status: boolean; error?: string; synthesis?: string; metadata?: object }) => {
+			const { status, error, synthesis, metadata } = specs;
 			res.write('ÿ');
-			res.write(JSON.stringify({ status, error, synthesis }));
+			res.write(JSON.stringify({ status, error, synthesis, metadata }));
 			res.end();
 		};
 
 		let answer = '';
 		let stage: { synthesis: string };
+		const metadata = { user: {}, system: {} };
 		try {
 			// Store the user message as soon as it arrives
 			const userMessage = { content: message, role: 'user' };
@@ -53,6 +54,7 @@ export class ConversationsRoutes {
 			if (response.error) {
 				return res.status(400).json({ status: false, error: response.error });
 			}
+			metadata.user = { id: response.data.id };
 
 			res.setHeader('Content-Type', 'text/plain');
 			res.setHeader('Transfer-Encoding', 'chunked');
@@ -84,6 +86,7 @@ export class ConversationsRoutes {
 			if (response.error) {
 				return done({ status: false, error: 'Error saving agent response' });
 			}
+			metadata.system = { id: response.data.id };
 
 			// update synthesis on conversation
 			const data = { id, synthesis: stage?.synthesis };
@@ -92,7 +95,7 @@ export class ConversationsRoutes {
 			// set last interaction on conversation
 			await Conversation.setLastInteractions(id, 4);
 
-			done({ status: true });
+			done({ status: true, metadata });
 		} catch (exc) {
 			return done({ status: false, error: 'Error saving agent response' });
 		}
