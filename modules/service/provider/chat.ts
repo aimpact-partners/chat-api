@@ -1,8 +1,7 @@
 import type { Server } from 'socket.io';
 import { db } from '@aimpact/chat-api/firestore';
 import { chatAPI } from '@aimpact/chat-api/backend/api';
-import { ChatMessages } from './messages';
-import { FirestoreService } from '../firestore/service';
+import { FirestoreService } from './firestore/service';
 
 interface IChat {
 	id: string;
@@ -18,7 +17,6 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 	socket: Server;
 	private collection;
 	private table = 'Conversations';
-	#messages = new ChatMessages();
 	firestoreService: FirestoreService;
 
 	constructor(socket: Server) {
@@ -95,6 +93,7 @@ export /*actions*/ /*bundle*/ class ChatProvider {
 	}
 
 	async sendMessage(data) {
-		return this.#messages.publish(data);
+		console.error('Service Provider chat/sendMessage not available - please check trace');
+		// return this.#messages.publish(data);
 	}
 }

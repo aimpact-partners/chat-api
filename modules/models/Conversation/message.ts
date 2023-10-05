@@ -39,7 +39,7 @@ export class Message {
 
 			await conversation.update({ messages: { count } }, { merge: true });
 
-			return { status: true, data: { specs } };
+			return { status: true, data: specs };
 		} catch (e) {
 			console.error(e);
 			return { status: false, error: e.message };
