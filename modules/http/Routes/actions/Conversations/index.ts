@@ -46,15 +46,16 @@ export class ConversationsRoutes {
 
 		let answer = '';
 		let stage: { synthesis: string };
-		const metadata = { user: {}, system: {} };
+		const metadata = {};
+		// const metadata = { user: {}, system: {} };
 		try {
 			// Store the user message as soon as it arrives
-			const userMessage = { content: message, role: 'user' };
-			let response = await Conversation.sendMessage(id, userMessage);
-			if (response.error) {
-				return res.status(400).json({ status: false, error: response.error });
-			}
-			metadata.user = { id: response.data.id };
+			// const userMessage = { content: message, role: 'user' };
+			// let response = await Conversation.sendMessage(id, userMessage);
+			// if (response.error) {
+			// 	return res.status(400).json({ status: false, error: response.error });
+			// }
+			// metadata.user = { id: response.data.id };
 
 			res.setHeader('Content-Type', 'text/plain');
 			res.setHeader('Transfer-Encoding', 'chunked');
@@ -81,12 +82,12 @@ export class ConversationsRoutes {
 
 		try {
 			// set agent message on firestore
-			const agentMessage = { content: answer, role: 'system' };
-			const response = await Conversation.sendMessage(id, agentMessage);
-			if (response.error) {
-				return done({ status: false, error: 'Error saving agent response' });
-			}
-			metadata.system = { id: response.data.id };
+			// const agentMessage = { content: answer, role: 'system' };
+			// const response = await Conversation.sendMessage(id, agentMessage);
+			// if (response.error) {
+			// 	return done({ status: false, error: 'Error saving agent response' });
+			// }
+			// metadata.system = { id: response.data.id };
 
 			// update synthesis on conversation
 			const data = { id, synthesis: stage?.synthesis };
