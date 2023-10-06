@@ -32,18 +32,14 @@ export /*actions*/ /*bundle*/ class MessageProvider {
 
 	async publish(data) {
 		try {
-			if (!data.chatId) {
-				throw new Error('chatId is required');
+			if (!data.conversationId) {
+				throw new Error('conversationId is required');
 			}
 			const chatProvider = db.collection('Conversations');
-			const chat = await chatProvider.doc(data.chatId);
-			await chat
-				.collection(this.table)
-				.doc(data.id)
-				.set({
-					...data,
-					timestamp: admin.firestore.FieldValue.serverTimestamp()
-				});
+			const chat = await chatProvider.doc(data.conversationId);
+
+			const specs = { ...data, timestamp: admin.firestore.FieldValue.serverTimestamp() };
+			await chat.collection(this.table).doc(data.id).set(specs);
 
 			const savedMessage = await chat.collection(this.table).doc(data.id).get();
 			const responseData = savedMessage.exists ? savedMessage.data() : undefined;
