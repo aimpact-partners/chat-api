@@ -27,12 +27,15 @@ export class ConversationsRoutes {
 	}
 
 	static async sendMessage(req: Request, res: Response) {
-		const { id } = req.params;
-		if (!id) {
+		const conversationId = req.params.id;
+		if (!conversationId) {
 			return res.status(400).json({ status: false, error: 'Parameter conversationId is required' });
 		}
 
-		const { message } = req.body;
+		const { message, id } = req.body;
+		if (!id) {
+			return res.status(400).json({ status: false, error: 'Parameter id is required' });
+		}
 		if (!message) {
 			return res.status(400).json({ status: false, error: 'Parameter message is required' });
 		}
@@ -50,17 +53,17 @@ export class ConversationsRoutes {
 		// const metadata = { user: {}, system: {} };
 		try {
 			// Store the user message as soon as it arrives
-			// const userMessage = { content: message, role: 'user' };
-			// let response = await Conversation.sendMessage(id, userMessage);
-			// if (response.error) {
-			// 	return res.status(400).json({ status: false, error: response.error });
-			// }
+			const userMessage = { content: message, role: 'user' };
+			let response = await Conversation.saveMessage(conversationId, userMessage, id);
+			if (response.error) {
+				return res.status(400).json({ status: false, error: response.error });
+			}
 			// metadata.user = { id: response.data.id };
 
 			res.setHeader('Content-Type', 'text/plain');
 			res.setHeader('Transfer-Encoding', 'chunked');
 
-			const { iterator, error } = await Agents.sendMessage(id, message);
+			const { iterator, error } = await Agents.sendMessage(conversationId, message);
 			if (error) {
 				return done({ status: false, error: error });
 			}
@@ -83,18 +86,18 @@ export class ConversationsRoutes {
 		try {
 			// set agent message on firestore
 			// const agentMessage = { content: answer, role: 'system' };
-			// const response = await Conversation.sendMessage(id, agentMessage);
+			// const response = await Conversation.saveMessage(conversationId, agentMessage);
 			// if (response.error) {
 			// 	return done({ status: false, error: 'Error saving agent response' });
 			// }
 			// metadata.system = { id: response.data.id };
 
 			// update synthesis on conversation
-			const data = { id, synthesis: stage?.synthesis };
+			const data = { id: conversationId, synthesis: stage?.synthesis };
 			await Conversation.publish(data);
 
 			// set last interaction on conversation
-			await Conversation.setLastInteractions(id, 4);
+			await Conversation.setLastInteractions(conversationId, 4);
 
 			done({ status: true, metadata });
 		} catch (exc) {

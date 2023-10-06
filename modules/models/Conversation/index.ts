@@ -56,8 +56,8 @@ export /*bundle*/ class Conversation {
 	 * @param message
 	 * @returns
 	 */
-	static async sendMessage(id: string, message: IMessage) {
-		return Message.publish(id, message);
+	static async saveMessage(conversationId: string, message: IMessage, id: string) {
+		return Message.publish(conversationId, message, id);
 	}
 
 	/**

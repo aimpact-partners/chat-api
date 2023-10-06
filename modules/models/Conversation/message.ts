@@ -8,7 +8,7 @@ export interface IMessage {
 }
 
 export class Message {
-	static async publish(conversationId: string, message: IMessage) {
+	static async publish(conversationId: string, message: IMessage, messageId?: string) {
 		try {
 			if (!conversationId) {
 				throw new Error('conversationId is required');
@@ -24,8 +24,7 @@ export class Message {
 				throw new Error('Conversation not exists');
 			}
 
-			const id = uuidv4();
-
+			const id = messageId ? messageId : uuidv4();
 			const specs = {
 				id,
 				...message,
