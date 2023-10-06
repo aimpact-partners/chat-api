@@ -83,8 +83,8 @@ export /*bundle*/ const uploader = async function (req, res) {
 		 * remover el guardado desde el cliente
 		 * agregar captura de la respuesta de manera incremental en el cliente
 		 */
-		const { chatId } = fields;
-		const { iterator, error } = await Agents.sendMessage(chatId, transcription.data?.text);
+		const { conversationId } = fields;
+		const { iterator, error } = await Agents.sendMessage(conversationId, transcription.data?.text);
 		if (error) {
 			return res.status(500).json({ status: false, error });
 		}
