@@ -36,7 +36,16 @@ export /*bundle*/ class Conversation {
 
 		if (messages) {
 			const messagesSnapshot = await conversationDoc.collection('messages').orderBy('timestamp').get();
-			conversationData.messages = messagesSnapshot.docs.map(doc => doc.data());
+			conversationData.messages = messagesSnapshot.docs.map(doc => {
+				const data = doc.data();
+
+				if (typeof data.timestamp === 'object') {
+					const dateObject = data.timestamp.toDate();
+					data.timestamp = dateObject.getTime();
+				}
+
+				return data;
+			});
 		}
 
 		return conversationData;

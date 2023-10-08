@@ -47,7 +47,16 @@ export class Message {
 
 			await conversation.update({ messages: { count } }, { merge: true });
 
-			return { status: true, data: specs };
+			const dataCollection = conversation.collection('messages').doc(id);
+			const dataDoc = await dataCollection.get();
+			const dataMessage = dataDoc.data();
+
+			if (typeof dataMessage.timestamp === 'object') {
+				const dateObject = dataMessage.timestamp.toDate();
+				dataMessage.timestamp = dateObject.getTime();
+			}
+
+			return { status: true, data: dataMessage };
 		} catch (e) {
 			console.error(e);
 			return { status: false, error: e.message };
