@@ -1,5 +1,4 @@
 import { v4 as uuidv4 } from 'uuid';
-import type { firestore } from 'firebase-admin';
 import { db } from '@aimpact/chat-api/firestore';
 import type { IMessage } from './message';
 import { Message } from './message';
@@ -10,23 +9,35 @@ export /*bundle*/ interface IConversation {
 	name: string;
 	metadata: {};
 	parent: string;
+	children: string;
 	language: { default: string };
 	user: { id: string; name: string };
 	usage: { completionTokens: number; promptTokens: number; totalTokens: number };
+	messages?: {};
 }
 
 export /*bundle*/ class Conversation {
-	private collection: firestore.CollectionReference;
-	table = 'Conversations';
-
-	static async get(id: string) {
+	static async get(id: string, uid: string, messages: boolean = false) {
 		if (!id) {
 			throw new Error('id is required');
 		}
 
 		const conversationDoc = await db.collection('Conversations').doc(id);
 		const doc = await conversationDoc.get();
+		if (!doc.exists) {
+			return { error: 'Conversation not exists' };
+		}
+
 		const conversationData: IConversation = doc.data();
+
+		// if (conversationData.user.id !== uid) {
+		// 	return { error: 'The user does not have access permissions on this conversation' };
+		// }
+
+		if (messages) {
+			const messagesSnapshot = await conversationDoc.collection('messages').orderBy('timestamp').get();
+			conversationData.messages = messagesSnapshot.docs.map(doc => doc.data());
+		}
 
 		return conversationData;
 	}
@@ -56,8 +67,8 @@ export /*bundle*/ class Conversation {
 	 * @param message
 	 * @returns
 	 */
-	static async saveMessage(conversationId: string, message: IMessage, id: string) {
-		return Message.publish(conversationId, message, id);
+	static async saveMessage(conversationId: string, params: IMessage) {
+		return Message.publish(conversationId, params);
 	}
 
 	/**

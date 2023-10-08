@@ -1,4 +1,5 @@
 import type { Request, Response, Application } from 'express';
+import type { IAuthenticatedRequest } from '@aimpact/chat-api/middleware';
 import { Conversation, IConversation } from '@aimpact/chat-api/models/conversation';
 import { Agents } from '@aimpact/chat-api/agents';
 import { UserMiddlewareHandler } from '@aimpact/chat-api/middleware';
@@ -12,8 +13,23 @@ export class ConversationsRoutes {
 			});
 		});
 
+		app.get('/conversations/:id', UserMiddlewareHandler.validate, ConversationsRoutes.get);
 		app.post('/conversations', UserMiddlewareHandler.validate, ConversationsRoutes.publish);
 		app.post('/conversations/:id/messages', UserMiddlewareHandler.validate, ConversationsRoutes.sendMessage);
+	}
+
+	static async get(req: IAuthenticatedRequest, res: Response) {
+		try {
+			const { id } = req.params;
+			const { uid } = req.user;
+
+			// true for get messages
+			const data = await Conversation.get(id, uid, true);
+			return res.json({ status: true, data });
+		} catch (e) {
+			console.error(e);
+			res.json({ status: false, error: e.message });
+		}
 	}
 
 	static async publish(req: Request, res: Response) {
@@ -22,6 +38,7 @@ export class ConversationsRoutes {
 			const data = await Conversation.publish(params);
 			res.json({ status: true, data });
 		} catch (e) {
+			console.error(e);
 			res.json({ status: false, error: e.message });
 		}
 	}
@@ -49,19 +66,21 @@ export class ConversationsRoutes {
 
 		let answer = '';
 		let stage: { synthesis: string };
-		const metadata = {};
-		// const metadata = { user: {}, system: {} };
+		const metadata = { user: {}, system: {} };
 		try {
 			// Store the user message as soon as it arrives
-			const userMessage = { content: message, role: 'user' };
-			let response = await Conversation.saveMessage(conversationId, userMessage, id);
+			const userMessage = { id, content: message, role: 'user' };
+			let response = await Conversation.saveMessage(conversationId, userMessage);
 			if (response.error) {
 				return res.status(400).json({ status: false, error: response.error });
 			}
-			// metadata.user = { id: response.data.id };
+			metadata.user = { id: response.data.id };
 
 			res.setHeader('Content-Type', 'text/plain');
 			res.setHeader('Transfer-Encoding', 'chunked');
+
+			// response the userMessage Id
+			res.write('😸' + response.data.id + '🖋️');
 
 			const { iterator, error } = await Agents.sendMessage(conversationId, message);
 			if (error) {
@@ -85,12 +104,12 @@ export class ConversationsRoutes {
 
 		try {
 			// set agent message on firestore
-			// const agentMessage = { content: answer, role: 'system' };
-			// const response = await Conversation.saveMessage(conversationId, agentMessage);
-			// if (response.error) {
-			// 	return done({ status: false, error: 'Error saving agent response' });
-			// }
-			// metadata.system = { id: response.data.id };
+			const agentMessage = { content: answer, role: 'system' };
+			const response = await Conversation.saveMessage(conversationId, agentMessage);
+			if (response.error) {
+				return done({ status: false, error: 'Error saving agent response' });
+			}
+			metadata.system = { id: response.data.id };
 
 			// update synthesis on conversation
 			const data = { id: conversationId, synthesis: stage?.synthesis };
@@ -102,6 +121,34 @@ export class ConversationsRoutes {
 			done({ status: true, metadata });
 		} catch (exc) {
 			return done({ status: false, error: 'Error saving agent response' });
+		}
+	}
+
+	static async _sendMessage(req: Request, res: Response) {
+		const conversationId = req.params.id;
+		if (!conversationId) {
+			return res.status(400).json({ status: false, error: 'conversationId is required' });
+		}
+
+		const { id, message, role } = req.body;
+		if (!message) {
+			return res.status(400).json({ status: false, error: 'Parameter message is required' });
+		}
+		if (!role) {
+			return res.status(400).json({ status: false, error: 'Parameter role is required' });
+		}
+
+		try {
+			const specs = { id, content: message, role };
+			let response = await Conversation.saveMessage(conversationId, specs);
+			if (response.error) {
+				return res.status(400).json({ status: false, error: response.error });
+			}
+
+			return res.json({ status: true, data: response.data });
+		} catch (exc) {
+			console.error(exc);
+			return res.json({ status: false, error: 'Error store message' });
 		}
 	}
 }

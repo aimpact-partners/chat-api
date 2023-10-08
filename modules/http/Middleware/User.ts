@@ -1,8 +1,14 @@
 import type { Request, Response } from 'express';
 import * as admin from 'firebase-admin';
 
+interface IUser {
+	uid: string;
+	displayName: string;
+	email: string;
+	photoURL: string;
+}
 interface /*bundle*/ IAuthenticatedRequest extends Request {
-	user?: any;
+	user?: IUser;
 }
 
 export /*bundle*/ class UserMiddlewareHandler {

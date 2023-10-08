@@ -3,18 +3,23 @@ import * as admin from 'firebase-admin';
 import { db } from '@aimpact/chat-api/firestore';
 
 export interface IMessage {
+	id: string;
 	role: string;
 	content: string;
+	timestamp?: number;
 }
 
 export class Message {
-	static async publish(conversationId: string, message: IMessage, messageId?: string) {
+	static async publish(conversationId: string, params: IMessage) {
 		try {
 			if (!conversationId) {
 				throw new Error('conversationId is required');
 			}
-			if (!message.content) {
+			if (!params.content) {
 				throw new Error('message content is required');
+			}
+			if (!params.role) {
+				throw new Error('role is required');
 			}
 
 			const collection = db.collection('Conversations');
@@ -24,12 +29,16 @@ export class Message {
 				throw new Error('Conversation not exists');
 			}
 
-			const id = messageId ? messageId : uuidv4();
+			const id = params.id ? params.id : uuidv4();
+			delete params.id;
+
+			const timestamp = params.timestamp ? params.timestamp : admin.firestore.FieldValue.serverTimestamp();
+
 			const specs = {
 				id,
-				...message,
+				...params,
 				conversationId: conversationId,
-				timestamp: admin.firestore.FieldValue.serverTimestamp()
+				timestamp
 			};
 			await conversation.collection('messages').doc(id).set(specs);
 
