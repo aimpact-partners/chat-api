@@ -15,6 +15,11 @@ export class ConversationMessagesRoutes {
 		});
 
 		app.post('/conversations/:id/messages', UserMiddlewareHandler.validate, ConversationMessagesRoutes.sendMessage);
+		app.post(
+			'/conversations/:id/messages/tools',
+			UserMiddlewareHandler.validate,
+			ConversationMessagesRoutes.sendMessageTools
+		);
 	}
 
 	static async sendMessage(req: IAuthenticatedRequest, res: Response) {
@@ -30,5 +35,19 @@ export class ConversationMessagesRoutes {
 		const { user } = req;
 		const conversation = await Conversation.get(conversationId, user.uid);
 		return processAudio(req, res, { user, conversation });
+	}
+	static async sendMessageTools(req: IAuthenticatedRequest, res: Response) {
+		const conversationId = req.params.id;
+		if (!conversationId) {
+			return res.status(400).json({ status: false, error: 'Parameter conversationId is required' });
+		}
+
+		if (req.headers['content-type'] === 'application/json') {
+			return processText(req, res, { tools: true });
+		}
+
+		const { user } = req;
+		const conversation = await Conversation.get(conversationId, user.uid);
+		return processAudio(req, res, { user, conversation, tools: true });
 	}
 }

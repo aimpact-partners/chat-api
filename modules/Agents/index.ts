@@ -15,7 +15,7 @@ interface ISendMessageResponse {
 }
 
 export /*bundle*/ class Agents {
-	static async sendMessage(conversationId: string, prompt: string): Promise<ISendMessageResponse> {
+	static async sendMessage(conversationId: string, prompt: string, specs): Promise<ISendMessageResponse> {
 		let conversation: any;
 		try {
 			conversation = await Conversation.get(conversationId);
@@ -39,7 +39,7 @@ export /*bundle*/ class Agents {
 		const { user, metadata, synthesis, message: msgs } = conversation;
 		const messages = { last: msgs ? msgs.lastTwo : [], count: msgs ? msgs.count : 0 };
 
-		const url = AGENT_API_URL;
+		const url = specs.tools ? `${AGENT_API_URL}/tools` : AGENT_API_URL;
 		const method = 'POST';
 		const headers = {
 			'Content-Type': 'application/json',

@@ -34,12 +34,11 @@ interface IFileSpecs {
 }
 
 function processTranscription(req, res, specs): Promise<any> {
+	const { user, conversation } = specs;
 	const promise = new PendingPromise();
 	const fields: IFileSpecs = {};
 	const bb = Busboy({ headers: req.headers });
 	const files = [];
-
-	const { user, conversation } = specs;
 
 	let transcription = new PendingPromise();
 	bb.on('field', (name, val) => (fields[name] = val));
@@ -104,7 +103,7 @@ export const processAudio = async function (req, res, specs) {
 		}
 		const user = response.data;
 
-		const { iterator, error } = await Agents.sendMessage(conversationId, transcription.data?.text);
+		const { iterator, error } = await Agents.sendMessage(conversationId, transcription.data?.text, specs);
 		if (error) {
 			return res.status(500).json({ status: false, error });
 		}
