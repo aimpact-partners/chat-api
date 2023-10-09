@@ -1,7 +1,7 @@
 import type { Response, Application } from 'express';
+import type { IAuthenticatedRequest } from '@aimpact/chat-api/middleware';
 import { UserMiddlewareHandler } from '@aimpact/chat-api/middleware';
 import { Conversation } from '@aimpact/chat-api/models/conversation';
-import type { IAuthenticatedRequest } from '@aimpact/chat-api/middleware';
 import { processText } from './text';
 import { processAudio } from './audio';
 
@@ -36,6 +36,7 @@ export class ConversationMessagesRoutes {
 		const conversation = await Conversation.get(conversationId, user.uid);
 		return processAudio(req, res, { user, conversation });
 	}
+
 	static async sendMessageTools(req: IAuthenticatedRequest, res: Response) {
 		const conversationId = req.params.id;
 		if (!conversationId) {
