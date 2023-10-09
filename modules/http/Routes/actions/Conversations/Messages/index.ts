@@ -48,7 +48,14 @@ export class ConversationMessagesRoutes {
 		if (!conversationId) {
 			return res.status(400).json({ status: false, error: 'Parameter conversationId is required' });
 		}
-		return processText(req, res, {});
+
+		if (req.headers['content-type'] === 'application/json') {
+			return processText(req, res, {});
+		}
+
+		const { user } = req;
+		const conversation = await Conversation.get(conversationId, user.uid);
+		return processAudio(req, res, { user, conversation });
 	}
 
 	static async sendAudioTools(req: IAuthenticatedRequest, res: Response) {
