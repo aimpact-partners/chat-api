@@ -7,10 +7,23 @@ import { generateCustomName } from '../../utils/generate-name';
 import { PendingPromise } from '@beyond-js/kernel/core';
 import { Agents } from '@aimpact/chat-api/agents';
 import { OpenAIBackend } from '@aimpact/chat-api/backend-openai';
+import { Conversation } from '@aimpact/chat-api/models/conversation';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
 const oaiBackend = new OpenAIBackend();
+
+export interface IMessage {
+	id: string;
+	role: string;
+	content: string;
+	timestamp?: number;
+}
+interface IMetadata {
+	user: IMessage;
+	system: IMessage;
+	error?: string;
+}
 
 interface IFileSpecs {
 	project?: string;
@@ -79,7 +92,6 @@ export /*bundle*/ const uploaderStream = async function (req, res) {
 
 		res.setHeader('Content-Type', 'text/plain');
 		res.setHeader('Transfer-Encoding', 'chunked');
-
 		const done = (specs: { status: boolean; error?: string; synthesis?: string; metadata?: object }) => {
 			const { status, error, synthesis, metadata } = specs;
 			res.write('ÿ');
@@ -93,7 +105,17 @@ export /*bundle*/ const uploaderStream = async function (req, res) {
 		 * remover el guardado desde el cliente
 		 * agregar captura de la respuesta de manera incremental en el cliente
 		 */
-		const { conversationId } = fields;
+		const { conversationId, id, timestamp, systemId } = fields;
+
+		const metadata: IMetadata = {};
+
+		const userMessage = { id, content: transcription.data?.text, role: 'user', timestamp };
+		let response = await Conversation.saveMessage(conversationId, userMessage);
+		if (response.error) {
+			return res.status(500).json({ status: false, error: `Error storing user message: ${response.error}` });
+		}
+		metadata.user = response.data;
+
 		const { iterator, error } = await Agents.sendMessage(conversationId, transcription.data?.text);
 		if (error) {
 			return res.status(500).json({ status: false, error });
@@ -112,19 +134,13 @@ export /*bundle*/ const uploaderStream = async function (req, res) {
 			}
 		}
 
-		const metadata = { transcription: transcription.data.text, output: answer };
+		// const metadata = { transcription: transcription.data.text, output: answer };
+
+		const systemMessage = { id: systemId, content: answer, role: 'system' };
+		response = await Conversation.saveMessage(conversationId, systemMessage);
+		response.error ? (metadata.error = response.error) : (metadata.system = response.data);
 
 		return done({ status: true, metadata });
-
-		return res.json({
-			status: true,
-			data: {
-				file: file.dest,
-				transcription: transcription.data.text,
-				output: answer,
-				message: 'File uploaded successfully'
-			}
-		});
 	} catch (error) {
 		console.error(error);
 		res.json({
