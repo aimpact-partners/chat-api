@@ -1,8 +1,9 @@
 import type { Request, Response, Application } from 'express';
+import { Agents } from '@aimpact/chat-api/agents';
+import { uploaderStream } from '../Uploader/stream';
+import { UserMiddlewareHandler } from '@aimpact/chat-api/middleware';
 import type { IAuthenticatedRequest } from '@aimpact/chat-api/middleware';
 import { Conversation, IConversation } from '@aimpact/chat-api/models/conversation';
-import { Agents } from '@aimpact/chat-api/agents';
-import { UserMiddlewareHandler } from '@aimpact/chat-api/middleware';
 
 export class ConversationsRoutes {
 	static setup(app: Application) {
@@ -50,7 +51,19 @@ export class ConversationsRoutes {
 			return res.status(400).json({ status: false, error: 'Parameter conversationId is required' });
 		}
 
-		const { id, systemId, content, timestamp } = req.body;
+		if (req.headers['content-type'] === 'application/json') {
+			return ConversationsRoutes._textMessage(req, res);
+		}
+		return uploaderStream(req, res);
+	}
+
+	static async _textMessage(req: Request, res: Response) {
+		const conversationId = req.params.id;
+		if (!conversationId) {
+			return res.status(400).json({ status: false, error: 'Parameter conversationId is required' });
+		}
+
+		const { id, systemId, content } = req.body;
 		if (!id) {
 			return res.status(400).json({ status: false, error: 'Parameter id is required' });
 		}
@@ -73,7 +86,7 @@ export class ConversationsRoutes {
 		let stage: { synthesis: string };
 		try {
 			// Store the user message as soon as it arrives
-			const userMessage = { id, content, role: 'user', timestamp };
+			const userMessage = { id, content, role: 'user' };
 			let response = await Conversation.saveMessage(conversationId, userMessage);
 			if (response.error) {
 				return res.status(400).json({ status: false, error: response.error });
@@ -122,34 +135,6 @@ export class ConversationsRoutes {
 			done({ status: true, user, system });
 		} catch (exc) {
 			return done({ status: false, error: 'Error saving agent response' });
-		}
-	}
-
-	static async _sendMessage(req: Request, res: Response) {
-		const conversationId = req.params.id;
-		if (!conversationId) {
-			return res.status(400).json({ status: false, error: 'conversationId is required' });
-		}
-
-		const { id, message, role } = req.body;
-		if (!message) {
-			return res.status(400).json({ status: false, error: 'Parameter message is required' });
-		}
-		if (!role) {
-			return res.status(400).json({ status: false, error: 'Parameter role is required' });
-		}
-
-		try {
-			const specs = { id, content: message, role };
-			let response = await Conversation.saveMessage(conversationId, specs);
-			if (response.error) {
-				return res.status(400).json({ status: false, error: response.error });
-			}
-
-			return res.json({ status: true, data: response.data });
-		} catch (exc) {
-			console.error(exc);
-			return res.json({ status: false, error: 'Error store message' });
 		}
 	}
 }
