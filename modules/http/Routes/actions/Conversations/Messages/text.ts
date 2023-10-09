@@ -62,6 +62,7 @@ export const processText = async (req: Request, res: Response, specs) => {
 		const agentMessage = { id: systemId, content: answer, role: 'system' };
 		const response = await Conversation.saveMessage(conversationId, agentMessage);
 		if (response.error) {
+			console.error('Error saving agent response:', response.error);
 			return done({ status: false, error: 'Error saving agent response' });
 		}
 		const system = response.data;

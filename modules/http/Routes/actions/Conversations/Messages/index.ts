@@ -29,7 +29,7 @@ export class ConversationMessagesRoutes {
 		}
 
 		if (req.headers['content-type'] === 'application/json') {
-			return processText(req, res);
+			return processText(req, res, {});
 		}
 
 		const { user } = req;
