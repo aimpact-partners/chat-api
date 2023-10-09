@@ -92,13 +92,14 @@ export /*bundle*/ const uploaderStream = async function (req, res) {
 
 		res.setHeader('Content-Type', 'text/plain');
 		res.setHeader('Transfer-Encoding', 'chunked');
-		const done = (specs: { status: boolean; error?: string; synthesis?: string; metadata?: object }) => {
-			const { status, error, synthesis, metadata } = specs;
+		const done = (specs: { status: boolean; error?: string; user?: object; system?: object }) => {
+			const { status, error, user, system } = specs;
 			res.write('ÿ');
-			res.write(JSON.stringify({ status, error, synthesis, metadata }));
+			res.write(JSON.stringify({ status, error, user, system }));
 			res.end();
 		};
 
+		let user;
 		const { conversationId, id, timestamp, systemId } = fields;
 
 		const userMessage = { id, content: transcription.data?.text, role: 'user', timestamp };
@@ -106,8 +107,7 @@ export /*bundle*/ const uploaderStream = async function (req, res) {
 		if (response.error) {
 			return res.status(500).json({ status: false, error: `Error storing user message: ${response.error}` });
 		}
-
-		const metadata: IMetadata = { user: response.data };
+		user = response.data;
 
 		const { iterator, error } = await Agents.sendMessage(conversationId, transcription.data?.text);
 		if (error) {
@@ -132,9 +132,9 @@ export /*bundle*/ const uploaderStream = async function (req, res) {
 		if (response.error) {
 			return done({ status: false, error: 'Error saving agent response' });
 		}
-		metadata.system = response.data;
+		const system = response.data;
 
-		return done({ status: true, metadata });
+		return done({ status: true, user, system });
 	} catch (error) {
 		console.error(error);
 		res.json({
