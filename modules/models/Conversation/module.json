@@ -1,6 +1,0 @@
-{
-	"name": "models/conversation",
-	"bundle": "ts",
-	"platforms": ["node", "backend"],
-	"files": "*"
-}

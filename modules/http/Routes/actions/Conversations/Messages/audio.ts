@@ -1,11 +1,11 @@
 import { join } from 'path';
 import * as stream from 'stream';
 import * as Busboy from 'busboy';
-import { FilestoreFile } from '../../bucket/file';
-import { getExtension } from '../../utils/get-extension';
-import { generateCustomName } from '../../utils/generate-name';
-import { PendingPromise } from '@beyond-js/kernel/core';
+import { FilestoreFile } from '../../../utils/bucket';
+import { getExtension } from '../../../utils/get-extension';
+import { generateCustomName } from '../../../utils/generate-name';
 import { Agents } from '@aimpact/chat-api/agents';
+import { PendingPromise } from '@beyond-js/kernel/core';
 import { OpenAIBackend } from '@aimpact/chat-api/backend-openai';
 import { Conversation } from '@aimpact/chat-api/models/conversation';
 import * as dotenv from 'dotenv';
@@ -33,15 +33,13 @@ interface IFileSpecs {
 	knowledgeBoxId?: string;
 }
 
-function isReadableStream(obj) {
-	return obj instanceof stream.Readable;
-}
-
-function processRequest(req, res): Promise<any> {
+function processTranscription(req, res, specs): Promise<any> {
 	const promise = new PendingPromise();
 	const fields: IFileSpecs = {};
 	const bb = Busboy({ headers: req.headers });
 	const files = [];
+
+	const { user, conversation } = specs;
 
 	let transcription = new PendingPromise();
 	bb.on('field', (name, val) => (fields[name] = val));
@@ -60,9 +58,8 @@ function processRequest(req, res): Promise<any> {
 			info: { filename, mimeType }
 		} = item;
 
-		const { project, container, userId } = fields;
 		const name = `${generateCustomName(filename)}${getExtension(mimeType)}`;
-		let dest = join(project, userId, container, name);
+		let dest = join(conversation.project, user.uid, 'audio', name);
 		dest = dest.replace(/\\/g, '/');
 		const response = await transcription;
 
@@ -74,15 +71,14 @@ function processRequest(req, res): Promise<any> {
 		promise.resolve({ transcription: response, fields, file: { name, dest, mimeType } });
 	});
 
-	// TODO @ftovar8 @jircdev validar el funcionamiento de estos metodos
-	process.env?.CLOUD_FUNCTION ? bb.end(req.rawBody) : req.pipe(bb);
+	req.pipe(bb);
 
 	return promise;
 }
 
-export /*bundle*/ const uploaderStream = async function (req, res) {
+export const processAudio = async function (req, res, specs) {
 	try {
-		const { transcription, fields, file } = await processRequest(req, res);
+		const { transcription, fields, file } = await processTranscription(req, res, specs);
 		if (!transcription.status) {
 			return res.json({
 				status: false,
@@ -99,7 +95,6 @@ export /*bundle*/ const uploaderStream = async function (req, res) {
 			res.end();
 		};
 
-		let user;
 		const { conversationId, id, timestamp, systemId } = fields;
 
 		const userMessage = { id, content: transcription.data?.text, role: 'user', timestamp };
@@ -107,7 +102,7 @@ export /*bundle*/ const uploaderStream = async function (req, res) {
 		if (response.error) {
 			return res.status(500).json({ status: false, error: `Error storing user message: ${response.error}` });
 		}
-		user = response.data;
+		const user = response.data;
 
 		const { iterator, error } = await Agents.sendMessage(conversationId, transcription.data?.text);
 		if (error) {
@@ -133,6 +128,13 @@ export /*bundle*/ const uploaderStream = async function (req, res) {
 			return done({ status: false, error: 'Error saving agent response' });
 		}
 		const system = response.data;
+
+		// update synthesis on conversation
+		const data = { id: conversationId, synthesis: stage?.synthesis };
+		await Conversation.publish(data);
+
+		// set last interaction on conversation
+		await Conversation.setLastInteractions(conversationId, 4);
 
 		return done({ status: true, user, system });
 	} catch (error) {
