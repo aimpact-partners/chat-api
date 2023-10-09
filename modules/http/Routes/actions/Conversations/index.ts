@@ -50,15 +50,15 @@ export class ConversationsRoutes {
 			return res.status(400).json({ status: false, error: 'Parameter conversationId is required' });
 		}
 
-		const { id, systemId, message, timestamp } = req.body;
+		const { id, systemId, content, timestamp } = req.body;
 		if (!id) {
 			return res.status(400).json({ status: false, error: 'Parameter id is required' });
 		}
 		if (!systemId) {
 			return res.status(400).json({ status: false, error: 'Parameter systemId is required' });
 		}
-		if (!message) {
-			return res.status(400).json({ status: false, error: 'Parameter message is required' });
+		if (!content) {
+			return res.status(400).json({ status: false, error: 'Parameter content is required' });
 		}
 
 		const done = (specs: { status: boolean; error?: string; synthesis?: string; metadata?: object }) => {
@@ -73,7 +73,7 @@ export class ConversationsRoutes {
 		const metadata = { user: {}, system: {} };
 		try {
 			// Store the user message as soon as it arrives
-			const userMessage = { id, content: message, role: 'user', timestamp };
+			const userMessage = { id, content, role: 'user', timestamp };
 			let response = await Conversation.saveMessage(conversationId, userMessage);
 			if (response.error) {
 				return res.status(400).json({ status: false, error: response.error });
@@ -83,7 +83,7 @@ export class ConversationsRoutes {
 			res.setHeader('Content-Type', 'text/plain');
 			res.setHeader('Transfer-Encoding', 'chunked');
 
-			const { iterator, error } = await Agents.sendMessage(conversationId, message);
+			const { iterator, error } = await Agents.sendMessage(conversationId, content);
 			if (error) {
 				return done({ status: false, error: error });
 			}

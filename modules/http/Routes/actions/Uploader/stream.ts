@@ -20,8 +20,8 @@ export interface IMessage {
 	timestamp?: number;
 }
 interface IMetadata {
-	user: IMessage;
-	system: IMessage;
+	user: IMessage | undefined;
+	system?: IMessage | undefined;
 	error?: string;
 }
 
@@ -99,22 +99,15 @@ export /*bundle*/ const uploaderStream = async function (req, res) {
 			res.end();
 		};
 
-		/**
-		 * Pendientes
-		 * Agregar guardado en mensaje desde el backend
-		 * remover el guardado desde el cliente
-		 * agregar captura de la respuesta de manera incremental en el cliente
-		 */
 		const { conversationId, id, timestamp, systemId } = fields;
-
-		const metadata: IMetadata = {};
 
 		const userMessage = { id, content: transcription.data?.text, role: 'user', timestamp };
 		let response = await Conversation.saveMessage(conversationId, userMessage);
 		if (response.error) {
 			return res.status(500).json({ status: false, error: `Error storing user message: ${response.error}` });
 		}
-		metadata.user = response.data;
+
+		const metadata: IMetadata = { user: response.data };
 
 		const { iterator, error } = await Agents.sendMessage(conversationId, transcription.data?.text);
 		if (error) {
@@ -134,11 +127,12 @@ export /*bundle*/ const uploaderStream = async function (req, res) {
 			}
 		}
 
-		// const metadata = { transcription: transcription.data.text, output: answer };
-
 		const systemMessage = { id: systemId, content: answer, role: 'system' };
 		response = await Conversation.saveMessage(conversationId, systemMessage);
-		response.error ? (metadata.error = response.error) : (metadata.system = response.data);
+		if (response.error) {
+			return done({ status: false, error: 'Error saving agent response' });
+		}
+		metadata.system = response.data;
 
 		return done({ status: true, metadata });
 	} catch (error) {
