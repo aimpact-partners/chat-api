@@ -14,9 +14,7 @@ export class ConversationMessagesRoutes {
 			});
 		});
 
-		const { validate } = UserMiddlewareHandler;
-		app.post('/conversations/:id/messages', validate, ConversationMessagesRoutes.sendMessage);
-		app.post('/conversations/:id/messages/tools', validate, ConversationMessagesRoutes.sendMessageTools);
+		app.post('/conversations/:id/messages', UserMiddlewareHandler.validate, ConversationMessagesRoutes.sendMessage);
 	}
 
 	static async sendMessage(req: IAuthenticatedRequest, res: Response) {
@@ -43,44 +41,10 @@ export class ConversationMessagesRoutes {
 
 		try {
 			if (req.headers['content-type'] === 'application/json') {
-				return processText(req, res, {});
+				return processText(req, res);
 			}
 
 			return processAudio(req, res, { user, conversation });
-		} catch (e) {
-			console.error(e);
-			res.json({ status: false, error: e.message });
-		}
-	}
-
-	static async sendMessageTools(req: IAuthenticatedRequest, res: Response) {
-		const conversationId = req.params.id;
-		if (!conversationId) {
-			return res.status(400).json({ status: false, error: 'Parameter conversationId is required' });
-		}
-
-		const { user } = req;
-		let conversation;
-		try {
-			conversation = await Conversation.get(conversationId, user.uid);
-		} catch (e) {
-			console.error(e);
-			res.json({ status: false, error: e.message });
-		}
-
-		if (conversation.error) {
-			return res.status(400).json({ status: false, error: conversation.error });
-		}
-		if (!conversation.project) {
-			return res.status(400).json({ status: false, error: 'the conversation not has a project defined' });
-		}
-
-		try {
-			if (req.headers['content-type'] === 'application/json') {
-				return processText(req, res, { tools: true });
-			}
-
-			return processAudio(req, res, { user, conversation, tools: true });
 		} catch (e) {
 			console.error(e);
 			res.json({ status: false, error: e.message });

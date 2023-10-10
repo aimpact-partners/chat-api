@@ -2,7 +2,7 @@ import type { Request, Response, Application } from 'express';
 import { Agents } from '@aimpact/chat-api/agents';
 import { Conversation } from '@aimpact/chat-api/models/conversation';
 
-export const processText = async (req: Request, res: Response, specs) => {
+export const processText = async (req: Request, res: Response) => {
 	const conversationId = req.params.id;
 	const { id, systemId, content } = req.body;
 	if (!id) {
@@ -37,7 +37,7 @@ export const processText = async (req: Request, res: Response, specs) => {
 		res.setHeader('Content-Type', 'text/plain');
 		res.setHeader('Transfer-Encoding', 'chunked');
 
-		const { iterator, error } = await Agents.sendMessage(conversationId, content, specs);
+		const { iterator, error } = await Agents.sendMessage(conversationId, content);
 		if (error) {
 			return done({ status: false, error: error });
 		}

@@ -103,7 +103,7 @@ export const processAudio = async function (req, res, specs) {
 		}
 		const user = response.data;
 
-		const { iterator, error } = await Agents.sendMessage(conversationId, transcription.data?.text, specs);
+		const { iterator, error } = await Agents.sendMessage(conversationId, transcription.data?.text);
 		if (error) {
 			return res.status(500).json({ status: false, error });
 		}
