@@ -1,5 +1,6 @@
 import { KBRoutes } from './actions/KB';
 import { UsersRoutes } from './actions/Users';
+import { ChatsRoutes } from './actions/Chats';
 import { ConversationsRoutes } from './actions/Conversations';
 
 export /*bundle*/ class Routes {
@@ -9,6 +10,7 @@ export /*bundle*/ class Routes {
 
 			KBRoutes.setup(app);
 			UsersRoutes.setup(app);
+			ChatsRoutes.setup(app);
 			ConversationsRoutes.setup(app);
 		} catch (e) {
 			console.error('error catched', e);
