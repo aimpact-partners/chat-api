@@ -3,6 +3,7 @@ import { db } from '@aimpact/chat-api/firestore';
 import type { IMessage } from './message';
 import { Message } from './message';
 import { Messages } from './messages';
+import { Timestamp } from '@aimpact/chat-api/utils/timestamp';
 
 export /*bundle*/ interface IConversation {
 	id: string;
@@ -13,7 +14,7 @@ export /*bundle*/ interface IConversation {
 	language: { default: string };
 	user: { id: string; name: string };
 	usage: { completionTokens: number; promptTokens: number; totalTokens: number };
-	messages?: {};
+	messages?: IMessage[];
 }
 
 export /*bundle*/ class Conversation {
@@ -38,14 +39,10 @@ export /*bundle*/ class Conversation {
 			const messagesSnapshot = await conversationDoc.collection('messages').orderBy('timestamp').get();
 			conversationData.messages = messagesSnapshot.docs.map(doc => {
 				const data = doc.data();
-
-				if (typeof data.timestamp === 'object') {
-					const dateObject = data.timestamp.toDate();
-					data.timestamp = dateObject.getTime();
-				}
-
+				data.timestamp = Timestamp.format(data.timestamp);
 				return data;
 			});
+			conversationData.messages.sort((a, b) => a.timestamp - b.timestamp);
 		}
 
 		return conversationData;

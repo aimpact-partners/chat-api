@@ -6,7 +6,8 @@ export interface IMessage {
 	id: string;
 	role: string;
 	content: string;
-	timestamp?: number;
+	conversationId: string;
+	timestamp: number;
 }
 
 export class Message {
