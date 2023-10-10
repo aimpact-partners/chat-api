@@ -43,10 +43,10 @@ export class ConversationMessagesRoutes {
 
 		try {
 			if (req.headers['content-type'] === 'application/json') {
-				return processText(req, res, { tools: true });
+				return processText(req, res, {});
 			}
 
-			return processAudio(req, res, { user, conversation, tools: true });
+			return processAudio(req, res, { user, conversation });
 		} catch (e) {
 			console.error(e);
 			res.json({ status: false, error: e.message });
