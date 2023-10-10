@@ -1,6 +1,6 @@
 import type { Server } from 'socket.io';
-import * as admin from 'firebase-admin';
 import { db } from '@aimpact/chat-api/firestore';
+import { Timestamp } from '@aimpact/chat-api/utils/timestamp';
 
 interface IMessage {
 	id: string;
@@ -38,12 +38,13 @@ export /*actions*/ /*bundle*/ class MessageProvider {
 			const chatProvider = db.collection('Conversations');
 			const chat = await chatProvider.doc(data.conversationId);
 
-			const timestamp = data.timestamp ? data.timestamp : admin.firestore.FieldValue.serverTimestamp();
+			const timestamp = Timestamp.set(data.timestamp);
 			const specs = { ...data, timestamp };
 			await chat.collection(this.table).doc(data.id).set(specs);
 
 			const savedMessage = await chat.collection(this.table).doc(data.id).get();
 			const responseData = savedMessage.exists ? savedMessage.data() : undefined;
+			responseData.timestamp && (responseData.timestamp = Timestamp.format(responseData.timestamp));
 
 			return { status: true, data: responseData };
 		} catch (e) {

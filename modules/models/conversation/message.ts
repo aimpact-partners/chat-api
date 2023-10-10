@@ -1,6 +1,6 @@
-import { v4 as uuidv4 } from 'uuid';
-import * as admin from 'firebase-admin';
+import { v4 as uuid } from 'uuid';
 import { db } from '@aimpact/chat-api/firestore';
+import { Timestamp } from '@aimpact/chat-api/utils/timestamp';
 
 export interface IMessage {
 	id: string;
@@ -29,17 +29,11 @@ export class Message {
 				throw new Error('Conversation not exists');
 			}
 
-			const id = params.id ? params.id : uuidv4();
+			const id = params.id ? params.id : uuid();
 			delete params.id;
 
-			const timestamp = params.timestamp ? params.timestamp : admin.firestore.FieldValue.serverTimestamp();
-
-			const specs = {
-				id,
-				...params,
-				conversationId: conversationId,
-				timestamp
-			};
+			const timestamp = Timestamp.set(params.timestamp);
+			const specs = { id, conversationId, ...params, timestamp };
 			await conversation.collection('messages').doc(id).set(specs);
 
 			const data = conversationDoc.data();
@@ -50,11 +44,7 @@ export class Message {
 			const dataCollection = conversation.collection('messages').doc(id);
 			const dataDoc = await dataCollection.get();
 			const dataMessage = dataDoc.data();
-
-			if (typeof dataMessage.timestamp === 'object') {
-				const dateObject = dataMessage.timestamp.toDate();
-				dataMessage.timestamp = dateObject.getTime();
-			}
+			dataMessage.timestamp && (dataMessage.timestamp = Timestamp.format(dataMessage.timestamp));
 
 			return { status: true, data: dataMessage };
 		} catch (e) {
