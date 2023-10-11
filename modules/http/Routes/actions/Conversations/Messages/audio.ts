@@ -96,14 +96,18 @@ export const processAudio = async function (req, res, specs) {
 
 		const { conversationId, id, timestamp, systemId } = fields;
 
-		const userMessage = { id, content: transcription.data?.text, role: 'user', timestamp };
+		const transcriptionText = transcription.data?.text;
+		const userMessage = { id, content: transcriptionText, role: 'user', timestamp };
 		let response = await Conversation.saveMessage(conversationId, userMessage);
 		if (response.error) {
 			return res.status(500).json({ status: false, error: `Error storing user message: ${response.error}` });
 		}
 		const user = response.data;
 
-		const { iterator, error } = await Agents.sendMessage(conversationId, transcription.data?.text);
+		const action = { type: 'transcription', data: { transcription: transcriptionText } };
+		res.write('😸' + JSON.stringify(action) + '🖋️');
+
+		const { iterator, error } = await Agents.sendMessage(conversationId, transcriptionText);
 		if (error) {
 			return res.status(500).json({ status: false, error });
 		}
