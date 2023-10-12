@@ -96,7 +96,10 @@ export /*bundle*/ class Conversation {
 		}
 
 		const messages = await Messages.getByLimit(id, limit);
-		const lastTwo = messages.map(({ content, role }) => ({ content, role }));
+		const lastTwo = messages.map(({ role, content, answer }) => ({
+			role,
+			content: role === 'assistant' ? answer : content
+		}));
 
 		await collection.doc(id).set({ messages: { lastTwo } }, { merge: true });
 	}

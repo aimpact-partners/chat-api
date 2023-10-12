@@ -4,11 +4,13 @@ import { Timestamp } from '@aimpact/chat-api/utils/timestamp';
 
 export interface IMessage {
 	id: string;
-	role: string;
+	role: 'system' | 'user' | 'assistant' | 'function';
 	content: string;
 	conversationId: string;
 	timestamp: number;
 }
+
+const MESSAGE_ROLE = ['system', 'user', 'assistant', 'function'];
 
 export class Message {
 	static async publish(conversationId: string, params: IMessage) {
@@ -19,8 +21,12 @@ export class Message {
 			if (!params.content) {
 				throw new Error('message content is required');
 			}
+
 			if (!params.role) {
 				throw new Error('role is required');
+			}
+			if (!MESSAGE_ROLE.includes(params.role)) {
+				throw new Error('role not supported');
 			}
 
 			const collection = db.collection('Conversations');
