@@ -86,10 +86,10 @@ export class ConversationMessagesRoutes {
 			return res.json({ status: false, error });
 		}
 
-		const done = (specs: { status: boolean; error?: string; user?: object; system?: object }) => {
-			const { status, error, user, system } = specs;
+		const done = (specs: { status: boolean; error?: string }) => {
+			const { status, error } = specs;
 			res.write('ÿ');
-			res.write(JSON.stringify({ status, error, user, system }));
+			res.write(JSON.stringify({ status, error }));
 			res.end();
 		};
 		res.setHeader('Content-Type', 'text/plain');
@@ -97,7 +97,6 @@ export class ConversationMessagesRoutes {
 
 		const { id, content, timestamp, systemId } = data;
 
-		let user;
 		let answer = '';
 		let metadata: { answer: string; synthesis: string };
 		try {
@@ -107,7 +106,6 @@ export class ConversationMessagesRoutes {
 			if (response.error) {
 				return done({ status: false, error: response.error });
 			}
-			user = response.data;
 
 			const audioRequest = req.headers['content-type'] !== 'application/json';
 			if (audioRequest) {
@@ -135,7 +133,6 @@ export class ConversationMessagesRoutes {
 			return done({ status: false, error: 'Error processing agent response' });
 		}
 
-		let system;
 		try {
 			// set assistant message on firestore
 			const agentMessage = { id: systemId, content: answer, answer: metadata.answer, role: 'assistant' };
@@ -144,7 +141,6 @@ export class ConversationMessagesRoutes {
 				console.error('Error saving agent response:', response.error);
 				return done({ status: false, error: 'Error saving agent response' });
 			}
-			system = response.data;
 
 			// update synthesis on conversation
 			const data = { id: conversationId, synthesis: metadata?.synthesis };
@@ -156,6 +152,6 @@ export class ConversationMessagesRoutes {
 			return done({ status: false, error: 'Error saving agent response' });
 		}
 
-		done({ status: true, user, system });
+		done({ status: true });
 	}
 }
