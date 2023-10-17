@@ -1,8 +1,8 @@
-# changelog v1.0.1
+# changelog test-v0.1.0
 
-Chat API `v1.0.1`
+Chat API `test-v0.1.0`
 
-[https://github.com/aimpact-partners/chat-api]
+[https://github.com/aimpact-partners/chat-api/releases/tag/test-v0.1.0]
 
 ## UPDATES
 
