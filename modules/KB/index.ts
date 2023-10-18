@@ -58,7 +58,7 @@ export /*bundle*/ class KB {
 			// Remove extra whitespaces
 			text = text.replace(/\s+/g, ' ');
 			// Remove special characters
-			text = text.replace(/[^\w\s]/gi, '');
+			text = text.replace(/[^\p{L}\p{N}\s\.,?!]/gu, '');
 			// Convert to lowercase
 			text = text.toLowerCase();
 
