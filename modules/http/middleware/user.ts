@@ -3,6 +3,7 @@ import * as admin from 'firebase-admin';
 
 interface IUser {
 	uid: string;
+	name: string;
 	displayName: string;
 	email: string;
 	photoURL: string;
@@ -25,7 +26,7 @@ export /*bundle*/ class UserMiddlewareHandler {
 					.json({ status: false, error: 'Invalid Access token or Access token not provided' });
 			}
 
-			req.user = { uid: decodedToken.uid, name: decodedToken.name, email: decodedToken.email };
+			req.user = <IUser>{ uid: decodedToken.uid, name: decodedToken.name, email: decodedToken.email };
 			next();
 		} catch (e) {
 			console.error(e);

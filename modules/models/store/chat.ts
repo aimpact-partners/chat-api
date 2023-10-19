@@ -1,7 +1,7 @@
 import type { Server } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 import * as admin from 'firebase-admin';
-import { db } from '@aimpact/chat-api/firestore';
+import { db } from '@beyond-js/firestore-collection/db';
 
 interface IChat {
 	id: string;

@@ -1,4 +1,4 @@
-import { db } from '@aimpact/chat-api/firestore';
+import { db } from '@beyond-js/firestore-collection/db';
 import { BatchDeleter } from './firestore/delete';
 import { FirestoreService } from './firestore/service';
 
@@ -40,7 +40,7 @@ class ChatAPI {
 
 			return {
 				status: true,
-				data: { ...doc.data(), messages },
+				data: { ...doc.data(), messages }
 			};
 		} catch (e) {
 			return { status: false, error: e.message };

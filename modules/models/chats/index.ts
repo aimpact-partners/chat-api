@@ -1,4 +1,4 @@
-import { db } from '@aimpact/chat-api/firestore';
+import { db } from '@beyond-js/firestore-collection/db';
 import { BatchDeleter } from './firestore/delete';
 import { FirestoreService } from './firestore/service';
 import { v4 as uuidv4 } from 'uuid';

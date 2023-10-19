@@ -1,5 +1,5 @@
 import * as admin from 'firebase-admin';
-import { db } from '@aimpact/chat-api/firestore';
+import { db } from '@beyond-js/firestore-collection/db';
 
 export /*bundle*/ class User {
 	#accessToken: string;

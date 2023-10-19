@@ -1,4 +1,4 @@
-import { db } from '@aimpact/chat-api/firestore';
+import { db } from '@beyond-js/firestore-collection/db';
 
 export class Messages {
 	static async getByLimit(conversationId: string, limit: number) {

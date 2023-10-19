@@ -1,6 +1,6 @@
-import { prompts } from '@aimpact/ailearn-api/data/model';
-import { BusinessErrorManager, ErrorGenerator } from '@aimpact/ailearn-api/business/errors';
-import type { IPromptData } from '@aimpact/ailearn-api/data/interfaces';
+import { prompts } from '@aimpact/chat-api/data/model';
+import { BusinessErrorManager, ErrorGenerator } from '@beyond-js/firestore-collection/errors';
+import type { IPromptData } from '@aimpact/chat-api/data/interfaces';
 
 export interface IPromptGenerationParams {
 	category: string;

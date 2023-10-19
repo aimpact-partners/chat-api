@@ -1,5 +1,5 @@
 import type { Request, Response, Application } from 'express';
-import { db } from '@aimpact/chat-api/firestore';
+import { db } from '@beyond-js/firestore-collection/db';
 import { uploader } from '@aimpact/chat-api/documents-upload';
 import { KB, Documents } from '@aimpact/chat-api/models/kb';
 import { KB as KBPinecone } from '@aimpact/chat-api/kb';

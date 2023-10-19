@@ -1,4 +1,4 @@
-import { db } from '@aimpact/chat-api/firestore';
+import { db } from '@beyond-js/firestore-collection/db';
 
 export class BatchDeleter {
 	constructor(private collectionRef: FirebaseFirestore.CollectionReference<FirebaseFirestore.DocumentData>) {}
