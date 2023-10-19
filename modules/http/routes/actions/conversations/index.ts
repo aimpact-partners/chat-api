@@ -1,10 +1,9 @@
-import type { Response, Application } from 'express';
 import { UserMiddlewareHandler } from '@aimpact/chat-api/middleware';
 import { Conversation } from '@aimpact/chat-api/models/conversation';
+import { ConversationMessagesRoutes } from './messages';
+import type { Response, Application } from 'express';
 import type { IAuthenticatedRequest } from '@aimpact/chat-api/middleware';
 import type { IConversation } from '@aimpact/chat-api/models/conversation';
-
-import { ConversationMessagesRoutes } from './Messages';
 
 export class ConversationsRoutes {
 	static setup(app: Application) {
