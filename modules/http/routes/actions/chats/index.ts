@@ -8,7 +8,7 @@ export class ChatsRoutes {
 		// TODO actualizar respuesta de endpoint POST/chats
 		// app.use(
 		// 	OpenApiValidator.middleware({
-		// 		apiSpec: `${process.cwd()}/docs/api/chats.yaml`,
+		// 		apiSpec: `${process.cwd()}/docs/chats/api.yaml`,
 		// 		validateRequests: true, // (default)
 		// 		validateResponses: true, // false by default
 		// 	})
@@ -17,14 +17,14 @@ export class ChatsRoutes {
 		app.use((err, req, res, next) => {
 			res.status(err.status || 500).json({
 				message: err.message,
-				errors: err.errors,
+				errors: err.errors
 			});
 		});
 
 		app.use((err, req, res, next) => {
 			res.status(err.status || 500).json({
 				message: err.message,
-				errors: err.errors,
+				errors: err.errors
 			});
 		});
 		app.get('/chats', ChatsRoutes.list);
@@ -46,12 +46,12 @@ export class ChatsRoutes {
 			}
 			res.json({
 				status: true,
-				data,
+				data
 			});
 		} catch (e) {
 			console.error(e);
 			res.json({
-				error: e.message,
+				error: e.message
 			});
 			return { status: false, error: e.message };
 		}
@@ -68,7 +68,7 @@ export class ChatsRoutes {
 			return res.json({ status: true, data });
 		} catch (e) {
 			res.json({
-				error: e.message,
+				error: e.message
 			});
 		}
 	}
@@ -84,7 +84,7 @@ export class ChatsRoutes {
 		} catch (e) {
 			res.json({
 				status: false,
-				error: e.message,
+				error: e.message
 			});
 		}
 	}
@@ -100,7 +100,7 @@ export class ChatsRoutes {
 		} catch (e) {
 			res.json({
 				status: false,
-				error: e.message,
+				error: e.message
 			});
 		}
 	}
@@ -117,8 +117,8 @@ export class ChatsRoutes {
 				return res.json({
 					status: false,
 					data: {
-						error: 'invalid fields',
-					},
+						error: 'invalid fields'
+					}
 				});
 			}
 
@@ -127,7 +127,7 @@ export class ChatsRoutes {
 		} catch (e) {
 			res.json({
 				status: false,
-				error: e.message,
+				error: e.message
 			});
 		}
 	}
@@ -146,7 +146,7 @@ export class ChatsRoutes {
 				const items: string[] = await model.deleteAll('userId', userId);
 				return res.json({
 					status: true,
-					data: { deleted: items },
+					data: { deleted: items }
 				});
 			}
 			await model.delete(id);
@@ -155,7 +155,7 @@ export class ChatsRoutes {
 		} catch (e) {
 			res.json({
 				status: false,
-				error: e.message,
+				error: e.message
 			});
 		}
 	}

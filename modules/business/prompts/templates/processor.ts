@@ -1,5 +1,5 @@
 import { prompts } from '@aimpact/chat-api/data/model';
-import { BusinessErrorManager, ErrorGenerator } from '@beyond-js/firestore-collection/errors';
+import { FirestoreErrorManager, ErrorGenerator } from '@beyond-js/firestore-collection/errors';
 import type { IPromptData } from '@aimpact/chat-api/data/interfaces';
 
 export interface IPromptGenerationParams {
@@ -61,7 +61,7 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 		return this.#processedValue;
 	}
 
-	#error: BusinessErrorManager;
+	#error: FirestoreErrorManager;
 	get error() {
 		return this.#error;
 	}
@@ -84,8 +84,8 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 		// Get the prompt data
 		await (async () => {
 			const response = await prompts.data({ id });
-			if (response.error) return (this.#error = new BusinessErrorManager(response.error));
-			if (!response.data.exists) return (this.#error = new BusinessErrorManager(response.data.error));
+			if (response.error) return (this.#error = new FirestoreErrorManager(response.error));
+			if (!response.data.exists) return (this.#error = new FirestoreErrorManager(response.data.error));
 			this.#data = response.data.data;
 		})();
 		if (!this.valid) return;
