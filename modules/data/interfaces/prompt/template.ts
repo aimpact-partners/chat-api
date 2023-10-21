@@ -6,12 +6,15 @@ export /*bundle*/ interface IPromptOptionData {
 }
 
 export /*bundle*/ interface IPromptData {
+	id: string;
 	categories?: IPromptCategoryData[];
 	name: string;
 	description: string;
 	language: string;
-	value?: string[];
+	value?: string;
 	options?: IPromptOptionData[];
 	dependencies?: string[];
 	literals?: string[];
+	format: 'json' | 'text';
+	is: 'prompt' | 'function';
 }

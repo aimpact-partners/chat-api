@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { db } from '@aimpact/chat-api/firestore';
+import { db } from '@beyond-js/firestore-collection/db';
 import type { IMessage } from './message';
 import { Message } from './message';
 import { Messages } from './messages';

@@ -2,7 +2,7 @@ import type { Server } from 'socket.io';
 import * as dayjs from 'dayjs';
 import * as jwt from 'jsonwebtoken';
 import * as admin from 'firebase-admin';
-import { db } from '@aimpact/chat-api/firestore';
+import { db } from '@beyond-js/firestore-collection/db';
 
 export /*actions*/ /*bundle*/ class UserProvider {
 	socket: Server;

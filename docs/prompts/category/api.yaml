@@ -1,0 +1,190 @@
+openapi: 3.0.0
+info:
+    title: Chat-API
+    version: 1.0.0
+    description: API endpoint for prompts in the Chat-API platform.
+    contact:
+        email: hello@aimpact.partners
+
+paths:
+    /prompts/category:
+        post:
+            summary: Publish a new prompt category.
+            tags:
+                - Prompts Categories.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - name
+                                - project
+                            properties:
+                                id:
+                                    type: string
+                                name:
+                                    type: string
+                                project:
+                                    type: string
+                                description:
+                                    type: string
+            responses:
+                200:
+                    description: Prompt Category published successfully.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponse'
+                400:
+                    description: Bad request. Possible errors regarding missing or incorrect data.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponse'
+
+    /prompts/category/{id}:
+        get:
+            summary: Get a Prompt.
+            tags:
+                - Prompts Categories.
+            responses:
+                200:
+                    description: Prompt Geted successfully.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponse'
+                400:
+                    description: Bad request. Possible errors regarding missing or incorrect data.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponse'
+
+        put:
+            summary: Put a Prompt category.
+            tags:
+                - Prompts Categories.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                name:
+                                    type: string
+                                description:
+                                    type: string
+            responses:
+                200:
+                    description: Prompt updated successfully.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponse'
+                400:
+                    description: Bad request. Possible errors regarding missing or incorrect data.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponse'
+
+        delete:
+            summary: Delete a prompt category.
+            tags:
+                - Prompts Categories.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - value
+                            properties:
+                                value:
+                                    type: string
+
+            responses:
+                200:
+                    description: Prompt published successfully.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponse'
+                400:
+                    description: Bad request. Possible errors regarding missing or incorrect data.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponse'
+
+    /prompt/categories:
+        get:
+            summary: Get a Prompt Categories.
+            tags:
+                - Prompts Categories.
+            responses:
+                200:
+                    description: Prompt Geted successfully.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponse'
+                400:
+                    description: Bad request. Possible errors regarding missing or incorrect data.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponse'
+
+components:
+    schemas:
+        IResponse:
+            type: object
+            required:
+                - status
+            properties:
+                status:
+                    type: boolean
+                    description: Response status.
+                error:
+                    type: string
+                    description: Error text.
+                data:
+                    type: object
+                    $ref: '#/components/schemas/IPromptCategoryData'
+                    description: Response Data.
+
+        IPromptCategoryData:
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                description:
+                    type: string
+                project:
+                    type: object
+                    properties:
+                        id:
+                            type: string
+                        name:
+                            type: string
+                prompts:
+                    type: object
+                    additionalProperties:
+                        type: string

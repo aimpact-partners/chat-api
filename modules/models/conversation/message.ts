@@ -1,5 +1,5 @@
 import { v4 as uuid } from 'uuid';
-import { db } from '@aimpact/chat-api/firestore';
+import { db } from '@beyond-js/firestore-collection/db';
 import { Timestamp } from '@aimpact/chat-api/utils/timestamp';
 
 export interface IMessage {

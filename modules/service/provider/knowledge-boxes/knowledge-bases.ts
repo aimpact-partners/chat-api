@@ -1,5 +1,5 @@
 import type { Server } from 'socket.io';
-import { db } from '@aimpact/chat-api/firestore';
+import { db } from '@beyond-js/firestore-collection/db';
 
 interface KnowledgeBases {
 	id: string;

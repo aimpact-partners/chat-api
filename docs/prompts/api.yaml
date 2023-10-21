@@ -1,0 +1,258 @@
+openapi: 3.0.0
+info:
+    title: Chat-API
+    version: 1.0.0
+    description: API endpoint for prompts in the Chat-API platform.
+    contact:
+        email: hello@aimpact.partners
+
+paths:
+    /prompts/template/{id}:
+        get:
+            summary: Get a Prompt.
+            tags:
+                - Prompts Templates
+            responses:
+                200:
+                    description: Prompt Geted successfully.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponse'
+                400:
+                    description: Bad request. Possible errors regarding missing or incorrect data.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponse'
+
+        put:
+            summary: Update a Prompt.
+            tags:
+                - Prompts Templates
+            responses:
+                200:
+                    description: Prompt Geted successfully.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponse'
+                400:
+                    description: Bad request. Possible errors regarding missing or incorrect data.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponse'
+
+        delete:
+            summary: Delete a prompt.
+            tags:
+                - Prompts Templates
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - value
+                            properties:
+                                value:
+                                    type: string
+
+            responses:
+                200:
+                    description: Prompt published successfully.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponse'
+                400:
+                    description: Bad request. Possible errors regarding missing or incorrect data.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponse'
+
+    /prompts/template:
+        post:
+            summary: Publish a new prompt.
+            tags:
+                - Prompts Templates
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - name
+                                - description
+                                - language
+                            properties:
+                                name:
+                                    type: string
+                                description:
+                                    type: string
+                                language:
+                                    type: string
+                                categories:
+                                    type: array
+                                    items:
+                                        $ref: '#/components/schemas/IPromptCategoryData'
+                                value:
+                                    type: array
+                                    items:
+                                        type: string
+                                options:
+                                    type: array
+                                    items:
+                                        $ref: '#/components/schemas/IPromptOptionData'
+                                dependencies:
+                                    type: array
+                                    items:
+                                        type: string
+
+            responses:
+                200:
+                    description: Prompt published successfully.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponse'
+                400:
+                    description: Bad request. Possible errors regarding missing or incorrect data.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponse'
+
+    /prompts/templates:
+        get:
+            summary: Get a prompt templates list.
+            tags:
+                - Prompts Templates
+            responses:
+                200:
+                    description: Prompt Geted successfully.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponse'
+                400:
+                    description: Bad request. Possible errors regarding missing or incorrect data.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponse'
+
+    /prompts/migrate:
+        post:
+            summary: Update prompts from one environment to another.
+            tags:
+                - Prompts Templates
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - value
+                            properties:
+                                value:
+                                    type: string
+
+            responses:
+                200:
+                    description: Prompt published successfully.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponse'
+                400:
+                    description: Bad request. Possible errors regarding missing or incorrect data.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponse'
+
+components:
+    schemas:
+        IResponse:
+            type: object
+            required:
+                - status
+            properties:
+                status:
+                    type: boolean
+                    description: Response status.
+                error:
+                    type: string
+                    description: Error text.
+                data:
+                    type: object
+                    $ref: '#/components/schemas/IPromptData'
+                    description: Response Data.
+
+        IPromptData:
+            type: object
+            required:
+                - name
+                - description
+                - language
+            properties:
+                categories:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/IPromptCategoryData'
+                name:
+                    type: string
+                description:
+                    type: string
+                language:
+                    type: string
+                value?:
+                    type: array
+                    items:
+                        type: string
+                options?:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/IPromptOptionData'
+                dependencies:
+                    type: array
+                    items:
+                        type: string
+
+        IPromptCategoryData:
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                description:
+                    type: string
+                prompts:
+                    type: object
+                    additionalProperties:
+                        type: string
+
+        IPromptOptionData:
+            properties:
+                id:
+                    type: string
+                value:
+                    type: string
