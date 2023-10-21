@@ -1,6 +1,6 @@
 {
 	"name": "@aimpact/chat-api",
-	"version": "1.0.1",
+	"version": "0.1.0",
 	"title": "CHAT API for custom chats using Agents",
 	"description": "",
 	"license": "ISC",
