@@ -53,8 +53,7 @@ export class PromptsCategoryRoutes {
 
 	static async publish(req: Request, res: Response) {
 		try {
-			const { id, name, description } = req.body;
-			const response = await PromptCategories.save({ id, name, description });
+			const response = await PromptCategories.save(req.body);
 
 			if (response.error) {
 				res.json(new HttpResponse(response));

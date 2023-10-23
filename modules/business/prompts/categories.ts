@@ -1,18 +1,26 @@
 import { FirestoreErrorManager } from '@beyond-js/firestore-collection/errors';
+import { v4 as uuid } from 'uuid';
 import { Projects } from '@aimpact/chat-api/business/projects';
 import { promptsCategories } from '@aimpact/chat-api/data/model';
-import { IPromptCategoryBaseData } from '@aimpact/chat-api/data/interfaces';
+
+interface IPromptCategorySpecs {
+	id: string;
+	name: string;
+	description: string;
+	project: string;
+}
 
 export /*bundle*/ class PromptCategories {
 	static async data(id: string) {
 		return await promptsCategories.data({ id });
 	}
 
-	static async save(params: IPromptCategoryBaseData) {
+	static async save(params: IPromptCategorySpecs) {
 		try {
-			const { id, name, description, projectId } = params;
+			const id = params.id ?? uuid();
+			const { name, description, project } = params;
 
-			const projectResponse = await Projects.data({ id: projectId });
+			const projectResponse = await Projects.data(project);
 			if (projectResponse.error) {
 				return projectResponse;
 			}
@@ -20,17 +28,17 @@ export /*bundle*/ class PromptCategories {
 				return projectResponse;
 			}
 
-			const project = {
+			const projectSpecs = {
 				id: projectResponse.data.data.id,
 				name: projectResponse.data.data.name,
 				identifier: projectResponse.data.data.identifier
 			};
-			const specs = { data: { id, name, description, project } };
+			const specs = { data: { id, name, description, project: projectSpecs } };
 			const response = await promptsCategories.set(specs);
 
 			if (response.error) return new FirestoreErrorManager(response.error.code, response.error.text);
 
-			return await promptsCategories.data(id);
+			return await PromptCategories.data(id);
 		} catch (exc) {
 			return exc;
 		}
@@ -43,10 +51,8 @@ export /*bundle*/ class PromptCategories {
 			if (response.error) return new FirestoreErrorManager(response.error.code, response.error.text);
 
 			return response.data;
-		} catch (exc) {}
-	}
-
-	static async list(project: string) {
-		return await promptsCategories.data({ project });
+		} catch (exc) {
+			return exc;
+		}
 	}
 }
