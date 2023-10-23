@@ -1,4 +1,4 @@
-# About the projects
+# About the Prompts
 
 ## Prompts
 
@@ -12,7 +12,9 @@
 ### Literals
 
 -   Pure literals
--   Options: create and select
+-   Dependencies:
+-       Another prompt (ex: %HEADER)
+-       Options: create and select
 
 ### Prompts categories: CRUD
 
