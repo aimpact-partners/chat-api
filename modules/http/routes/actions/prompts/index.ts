@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 import { join } from 'path';
 import { UserMiddlewareHandler } from '@aimpact/chat-api/middleware';
 import { Response as HttpResponse } from '@beyond-js/response/main';
-import { PromptsCategoryRoutes } from './category';
+import { PromptsCategoriesRoutes } from './categories';
 import type { Request, Response, Application } from 'express';
 
 dotenv.config();
@@ -18,12 +18,12 @@ export class PromptsRoutes {
 		// 	})
 		// );
 
-		PromptsCategoryRoutes.setup(app);
+		PromptsCategoriesRoutes.setup(app);
 
-		app.get('/prompts/template/:id', UserMiddlewareHandler.validate, this.get);
-		app.put('/prompts/template/:id', UserMiddlewareHandler.validate, this.update);
-		app.delete('/prompts/template/:id', UserMiddlewareHandler.validate, this.delete);
-		app.post('/prompts/template', UserMiddlewareHandler.validate, this.publish);
+		app.get('/prompts/templates/:id', UserMiddlewareHandler.validate, this.get);
+		app.put('/prompts/templates/:id', UserMiddlewareHandler.validate, this.update);
+		app.delete('/prompts/templates/:id', UserMiddlewareHandler.validate, this.delete);
+		app.post('/prompts/templates', UserMiddlewareHandler.validate, this.publish);
 		app.get('/prompts/templates', UserMiddlewareHandler.validate, this.list);
 
 		app.get('/prompts/export', UserMiddlewareHandler.validate, this.export);

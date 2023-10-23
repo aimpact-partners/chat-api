@@ -9,27 +9,27 @@ import type { Request, Response, Application } from 'express';
 
 dotenv.config();
 
-export class PromptsCategoryRoutes {
+export class PromptsCategoriesRoutes {
 	static setup(app: Application) {
 		// app.use(
 		// 	OpenApiValidator.middleware({
-		// 		apiSpec: join(`${process.cwd()}/docs/prompts/category/api.yaml`),
+		// 		apiSpec: join(`${process.cwd()}/docs/prompts/categories/api.yaml`),
 		// 		validateRequests: true
 		// 		// validateResponses: true
 		// 	})
 		// );
 
 		app.get('/prompts/categories', this.list);
-		app.post('/prompts/category', this.publish);
-		app.get('/prompts/category/:id', this.get);
-		app.put('/prompts/category/:id', this.update);
-		app.delete('/prompts/category/:id', this.delete);
+		app.post('/prompts/categories', this.publish);
+		app.get('/prompts/categories/:id', this.get);
+		app.put('/prompts/categories/:id', this.update);
+		app.delete('/prompts/categories/:id', this.delete);
 
 		// app.get('/prompts/categories', UserMiddlewareHandler.validate, this.list);
-		// app.post('/prompts/category', UserMiddlewareHandler.validate, this.publish);
-		// app.get('/prompts/category/:id', UserMiddlewareHandler.validate, this.get);
-		// app.put('/prompts/category/:id', UserMiddlewareHandler.validate, this.update);
-		// app.delete('/prompts/category/:id', UserMiddlewareHandler.validate, this.delete);
+		// app.post('/prompts/categories', UserMiddlewareHandler.validate, this.publish);
+		// app.get('/prompts/categories/:id', UserMiddlewareHandler.validate, this.get);
+		// app.put('/prompts/categories/:id', UserMiddlewareHandler.validate, this.update);
+		// app.delete('/prompts/categories/:id', UserMiddlewareHandler.validate, this.delete);
 	}
 
 	static async get(req: Request, res: Response): Promise<void> {
@@ -60,7 +60,7 @@ export class PromptsCategoryRoutes {
 				return;
 			}
 			res.json(new HttpResponse({ data: response.data.data }));
-		} catch (e) {
+		} catch (exc) {
 			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
 		}
 	}
@@ -69,7 +69,7 @@ export class PromptsCategoryRoutes {
 		try {
 			let response;
 			res.json(new HttpResponse(response));
-		} catch (e) {
+		} catch (exc) {
 			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
 		}
 	}
@@ -78,7 +78,7 @@ export class PromptsCategoryRoutes {
 		try {
 			let response;
 			res.json(new HttpResponse(response));
-		} catch (e) {
+		} catch (exc) {
 			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
 		}
 	}
@@ -87,7 +87,7 @@ export class PromptsCategoryRoutes {
 		try {
 			const response = await PromptCategories.list();
 			res.json(new HttpResponse(response));
-		} catch (e) {
+		} catch (exc) {
 			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
 		}
 	}

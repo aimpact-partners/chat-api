@@ -7,7 +7,7 @@ info:
         email: hello@aimpact.partners
 
 paths:
-    /prompts/template/{id}:
+    /prompts/templates/{id}:
         get:
             summary: Get a Prompt.
             tags:
@@ -80,7 +80,7 @@ paths:
                                 type: object
                                 $ref: '#/components/schemas/IResponse'
 
-    /prompts/template:
+    /prompts/templates:
         post:
             summary: Publish a new prompt.
             tags:
@@ -135,7 +135,6 @@ paths:
                                 type: object
                                 $ref: '#/components/schemas/IResponse'
 
-    /prompts/templates:
         get:
             summary: Get a prompt templates list.
             tags:

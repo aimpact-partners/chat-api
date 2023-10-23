@@ -7,7 +7,7 @@ info:
         email: hello@aimpact.partners
 
 paths:
-    /prompts/category:
+    /prompts/categories:
         post:
             summary: Publish a new prompt category.
             tags:
@@ -46,7 +46,7 @@ paths:
                                 type: object
                                 $ref: '#/components/schemas/IResponse'
 
-    /prompts/category/{id}:
+    /prompts/categories/{id}:
         get:
             summary: Get a Prompt.
             tags:
