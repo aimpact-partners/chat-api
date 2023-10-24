@@ -100,6 +100,17 @@
 				}
 			},
 			{
+				"name": "web-development",
+				"environment": "development",
+				"platform": "web",
+				"backend": "backend",
+				"ports": {
+					"bundles": 3377,
+					"http": 3578,
+					"inspect": 3278
+				}
+			},
+			{
 				"name": "node-tsc",
 				"environment": "local",
 				"platform": "node",
