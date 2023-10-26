@@ -132,7 +132,7 @@ paths:
 
     /prompt/categories:
         get:
-            summary: Get a Prompt Categories.
+            summary: Get list of Prompt Categories.
             tags:
                 - Prompts Categories.
             responses:

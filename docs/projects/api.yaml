@@ -7,7 +7,7 @@ info:
         email: hello@aimpact.partners
 
 paths:
-    /projects:
+    /projects:  
         post:
             summary: Publish a new project.
             tags:
