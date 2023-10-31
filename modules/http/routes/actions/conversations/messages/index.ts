@@ -1,7 +1,7 @@
 import type { Response, Application } from 'express';
 import type { IAuthenticatedRequest } from '@aimpact/chat-api/middleware';
-import { Agents } from '@aimpact/chat-api/agents';
-import { Conversation } from '@aimpact/chat-api/models/conversation';
+import { Agents } from '@aimpact/chat-api/business/agents';
+import { Chat } from '@aimpact/chat-api/business/chats';
 import { UserMiddlewareHandler } from '@aimpact/chat-api/middleware';
 import { processAudio } from './audio';
 
@@ -12,7 +12,7 @@ interface IMessageSpecs {
 	timestamp?: number;
 }
 
-export class ConversationMessagesRoutes {
+export class ChatMessagesRoutes {
 	static setup(app: Application) {
 		app.use((err, req, res, next) => {
 			res.status(err.status || 500).json({
@@ -21,7 +21,7 @@ export class ConversationMessagesRoutes {
 			});
 		});
 
-		app.post('/conversations/:id/messages', UserMiddlewareHandler.validate, ConversationMessagesRoutes.sendMessage);
+		app.post('/conversations/:id/messages', UserMiddlewareHandler.validate, ChatMessagesRoutes.sendMessage);
 	}
 
 	static async sendMessage(req: IAuthenticatedRequest, res: Response) {
@@ -32,7 +32,7 @@ export class ConversationMessagesRoutes {
 
 		let conversation;
 		try {
-			conversation = await Conversation.get(conversationId, req.user.uid);
+			conversation = await Chat.get(conversationId, req.user.uid);
 			req.conversation = conversation;
 		} catch (e) {
 			console.error(e);
@@ -102,7 +102,7 @@ export class ConversationMessagesRoutes {
 		try {
 			// Store the user message as soon as it arrives
 			const userMessage = { id, content, role: 'user', timestamp };
-			let response = await Conversation.saveMessage(conversationId, userMessage);
+			let response = await Chat.saveMessage(conversationId, userMessage);
 			if (response.error) {
 				return done({ status: false, error: response.error });
 			}
@@ -136,7 +136,7 @@ export class ConversationMessagesRoutes {
 		try {
 			// set assistant message on firestore
 			const agentMessage = { id: systemId, content: answer, answer: metadata.answer, role: 'assistant' };
-			const response = await Conversation.saveMessage(conversationId, agentMessage);
+			const response = await Chat.saveMessage(conversationId, agentMessage);
 			if (response.error) {
 				console.error('Error saving agent response:', response.error);
 				return done({ status: false, error: 'Error saving agent response' });
@@ -144,10 +144,10 @@ export class ConversationMessagesRoutes {
 
 			// update synthesis on conversation
 			const data = { id: conversationId, synthesis: metadata?.synthesis };
-			await Conversation.publish(data);
+			await Chat.publish(data);
 
 			// set last interaction on conversation
-			await Conversation.setLastInteractions(conversationId, 4);
+			await Chat.setLastInteractions(conversationId, 4);
 		} catch (exc) {
 			return done({ status: false, error: 'Error saving agent response' });
 		}

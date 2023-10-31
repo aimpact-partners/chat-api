@@ -1,15 +1,12 @@
 import * as jwt from 'jsonwebtoken';
 import type { JwtPayload } from '@types/jsonwebtoken';
 import type { Request, Response, Application } from 'express';
-import { User as Model } from '@aimpact/chat-api/models/user';
+import { User as Model } from '@aimpact/chat-api/business/user';
 
 export class UsersRoutes {
 	static setup(app: Application) {
 		app.use((err, req, res, next) => {
-			res.status(err.status || 500).json({
-				message: err.message,
-				errors: err.errors,
-			});
+			res.status(err.status || 500).json({ message: err.message, errors: err.errors });
 		});
 
 		app.post('/integrations/tokens/verify', UsersRoutes.verify);

@@ -1,5 +1,5 @@
 import type { Request, Response, Application } from 'express';
-import { Chats } from '@aimpact/chat-api/models/chats';
+import { Chat } from '@aimpact/chat-api/business/chats';
 import * as OpenApiValidator from 'express-openapi-validator';
 import { IChat, ICreateChatSpecs } from './interfaces';
 
@@ -38,22 +38,16 @@ export class ChatsRoutes {
 
 	static async list(req: Request, res: Response) {
 		try {
-			const model = new Chats();
+			const model = new Chat();
 			const data: [] = await model.list({ userId: req.query.userId });
 
 			if (!data) {
 				return res.status(404).json({ error: 'Chats not found.' });
 			}
-			res.json({
-				status: true,
-				data
-			});
+			res.json({ status: true, data });
 		} catch (e) {
 			console.error(e);
-			res.json({
-				error: e.message
-			});
-			return { status: false, error: e.message };
+			res.json({ status: false, error: e.message });
 		}
 	}
 
@@ -62,14 +56,13 @@ export class ChatsRoutes {
 			// Logic to retrieve a specific chat by ID
 			const { id } = req.params;
 
-			const model = new Chats();
+			const model = new Chat();
 			const data = await model.get(id);
 
 			return res.json({ status: true, data });
 		} catch (e) {
-			res.json({
-				error: e.message
-			});
+			console.error(e);
+			res.json({ status: false, error: e.message });
 		}
 	}
 
@@ -77,15 +70,11 @@ export class ChatsRoutes {
 		try {
 			// Logic to create a new chat}
 			const params: ICreateChatSpecs = req.body;
-
-			const model = new Chats();
-			const data = await model.save(params);
+			const data = await Chat.publish(params);
 			res.json({ status: true, data });
 		} catch (e) {
-			res.json({
-				status: false,
-				error: e.message
-			});
+			console.error(e);
+			res.json({ status: false, error: e.message });
 		}
 	}
 
@@ -94,14 +83,12 @@ export class ChatsRoutes {
 			const { id } = req.params;
 			const params: IChat = req.body;
 
-			const model = new Chats();
+			const model = new Chat();
 			const data = model.save({ id, ...params });
 			res.json({ status: true, data });
 		} catch (e) {
-			res.json({
-				status: false,
-				error: e.message
-			});
+			console.error(e);
+			res.json({ status: false, error: e.message });
 		}
 	}
 
@@ -110,25 +97,18 @@ export class ChatsRoutes {
 			// Logic to create a new chat}
 			const params: IChat[] = req.body.chats;
 
-			const model = new Chats();
+			const model = new Chat();
 			const invalid = params.some(item => !model.validate(item));
 
 			if (invalid) {
-				return res.json({
-					status: false,
-					data: {
-						error: 'invalid fields'
-					}
-				});
+				return res.json({ status: false, data: { error: 'invalid fields' } });
 			}
 
 			const data = await model.saveAll(params);
 			res.json({ status: true, data });
 		} catch (e) {
-			res.json({
-				status: false,
-				error: e.message
-			});
+			console.error(e);
+			res.json({ status: false, error: e.message });
 		}
 	}
 
@@ -141,7 +121,7 @@ export class ChatsRoutes {
 				return res.status(400).json({ error: 'id or userId is required' });
 			}
 
-			const model = new Chats();
+			const model = new Chat();
 			if (userId) {
 				const items: string[] = await model.deleteAll('userId', userId);
 				return res.json({
@@ -153,10 +133,8 @@ export class ChatsRoutes {
 
 			res.json({ status: true, data: { deleted: [id] } });
 		} catch (e) {
-			res.json({
-				status: false,
-				error: e.message
-			});
+			console.error(e);
+			res.json({ status: false, error: e.message });
 		}
 	}
 }

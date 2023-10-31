@@ -2,7 +2,7 @@ import type { Request, Response, Application } from 'express';
 import { db } from '@beyond-js/firestore-collection/db';
 import { uploader } from '@aimpact/chat-api/documents-upload';
 import { KB, Documents } from '@aimpact/chat-api/models/kb';
-import { KB as KBPinecone } from '@aimpact/chat-api/kb';
+import { KB as KBPinecone } from '@aimpact/chat-api/business/kb';
 import * as dotenv from 'dotenv';
 dotenv.config();
 

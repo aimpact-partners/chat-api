@@ -36,7 +36,7 @@
 	"deployment": {
 		"distributions": [
 			{
-				"name": "web",
+				"name": "web-development",
 				"environment": "development",
 				"platform": "web",
 				"backend": "backend",
@@ -100,8 +100,8 @@
 				}
 			},
 			{
-				"name": "web-development",
-				"environment": "development",
+				"name": "web",
+				"environment": "local",
 				"platform": "web",
 				"backend": "backend",
 				"ports": {

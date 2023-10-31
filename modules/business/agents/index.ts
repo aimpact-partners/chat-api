@@ -1,4 +1,4 @@
-import { Conversation } from '@aimpact/chat-api/models/conversation';
+import { Chat } from '@aimpact/chat-api/business/chats';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -18,7 +18,7 @@ export /*bundle*/ class Agents {
 	static async sendMessage(conversationId: string, prompt: string): Promise<ISendMessageResponse> {
 		let conversation: any;
 		try {
-			conversation = await Conversation.get(conversationId);
+			conversation = await Chat.get(conversationId);
 		} catch (exc) {
 			console.error(exc);
 			return { status: false, error: 'Error fetching conversation data from store' };

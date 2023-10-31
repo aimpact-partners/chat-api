@@ -1,9 +1,10 @@
 import { FirestoreErrorManager } from '@beyond-js/firestore-collection/errors';
+import { db } from '@beyond-js/firestore-collection/db';
 import { v4 as uuid } from 'uuid';
 import { projects } from '@aimpact/chat-api/data/model';
 
 export /*bundle*/ class Projects {
-	static async data(id: string) {
+	static async data(id?: string) {
 		return await projects.data({ id });
 	}
 
@@ -40,6 +41,20 @@ export /*bundle*/ class Projects {
 			if (response.error) return new FirestoreErrorManager(response.error.code, response.error.text);
 
 			return Projects.data(id);
+		} catch (exc) {
+			return exc;
+		}
+	}
+
+	static async list() {
+		try {
+			const projectsRef = db.collection('Projects');
+			const snapshot = await projectsRef.get();
+
+			const entries = [];
+			snapshot.forEach(doc => entries.push(doc.data()));
+
+			return { data: { entries } };
 		} catch (exc) {
 			return exc;
 		}

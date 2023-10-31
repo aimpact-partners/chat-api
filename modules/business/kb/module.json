@@ -1,5 +1,5 @@
 {
-	"name": "kb",
+	"name": "business/kb",
 	"platforms": ["node"],
 	"ts": {
 		"files": ["*"]

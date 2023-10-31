@@ -1,9 +1,9 @@
 import { UserMiddlewareHandler } from '@aimpact/chat-api/middleware';
-import { Conversation } from '@aimpact/chat-api/models/conversation';
-import { ConversationMessagesRoutes } from './messages';
+import { Chat } from '@aimpact/chat-api/business/chats';
 import type { Response, Application } from 'express';
+import type { IChat } from '@aimpact/chat-api/business/chats';
 import type { IAuthenticatedRequest } from '@aimpact/chat-api/middleware';
-import type { IConversation } from '@aimpact/chat-api/models/conversation';
+import { ChatMessagesRoutes } from './messages';
 
 export class ConversationsRoutes {
 	static setup(app: Application) {
@@ -14,7 +14,7 @@ export class ConversationsRoutes {
 			});
 		});
 
-		ConversationMessagesRoutes.setup(app);
+		ChatMessagesRoutes.setup(app);
 
 		app.get('/conversations/:id', UserMiddlewareHandler.validate, ConversationsRoutes.get);
 		app.post('/conversations', UserMiddlewareHandler.validate, ConversationsRoutes.publish);
@@ -26,7 +26,7 @@ export class ConversationsRoutes {
 			const { uid } = req.user;
 
 			// true for get messages
-			const data = await Conversation.get(id, uid, true);
+			const data = await Chat.get(id, uid, true);
 			return res.json({ status: true, data });
 		} catch (e) {
 			console.error(e);
@@ -36,8 +36,8 @@ export class ConversationsRoutes {
 
 	static async publish(req: IAuthenticatedRequest, res: Response) {
 		try {
-			const params: IConversation = req.body;
-			const data = await Conversation.publish(params);
+			const params: IChat = req.body;
+			const data = await Chat.save(params);
 
 			res.json({ status: true, data });
 		} catch (e) {

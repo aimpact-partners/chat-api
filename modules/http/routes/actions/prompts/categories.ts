@@ -19,11 +19,11 @@ export class PromptsCategoriesRoutes {
 		// 	})
 		// );
 
-		app.get('/prompts/categories', this.list);
 		app.post('/prompts/categories', this.publish);
 		app.get('/prompts/categories/:id', this.get);
 		app.put('/prompts/categories/:id', this.update);
 		app.delete('/prompts/categories/:id', this.delete);
+		app.get('/prompts/categories/project/:id', this.list);
 
 		// app.get('/prompts/categories', UserMiddlewareHandler.validate, this.list);
 		// app.post('/prompts/categories', UserMiddlewareHandler.validate, this.publish);
@@ -59,6 +59,11 @@ export class PromptsCategoriesRoutes {
 				res.json(new HttpResponse(response));
 				return;
 			}
+			if (response.data.error) {
+				res.json(new HttpResponse({ error: response.data.error }));
+				return;
+			}
+
 			res.json(new HttpResponse({ data: response.data.data }));
 		} catch (exc) {
 			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
@@ -85,7 +90,10 @@ export class PromptsCategoriesRoutes {
 
 	static async list(req: Request, res: Response) {
 		try {
-			const response = await PromptCategories.list();
+			const { id } = req.params;
+			const response = await PromptCategories.byProject(id);
+
+			console.log('LISt', id, response);
 			res.json(new HttpResponse(response));
 		} catch (exc) {
 			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));

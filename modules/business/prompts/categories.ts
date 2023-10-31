@@ -1,4 +1,5 @@
 import { FirestoreErrorManager } from '@beyond-js/firestore-collection/errors';
+import { db } from '@beyond-js/firestore-collection/db';
 import { v4 as uuid } from 'uuid';
 import { Projects } from '@aimpact/chat-api/business/projects';
 import { promptsCategories } from '@aimpact/chat-api/data/model';
@@ -51,6 +52,20 @@ export /*bundle*/ class PromptCategories {
 			if (response.error) return new FirestoreErrorManager(response.error.code, response.error.text);
 
 			return response.data;
+		} catch (exc) {
+			return exc;
+		}
+	}
+
+	static async byProject(project: string) {
+		try {
+			const categoriasRef = db.collection('PromptCategories');
+			const snapshot = await categoriasRef.where('project.id', '==', project).get();
+
+			const entries = [];
+			snapshot.forEach(doc => entries.push(doc.data()));
+
+			return { data: { entries } };
 		} catch (exc) {
 			return exc;
 		}

@@ -8,8 +8,6 @@ import { PromptCategories } from '@aimpact/chat-api/business/prompts';
 import { Projects } from '@aimpact/chat-api/business/projects';
 import type { Request, Response, Application } from 'express';
 
-console.log('Projects', !!Projects);
-
 dotenv.config();
 
 export class ProjectsRoutes {
@@ -23,16 +21,19 @@ export class ProjectsRoutes {
 		// );
 
 		app.get('/projects/', this.list);
-		app.post('/projects/', this.publish);
 		app.get('/projects/:id', this.get);
+		app.post('/projects/', this.publish);
 		app.put('/projects/:id', this.update);
 		app.delete('/projects/:id', this.delete);
+	}
 
-		// app.get('/projects/', UserMiddlewareHandler.validate, this.list);
-		// app.post('/projects/', UserMiddlewareHandler.validate, this.publish);
-		// app.get('/projects/:id', UserMiddlewareHandler.validate, this.get);
-		// app.put('/projects/:id', UserMiddlewareHandler.validate, this.update);
-		// app.delete('/projects/:id', UserMiddlewareHandler.validate, this.delete);
+	static async list(req: Request, res: Response) {
+		try {
+			const response = await Projects.list();
+			res.json(new HttpResponse(response));
+		} catch (exc) {
+			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
+		}
 	}
 
 	static async get(req: Request, res: Response): Promise<void> {
@@ -58,8 +59,6 @@ export class ProjectsRoutes {
 		try {
 			const { id, name, description } = req.body;
 			const response = await Projects.save({ id, name, description });
-
-			console.log('response', response);
 
 			if (response.error) {
 				res.json(new HttpResponse(response));
@@ -87,15 +86,6 @@ export class ProjectsRoutes {
 	static async delete(req: Request, res: Response) {
 		try {
 			let response;
-			res.json(new HttpResponse(response));
-		} catch (exc) {
-			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
-		}
-	}
-
-	static async list(req: Request, res: Response) {
-		try {
-			const response = await PromptCategories.list();
 			res.json(new HttpResponse(response));
 		} catch (exc) {
 			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
