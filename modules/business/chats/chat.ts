@@ -51,7 +51,7 @@ export /*bundle*/ class Chat {
 		return conversationData;
 	}
 
-	static async publish(data: IChat) {
+	static async save(data: IChat) {
 		try {
 			const id = data.id ?? uuid();
 

@@ -1,6 +1,9 @@
 import type { Request, Response, Application } from 'express';
+import type { IAuthenticatedRequest } from '@aimpact/chat-api/middleware';
 import { Chat } from '@aimpact/chat-api/business/chats';
+import { UserMiddlewareHandler } from '@aimpact/chat-api/middleware';
 import * as OpenApiValidator from 'express-openapi-validator';
+import { ChatMessagesRoutes } from './messages';
 import { IChat, ICreateChatSpecs } from './interfaces';
 
 export class ChatsRoutes {
@@ -28,12 +31,17 @@ export class ChatsRoutes {
 			});
 		});
 		app.get('/chats', ChatsRoutes.list);
-		app.get('/chats/:id', ChatsRoutes.get);
-		app.post('/chats', ChatsRoutes.save);
 		app.post('/chats/bulk', ChatsRoutes.bulk);
 		app.put('/chats/:id', ChatsRoutes.update);
-		app.delete('/chats/:id', ChatsRoutes.delete);
 		app.delete('/chats/', ChatsRoutes.delete);
+		app.delete('/chats/:id', ChatsRoutes.delete);
+
+		ChatMessagesRoutes.setup(app);
+
+		app.post('/chats', UserMiddlewareHandler.validate, ChatsRoutes.save);
+		app.get('/chats/:id', UserMiddlewareHandler.validate, ChatsRoutes.get);
+		app.get('/conversations/:id', UserMiddlewareHandler.validate, ChatsRoutes.get);
+		app.post('/conversations', UserMiddlewareHandler.validate, ChatsRoutes.save);
 	}
 
 	static async list(req: Request, res: Response) {
@@ -51,14 +59,13 @@ export class ChatsRoutes {
 		}
 	}
 
-	static async get(req: Request, res: Response) {
+	static async get(req: IAuthenticatedRequest, res: Response) {
 		try {
-			// Logic to retrieve a specific chat by ID
 			const { id } = req.params;
+			const { uid } = req.user;
 
-			const model = new Chat();
-			const data = await model.get(id);
-
+			// true for get messages
+			const data = await Chat.get(id, uid, true);
 			return res.json({ status: true, data });
 		} catch (e) {
 			console.error(e);
@@ -68,9 +75,8 @@ export class ChatsRoutes {
 
 	static async save(req: Request, res: Response) {
 		try {
-			// Logic to create a new chat}
 			const params: ICreateChatSpecs = req.body;
-			const data = await Chat.publish(params);
+			const data = await Chat.save(params);
 			res.json({ status: true, data });
 		} catch (e) {
 			console.error(e);
