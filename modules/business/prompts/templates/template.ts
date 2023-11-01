@@ -2,6 +2,7 @@ import { FirestoreErrorManager } from '@beyond-js/firestore-collection/errors';
 import { v4 as uuid } from 'uuid';
 import { prompts } from '@aimpact/chat-api/data/model';
 import { IPromptData } from '@aimpact/chat-api/data/interfaces';
+import { PromptCategories } from '../categories';
 
 export /*bundle*/ class PromptsTemplate {
 	static async data(id: string) {
@@ -10,20 +11,35 @@ export /*bundle*/ class PromptsTemplate {
 
 	static async save(params: IPromptData) {
 		try {
+			if (params.format !== 'text' && params.format !== 'json') {
+				return { error: 'format not valid', code: 123 };
+			}
+			if (params.is !== 'prompt' && params.is !== 'function') {
+				return { error: 'prompt type not specified', code: 124 };
+			}
+
+			let categories;
+			// if (params.categories) {
+			// 	const responseCategory = await PromptCategories.data(params.categories);
+			// 	categories= categoriesData;
+			// }
+
 			const id = params.id ?? uuid();
-			const toSave = {
+			const toSave: IPromptData = {
 				id: id,
-				categories: params.categories,
 				name: params.name,
 				description: params.description,
 				language: params.language,
-				value: params.value,
-				options: params.options,
-				dependencies: params.dependencies,
-				literals: params.literals,
 				format: params.format,
 				is: params.is
 			};
+
+			categories && (toSave.categories = categories);
+			params.value && (toSave.value = params.value);
+			params.options && (toSave.options = params.options);
+			params.dependencies && (toSave.dependencies = params.dependencies);
+			params.literals && (toSave.literals = params.literals);
+
 			const specs = { data: toSave };
 			const response = await prompts.set(specs);
 

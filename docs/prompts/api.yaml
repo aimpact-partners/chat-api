@@ -213,7 +213,7 @@ components:
                 - description
                 - language
             properties:
-                categories:
+                categories?:
                     type: array
                     items:
                         $ref: '#/components/schemas/IPromptCategoryData'
@@ -231,7 +231,7 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/IPromptOptionData'
-                dependencies:
+                dependencies?:
                     type: array
                     items:
                         type: string

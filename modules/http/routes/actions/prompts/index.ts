@@ -1,10 +1,12 @@
+import type { Request, Response, Application } from 'express';
 import * as OpenApiValidator from 'express-openapi-validator';
 import * as dotenv from 'dotenv';
 import { join } from 'path';
 import { UserMiddlewareHandler } from '@aimpact/chat-api/middleware';
 import { Response as HttpResponse } from '@beyond-js/response/main';
+import { PromptsTemplate } from '@aimpact/chat-api/business/prompts';
+import { ErrorGenerator } from '@beyond-js/firestore-collection/errors';
 import { PromptsCategoriesRoutes } from './categories';
-import type { Request, Response, Application } from 'express';
 
 dotenv.config();
 
@@ -20,21 +22,28 @@ export class PromptsRoutes {
 
 		PromptsCategoriesRoutes.setup(app);
 
-		app.get('/prompts/templates/:id', UserMiddlewareHandler.validate, this.get);
-		app.put('/prompts/templates/:id', UserMiddlewareHandler.validate, this.update);
-		app.delete('/prompts/templates/:id', UserMiddlewareHandler.validate, this.delete);
-		app.post('/prompts/templates', UserMiddlewareHandler.validate, this.publish);
-		app.get('/prompts/templates', UserMiddlewareHandler.validate, this.list);
-
-		app.get('/prompts/export', UserMiddlewareHandler.validate, this.export);
+		app.get('/prompts/templates', this.list);
+		app.get('/prompts/templates/:id', this.get);
+		app.post('/prompts/templates', this.publish);
+		app.put('/prompts/templates/:id', this.update);
+		app.delete('/prompts/templates/:id', this.delete);
 	}
 
-	static async get(req: Request, res: Response) {
+	static async get(req: Request, res: Response): Promise<void> {
 		try {
-			let response;
-			res.json(new HttpResponse(response));
-		} catch (e) {
-			res.json({ error: e.message });
+			const { id } = req.params;
+			const response = await PromptsTemplate.data(id);
+			if (response.error) {
+				res.json(new HttpResponse(response));
+				return;
+			}
+			if (!response.data.exists) {
+				res.json(new HttpResponse({ error: response.data.error }));
+				return;
+			}
+			res.json(new HttpResponse({ data: response.data.data }));
+		} catch (exc) {
+			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
 		}
 	}
 
@@ -67,20 +76,20 @@ export class PromptsRoutes {
 
 	static async publish(req: Request, res: Response) {
 		try {
-			console.log('publish');
-			let response;
-			res.json(new HttpResponse(response));
-		} catch (e) {
-			res.json({ error: e.message });
-		}
-	}
+			const specs = req.body;
+			const response = await PromptsTemplate.save(specs);
+			if (response.error) {
+				res.json(new HttpResponse(response));
+				return;
+			}
+			if (response.data.error) {
+				res.json(new HttpResponse({ error: response.data.error }));
+				return;
+			}
 
-	static async export(req: Request, res: Response) {
-		try {
-			let response;
-			res.json(new HttpResponse(response));
-		} catch (e) {
-			res.json({ error: e.message });
+			res.json(new HttpResponse({ data: response.data.data }));
+		} catch (exc) {
+			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
 		}
 	}
 }

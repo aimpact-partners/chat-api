@@ -26,10 +26,6 @@ export class PromptsCategoriesRoutes {
 		app.get('/prompts/categories/project/:id', this.list);
 
 		// app.get('/prompts/categories', UserMiddlewareHandler.validate, this.list);
-		// app.post('/prompts/categories', UserMiddlewareHandler.validate, this.publish);
-		// app.get('/prompts/categories/:id', UserMiddlewareHandler.validate, this.get);
-		// app.put('/prompts/categories/:id', UserMiddlewareHandler.validate, this.update);
-		// app.delete('/prompts/categories/:id', UserMiddlewareHandler.validate, this.delete);
 	}
 
 	static async get(req: Request, res: Response): Promise<void> {
