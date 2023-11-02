@@ -38,8 +38,8 @@ export class ChatsRoutes {
 
 		ChatMessagesRoutes.setup(app);
 
-		app.post('/chats', UserMiddlewareHandler.validate, ChatsRoutes.save);
-		app.get('/chats/:id', UserMiddlewareHandler.validate, ChatsRoutes.get);
+		app.post('/chats', ChatsRoutes.save);
+		app.get('/chats/:id', ChatsRoutes.get);
 		app.get('/conversations/:id', UserMiddlewareHandler.validate, ChatsRoutes.get);
 		app.post('/conversations', UserMiddlewareHandler.validate, ChatsRoutes.save);
 	}
