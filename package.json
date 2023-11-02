@@ -36,19 +36,17 @@
 	"deployment": {
 		"distributions": [
 			{
-				"name": "web-development",
-				"environment": "development",
+				"name": "web",
+				"environment": "local",
 				"platform": "web",
 				"backend": "backend",
 				"ports": {
-					"bundles": 3380,
-					"http": 3581,
-					"inspect": 3282
+					"bundles": 3377
 				}
 			},
 			{
 				"name": "backend",
-				"environment": "development",
+				"environment": "local",
 				"platform": "backend",
 				"host": "https://chat-api-ws-v2-rb5caohzgq-uc.a.run.app",
 				"ports": {
@@ -59,7 +57,7 @@
 			},
 			{
 				"name": "http",
-				"environment": "development",
+				"environment": "local",
 				"platform": "node",
 				"ports": {
 					"bundles": 6583,
@@ -68,14 +66,42 @@
 				}
 			},
 			{
+				"name": "web-development",
+				"environment": "development",
+				"platform": "web",
+				"backend": "backend-development",
+				"ports": {
+					"bundles": 3380
+				}
+			},
+			{
+				"name": "backend-development",
+				"environment": "development",
+				"platform": "backend",
+				"host": "https://chat-api-ws-v2-rb5caohzgq-uc.a.run.app",
+				"ports": {
+					"bundles": 6586,
+					"http": 6587,
+					"inspect": 6588
+				}
+			},
+			{
+				"name": "http-development",
+				"environment": "development",
+				"platform": "node",
+				"ports": {
+					"bundles": 6589,
+					"http": 6590,
+					"inspect": 6591
+				}
+			},
+			{
 				"name": "web-testing",
 				"environment": "testing",
 				"platform": "web",
 				"backend": "backend-testing",
 				"ports": {
-					"bundles": 3385,
-					"http": 3586,
-					"inspect": 3287
+					"bundles": 3385
 				}
 			},
 			{
@@ -84,7 +110,7 @@
 				"platform": "backend",
 				"host": "https://chat-api-ws-skvkre4apq-uc.a.run.app",
 				"ports": {
-					"bundles": 6590,
+					"bundles": 6597,
 					"http": 6591,
 					"inspect": 6592
 				}
@@ -97,17 +123,6 @@
 					"bundles": 6593,
 					"http": 6594,
 					"inspect": 6595
-				}
-			},
-			{
-				"name": "web",
-				"environment": "local",
-				"platform": "web",
-				"backend": "backend",
-				"ports": {
-					"bundles": 3377,
-					"http": 3578,
-					"inspect": 3278
 				}
 			},
 			{

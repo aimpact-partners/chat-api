@@ -27,6 +27,8 @@ export class PromptsRoutes {
 		app.post('/prompts/templates', this.publish);
 		app.put('/prompts/templates/:id', this.update);
 		app.delete('/prompts/templates/:id', this.delete);
+
+		app.post('/prompts/templates/process', this.process);
 	}
 
 	static async get(req: Request, res: Response): Promise<void> {
@@ -88,6 +90,25 @@ export class PromptsRoutes {
 			}
 
 			res.json(new HttpResponse({ data: response.data.data }));
+		} catch (exc) {
+			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
+		}
+	}
+
+	static async process(req: Request, res: Response) {
+		try {
+			const { prompt } = req.body;
+			const response = await PromptsTemplate.process(prompt);
+			if (response.error) {
+				res.json(new HttpResponse(response));
+				return;
+			}
+			if (response.data.error) {
+				res.json(new HttpResponse({ error: response.data.error }));
+				return;
+			}
+
+			res.json(new HttpResponse({ data: response.data }));
 		} catch (exc) {
 			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
 		}

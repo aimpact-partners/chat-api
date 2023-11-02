@@ -5,7 +5,7 @@ export /*bundle*/ interface IPromptOptionData {
 	value: string;
 }
 
-export /*bundle*/ interface IPromptData {
+export /*bundle*/ interface IPromptTemplateData {
 	id: string;
 	categories?: IPromptCategoryData[];
 	name: string;
@@ -16,5 +16,5 @@ export /*bundle*/ interface IPromptData {
 	dependencies?: string[];
 	literals?: string[];
 	format: 'json' | 'text';
-	is: 'prompt' | 'function';
+	is: 'prompt' | 'function' | 'dependency';
 }
