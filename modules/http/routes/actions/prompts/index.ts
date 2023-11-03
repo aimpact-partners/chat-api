@@ -31,6 +31,21 @@ export class PromptsRoutes {
 		app.post('/prompts/templates/process', this.process);
 	}
 
+	static async list(req: Request, res: Response) {
+		try {
+			const filter = req.query.is;
+			const response = await PromptsTemplate.list(filter);
+			if (response.error) {
+				res.json(new HttpResponse(response));
+				return;
+			}
+
+			res.json(new HttpResponse({ data: response.data }));
+		} catch (e) {
+			res.json({ error: e.message });
+		}
+	}
+
 	static async get(req: Request, res: Response): Promise<void> {
 		try {
 			const { id } = req.params;
@@ -59,15 +74,6 @@ export class PromptsRoutes {
 	}
 
 	static async delete(req: Request, res: Response) {
-		try {
-			let response;
-			res.json(new HttpResponse(response));
-		} catch (e) {
-			res.json({ error: e.message });
-		}
-	}
-
-	static async list(req: Request, res: Response) {
 		try {
 			let response;
 			res.json(new HttpResponse(response));

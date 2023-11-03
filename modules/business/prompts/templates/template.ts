@@ -1,4 +1,5 @@
 import { FirestoreErrorManager } from '@beyond-js/firestore-collection/errors';
+import { db } from '@beyond-js/firestore-collection/db';
 import { OpenAIBackend } from '@aimpact/chat-api/backend-openai';
 import { v4 as uuid } from 'uuid';
 import { prompts } from '@aimpact/chat-api/data/model';
@@ -10,8 +11,29 @@ export /*bundle*/ class PromptsTemplate {
 		return await prompts.data({ id });
 	}
 
+	static async list(filter: string) {
+		try {
+			let query = db.collection('Prompts');
+			if (filter) {
+				query = <FirebaseFirestore.CollectionReference<FirebaseFirestore.DocumentData>>(
+					query.where('is', '==', filter)
+				);
+			}
+
+			const items = await query.get();
+			const entries = items.docs.map(item => item.data());
+			return { status: true, data: { entries } };
+		} catch (e) {
+			throw Error(e.message);
+		}
+	}
+
 	static async save(params: IPromptData) {
 		try {
+			const dataResponse = await PromptsTemplate.data(params.name);
+			if (dataResponse.error) return dataResponse;
+			if (dataResponse.data.exists) return { status: false, error: 'Prompt exists' };
+
 			if (params.format !== 'text' && params.format !== 'json') {
 				return { error: 'format not valid', code: 123 };
 			}
@@ -25,9 +47,8 @@ export /*bundle*/ class PromptsTemplate {
 			// 	categories= categoriesData;
 			// }
 
-			const id = params.id ?? uuid();
 			const toSave: IPromptData = {
-				id: id,
+				id: params.name,
 				name: params.name,
 				description: params.description,
 				language: params.language,
