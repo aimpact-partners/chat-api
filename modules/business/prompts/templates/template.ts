@@ -3,7 +3,8 @@ import { db } from '@beyond-js/firestore-collection/db';
 import { OpenAIBackend } from '@aimpact/chat-api/backend-openai';
 import { v4 as uuid } from 'uuid';
 import { prompts } from '@aimpact/chat-api/data/model';
-import { IPromptData } from '@aimpact/chat-api/data/interfaces';
+import { IPromptTemplateBaseData, IPromptTemplateData } from '@aimpact/chat-api/data/interfaces';
+import { Projects } from '@aimpact/chat-api/business/projects';
 import { PromptCategories } from '../categories';
 
 export /*bundle*/ class PromptsTemplate {
@@ -11,9 +12,13 @@ export /*bundle*/ class PromptsTemplate {
 		return await prompts.data({ id });
 	}
 
-	static async list(filter: string) {
+	static async list(projectId: string, filter: string) {
 		try {
-			let query = db.collection('Prompts');
+			const dataProject = await Projects.data(projectId);
+			if (dataProject.error) return dataProject;
+			if (!dataProject.data.exists) return { status: false, error: 'Project not exists' };
+
+			let query = db.collection('Prompts').where('project.id', '==', projectId);
 			if (filter) {
 				query = <FirebaseFirestore.CollectionReference<FirebaseFirestore.DocumentData>>(
 					query.where('is', '==', filter)
@@ -28,11 +33,15 @@ export /*bundle*/ class PromptsTemplate {
 		}
 	}
 
-	static async save(params: IPromptData) {
+	static async save(params: IPromptTemplateBaseData) {
 		try {
-			const dataResponse = await PromptsTemplate.data(params.name);
-			if (dataResponse.error) return dataResponse;
-			if (dataResponse.data.exists) return { status: false, error: 'Prompt exists' };
+			// const dataResponse = await PromptsTemplate.data(params.id);
+			// if (dataResponse.error) return dataResponse;
+			// if (dataResponse.data.exists) return { status: false, error: 'Prompt already exists' };
+
+			const dataProject = await Projects.data(params.projectId);
+			if (dataProject.error) return dataProject;
+			if (!dataProject.data.exists) return { status: false, error: 'Project not exists' };
 
 			if (params.format !== 'text' && params.format !== 'json') {
 				return { error: 'format not valid', code: 123 };
@@ -47,8 +56,11 @@ export /*bundle*/ class PromptsTemplate {
 			// 	categories= categoriesData;
 			// }
 
-			const toSave: IPromptData = {
-				id: params.name,
+			const project = dataProject.data.data;
+			const id = params.id ? params.id : `${project.id}.${params.name}`;
+			const toSave: IPromptTemplateData = {
+				project: { id: project.id, name: project.name },
+				id,
 				name: params.name,
 				description: params.description,
 				language: params.language,

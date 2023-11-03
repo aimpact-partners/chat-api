@@ -5,16 +5,27 @@ export /*bundle*/ interface IPromptOptionData {
 	value: string;
 }
 
-export /*bundle*/ interface IPromptTemplateData {
+interface IBase {
 	id: string;
-	categories?: IPromptCategoryData[];
 	name: string;
 	description: string;
 	language: string;
-	value?: string;
-	options?: IPromptOptionData[];
-	dependencies?: string[];
-	literals?: string[];
 	format: 'json' | 'text';
 	is: 'prompt' | 'function' | 'dependency';
+	value?: string;
+	options?: IPromptOptionData[];
+	literals?: {
+		pure?: string[];
+		dependencies?: string[];
+		metadata?: string[];
+	};
+}
+
+export /*bundle*/ interface IPromptTemplateBaseData extends IBase {
+	projectId: string;
+}
+
+export /*bundle*/ interface IPromptTemplateData extends IBase {
+	project: { id: string; name: string };
+	categories?: IPromptCategoryData[];
 }

@@ -22,7 +22,7 @@ export class PromptsRoutes {
 
 		PromptsCategoriesRoutes.setup(app);
 
-		app.get('/prompts/templates', this.list);
+		app.get('/prompts/templates/project/:projectId', this.list);
 		app.get('/prompts/templates/:id', this.get);
 		app.post('/prompts/templates', this.publish);
 		app.put('/prompts/templates/:id', this.update);
@@ -33,8 +33,9 @@ export class PromptsRoutes {
 
 	static async list(req: Request, res: Response) {
 		try {
+			const { projectId } = req.params;
 			const filter = req.query.is;
-			const response = await PromptsTemplate.list(filter);
+			const response = await PromptsTemplate.list(projectId, filter);
 			if (response.error) {
 				res.json(new HttpResponse(response));
 				return;
