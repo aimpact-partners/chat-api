@@ -118,6 +118,16 @@ paths:
             summary: Get a prompt templates list.
             tags:
                 - Prompts Templates
+            parameters:
+                - name: is
+                  in: query
+                  description: Filter ('prompt', 'function', 'dependency').
+                  schema:
+                      type: string
+                      enum:
+                          - prompt
+                          - function
+                          - dependency
             responses:
                 200:
                     description: Prompt Geted successfully.
