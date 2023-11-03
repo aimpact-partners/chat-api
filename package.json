@@ -69,61 +69,35 @@
 				"name": "web-development",
 				"environment": "development",
 				"platform": "web",
-				"backend": "backend-development",
-				"ports": {
-					"bundles": 3380
-				}
+				"backend": "backend-development"
 			},
 			{
 				"name": "backend-development",
 				"environment": "development",
 				"platform": "backend",
-				"host": "https://chat-api-ws-v2-rb5caohzgq-uc.a.run.app",
-				"ports": {
-					"bundles": 6586,
-					"http": 6587,
-					"inspect": 6588
-				}
+				"host": "https://chat-api-ws-v2-rb5caohzgq-uc.a.run.app"
 			},
 			{
 				"name": "http-development",
 				"environment": "development",
-				"platform": "node",
-				"ports": {
-					"bundles": 6589,
-					"http": 6590,
-					"inspect": 6591
-				}
+				"platform": "node"
 			},
 			{
 				"name": "web-testing",
 				"environment": "testing",
 				"platform": "web",
-				"backend": "backend-testing",
-				"ports": {
-					"bundles": 3385
-				}
+				"backend": "backend-testing"
 			},
 			{
 				"name": "backend-testing",
 				"environment": "testing",
 				"platform": "backend",
-				"host": "https://chat-api-ws-skvkre4apq-uc.a.run.app",
-				"ports": {
-					"bundles": 6597,
-					"http": 6591,
-					"inspect": 6592
-				}
+				"host": "https://chat-api-ws-skvkre4apq-uc.a.run.app"
 			},
 			{
 				"name": "http-testing",
 				"environment": "testing",
-				"platform": "node",
-				"ports": {
-					"bundles": 6593,
-					"http": 6594,
-					"inspect": 6595
-				}
+				"platform": "node"
 			},
 			{
 				"name": "node-tsc",
