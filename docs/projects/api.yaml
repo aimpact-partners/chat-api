@@ -7,11 +7,30 @@ info:
         email: hello@aimpact.partners
 
 paths:
-    /projects:  
+    /projects:
+        get:
+            summary: Get a projects list.
+            tags:
+                - /projects
+            responses:
+                200:
+                    description: Projects list geted successfully.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponseList'
+                400:
+                    description: Bad request. Possible errors regarding missing or incorrect data.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponseBadRequest'
         post:
             summary: Publish a new project.
             tags:
-                - Projects
+                - /projects
             requestBody:
                 required: true
                 content:
@@ -42,13 +61,13 @@ paths:
                         application/json:
                             schema:
                                 type: object
-                                $ref: '#/components/schemas/IResponse'
+                                $ref: '#/components/schemas/IResponseBadRequest'
 
     /projects/{id}:
         get:
             summary: Get a Project.
             tags:
-                - Projects
+                - /projects
             responses:
                 200:
                     description: Project Geted successfully.
@@ -63,12 +82,12 @@ paths:
                         application/json:
                             schema:
                                 type: object
-                                $ref: '#/components/schemas/IResponse'
+                                $ref: '#/components/schemas/IResponseBadRequest'
 
         put:
             summary: Put a Project.
             tags:
-                - Projects
+                - /projects
             requestBody:
                 required: true
                 content:
@@ -94,12 +113,12 @@ paths:
                         application/json:
                             schema:
                                 type: object
-                                $ref: '#/components/schemas/IResponse'
+                                $ref: '#/components/schemas/IResponseBadRequest'
 
         delete:
             summary: Delete a Project.
             tags:
-                - Projects
+                - /projects
             requestBody:
                 required: true
                 content:
@@ -126,7 +145,7 @@ paths:
                         application/json:
                             schema:
                                 type: object
-                                $ref: '#/components/schemas/IResponse'
+                                $ref: '#/components/schemas/IResponseBadRequest'
 
 components:
     schemas:
@@ -138,13 +157,37 @@ components:
                 status:
                     type: boolean
                     description: Response status.
-                error:
-                    type: string
-                    description: Error text.
                 data:
                     type: object
                     $ref: '#/components/schemas/IProjectData'
                     description: Response Data.
+
+        IResponseBadRequest:
+            type: object
+            properties:
+                status:
+                    type: boolean
+                    description: Response status.
+                error:
+                    type: string
+                    description: Error text.
+
+        IResponseList:
+            type: object
+            required:
+                - status
+            properties:
+                status:
+                    type: boolean
+                    description: Response status.
+                data:
+                    type: object
+                    properties:
+                        entries:
+                            description: Response Data.
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/IProjectData'
 
         IProjectData:
             properties:

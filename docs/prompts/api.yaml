@@ -198,11 +198,15 @@ components:
                 - type: object
             type: object
             required:
+                - projectId
                 - name
                 - description
                 - language
                 - format
                 - is
+            properties:
+                projectId:
+                    type: string
 
         IPromptTemplateBaseData:
             allOf:
@@ -214,10 +218,6 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/IPromptTemplateOptionData'
-                dependencies:
-                    type: array
-                    items:
-                        type: string
 
         IPromptTemplateData:
             type: object
@@ -232,6 +232,8 @@ components:
                 id:
                     type: string
                 name:
+                    type: string
+                identifier:
                     type: string
                 description:
                     type: string
