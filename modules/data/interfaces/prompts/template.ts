@@ -1,19 +1,13 @@
 import { IPromptCategoryData } from './category';
+import { IPromptOptionData } from './language';
 
-export /*bundle*/ interface IPromptOptionData {
-	id: string;
-	value: string;
-}
-
-interface IBase {
+interface IBaseData {
 	id: string;
 	name: string;
-	description: string;
-	language: string;
+	description?: string;
+	languages: string[];
 	format: 'json' | 'text';
 	is: 'prompt' | 'function' | 'dependency';
-	value?: string;
-	options?: IPromptOptionData[];
 	literals?: {
 		pure?: string[];
 		dependencies?: string[];
@@ -21,11 +15,15 @@ interface IBase {
 	};
 }
 
-export /*bundle*/ interface IPromptTemplateBaseData extends IBase {
+export /*bundle*/ interface IPromptTemplateBaseData extends IBaseData {
 	projectId: string;
+	language: string;
+	value?: string;
+	options?: IPromptOptionData[];
 }
 
-export /*bundle*/ interface IPromptTemplateData extends IBase {
-	project: { id: string; name: string };
+export /*bundle*/ interface IPromptTemplateData extends IBaseData {
+	identifier: string;
+	project: { id: string; name: string; identifier: string };
 	categories?: IPromptCategoryData[];
 }

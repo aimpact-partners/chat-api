@@ -1,6 +1,8 @@
 import { FirestoreErrorManager } from '@beyond-js/firestore-collection/errors';
-import { db } from '@beyond-js/firestore-collection/db';
+import { ErrorGenerator } from '@aimpact/chat-api/errors';
+import { Response } from '@beyond-js/response/main';
 import { v4 as uuid } from 'uuid';
+import { db } from '@beyond-js/firestore-collection/db';
 import { projects } from '@aimpact/chat-api/data/model';
 
 export /*bundle*/ class Projects {
@@ -24,7 +26,8 @@ export /*bundle*/ class Projects {
 
 			return Projects.data(id);
 		} catch (exc) {
-			return exc;
+			const error = ErrorGenerator.internalError(exc);
+			return new Response({ error });
 		}
 	}
 
@@ -42,7 +45,8 @@ export /*bundle*/ class Projects {
 
 			return Projects.data(id);
 		} catch (exc) {
-			return exc;
+			const error = ErrorGenerator.internalError(exc);
+			return new Response({ error });
 		}
 	}
 
@@ -56,7 +60,8 @@ export /*bundle*/ class Projects {
 
 			return { data: { entries } };
 		} catch (exc) {
-			return exc;
+			const error = ErrorGenerator.internalError(exc);
+			return new Response({ error });
 		}
 	}
 }

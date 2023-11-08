@@ -11,7 +11,7 @@ paths:
         post:
             summary: Publish a new prompt category.
             tags:
-                - Prompts Categories.
+                - /prompts/categories
             requestBody:
                 required: true
                 content:
@@ -20,13 +20,13 @@ paths:
                             type: object
                             required:
                                 - name
-                                - project
+                                - projectId
                             properties:
                                 id:
                                     type: string
                                 name:
                                     type: string
-                                project:
+                                projectId:
                                     type: string
                                 description:
                                     type: string
@@ -50,7 +50,7 @@ paths:
         get:
             summary: Get a Prompt.
             tags:
-                - Prompts Categories.
+                - /prompts/categories
             responses:
                 200:
                     description: Prompt Geted successfully.
@@ -65,12 +65,12 @@ paths:
                         application/json:
                             schema:
                                 type: object
-                                $ref: '#/components/schemas/IResponse'
+                                $ref: '#/components/schemas/IResponseBadRequest'
 
         put:
             summary: Put a Prompt category.
             tags:
-                - Prompts Categories.
+                - /prompts/categories
             requestBody:
                 required: true
                 content:
@@ -96,12 +96,12 @@ paths:
                         application/json:
                             schema:
                                 type: object
-                                $ref: '#/components/schemas/IResponse'
+                                $ref: '#/components/schemas/IResponseBadRequest'
 
         delete:
             summary: Delete a prompt category.
             tags:
-                - Prompts Categories.
+                - /prompts/categories
             requestBody:
                 required: true
                 content:
@@ -113,7 +113,6 @@ paths:
                             properties:
                                 value:
                                     type: string
-
             responses:
                 200:
                     description: Prompt published successfully.
@@ -128,13 +127,13 @@ paths:
                         application/json:
                             schema:
                                 type: object
-                                $ref: '#/components/schemas/IResponse'
+                                $ref: '#/components/schemas/IResponseBadRequest'
 
-    /prompt/categories:
+    /prompts/categories/project/{id}:
         get:
-            summary: Get list of Prompt Categories.
+            summary: Get list of Prompt Categories by Project.
             tags:
-                - Prompts Categories.
+                - /prompts/categories
             responses:
                 200:
                     description: Prompt Geted successfully.
@@ -142,14 +141,14 @@ paths:
                         application/json:
                             schema:
                                 type: object
-                                $ref: '#/components/schemas/IResponse'
+                                $ref: '#/components/schemas/IResponseList'
                 400:
                     description: Bad request. Possible errors regarding missing or incorrect data.
                     content:
                         application/json:
                             schema:
                                 type: object
-                                $ref: '#/components/schemas/IResponse'
+                                $ref: '#/components/schemas/IResponseBadRequest'
 
 components:
     schemas:
@@ -161,13 +160,37 @@ components:
                 status:
                     type: boolean
                     description: Response status.
-                error:
-                    type: string
-                    description: Error text.
                 data:
                     type: object
                     $ref: '#/components/schemas/IPromptCategoryData'
                     description: Response Data.
+
+        IResponseBadRequest:
+            type: object
+            properties:
+                status:
+                    type: boolean
+                    description: Response status.
+                error:
+                    type: string
+                    description: Error text.
+
+        IResponseList:
+            type: object
+            required:
+                - status
+            properties:
+                status:
+                    type: boolean
+                    description: Response status.
+                data:
+                    type: object
+                    properties:
+                        entries:
+                            description: Response Data.
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/IPromptCategoryData'
 
         IPromptCategoryData:
             properties:

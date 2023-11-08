@@ -88,8 +88,6 @@ export class PromptsCategoriesRoutes {
 		try {
 			const { id } = req.params;
 			const response = await PromptCategories.byProject(id);
-
-			console.log('LISt', id, response);
 			res.json(new HttpResponse(response));
 		} catch (exc) {
 			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));

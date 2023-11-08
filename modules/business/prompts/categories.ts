@@ -1,14 +1,17 @@
 import { FirestoreErrorManager } from '@beyond-js/firestore-collection/errors';
 import { db } from '@beyond-js/firestore-collection/db';
 import { v4 as uuid } from 'uuid';
+import { Response } from '@beyond-js/response/main';
+import { ErrorGenerator } from '@aimpact/chat-api/errors';
 import { Projects } from '@aimpact/chat-api/business/projects';
 import { promptsCategories } from '@aimpact/chat-api/data/model';
+import { IPromptCategoryData } from '@aimpact/chat-api/data/interfaces';
 
 interface IPromptCategorySpecs {
+	projectId: string;
 	id: string;
 	name: string;
 	description: string;
-	project: string;
 }
 
 export /*bundle*/ class PromptCategories {
@@ -18,10 +21,17 @@ export /*bundle*/ class PromptCategories {
 
 	static async save(params: IPromptCategorySpecs) {
 		try {
-			const id = params.id ?? uuid();
-			const { name, description, project } = params;
+			if (!params.projectId) {
+				const error = ErrorGenerator.invalidParameters('prompts-categories', 'projectId');
+				return new Response({ error });
+			}
+			if (!params.name) {
+				const error = ErrorGenerator.invalidParameters('prompts-categories', 'name');
+				return new Response({ error });
+			}
 
-			const projectResponse = await Projects.data(project);
+			const { name, description, projectId } = params;
+			const projectResponse = await Projects.data(projectId);
 			if (projectResponse.error) {
 				return projectResponse;
 			}
@@ -34,6 +44,8 @@ export /*bundle*/ class PromptCategories {
 				name: projectResponse.data.data.name,
 				identifier: projectResponse.data.data.identifier
 			};
+
+			const id = params.id ?? uuid();
 			const specs = { data: { id, name, description, project: projectSpecs } };
 			const response = await promptsCategories.set(specs);
 
@@ -41,7 +53,8 @@ export /*bundle*/ class PromptCategories {
 
 			return await PromptCategories.data(id);
 		} catch (exc) {
-			return exc;
+			const error = ErrorGenerator.internalError(exc);
+			return new Response({ error });
 		}
 	}
 
@@ -53,7 +66,8 @@ export /*bundle*/ class PromptCategories {
 
 			return response.data;
 		} catch (exc) {
-			return exc;
+			const error = ErrorGenerator.internalError(exc);
+			return new Response({ error });
 		}
 	}
 
@@ -62,12 +76,13 @@ export /*bundle*/ class PromptCategories {
 			const categoriasRef = db.collection('PromptCategories');
 			const snapshot = await categoriasRef.where('project.id', '==', project).get();
 
-			const entries = [];
-			snapshot.forEach(doc => entries.push(doc.data()));
+			const entries: IPromptCategoryData[] = [];
+			snapshot.forEach(doc => entries.push(doc.data() as IPromptCategoryData));
 
 			return { data: { entries } };
 		} catch (exc) {
-			return exc;
+			const error = ErrorGenerator.internalError(exc);
+			return new Response({ error });
 		}
 	}
 }

@@ -1,7 +1,7 @@
 import { ErrorManager } from '@beyond-js/response/main';
 
-export /*bundle*/ class FirestoreErrorManager extends ErrorManager {
+export /*bundle*/ class ChatAPIErrorManager extends ErrorManager {
 	get is() {
-		return 'agents-client';
+		return 'chat-api';
 	}
 }
