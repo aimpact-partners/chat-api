@@ -129,7 +129,6 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 					const specs = {};
 					specs[promptId] = dependency.value;
 					this.#data.dependencies.push(specs);
-					console.log(800, this.#data.dependencies);
 					return;
 				}
 
@@ -164,7 +163,6 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 		(() => {
 			const received = this.literals?.pure; // The key/value literals received to be applied to the prompt
 			const expected = this.#data.literals?.pure; // The literals as specified in the database
-			console.log('-----literals', received, expected);
 			if (!expected) return;
 
 			const notfound = expected.filter((pureLiteral: string) => !received.hasOwnProperty(pureLiteral));
@@ -214,9 +212,8 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 					// Convert camelCase to SCREAMING_SNAKE_CASE
 					// let screaming = name.replace(/([a-z])([A-Z])/g, '$1_$2').toUpperCase();
 					// Replace the literal
-					// const regex = new RegExp(screaming, 'g');
-
-					value = value.replace(`\{${name}\}`, val);
+					const regex = new RegExp(`\{${name}\}`, 'g');
+					value = value.replace(regex, val);
 				});
 			};
 
@@ -231,7 +228,5 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 
 			return value;
 		})();
-
-		console.log('this.#processedValue', this.#processedValue);
 	}
 }
