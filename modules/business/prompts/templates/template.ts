@@ -175,10 +175,10 @@ export /*bundle*/ class PromptsTemplate {
 			const data = {
 				id: `${project.identifier}.${params.name}.${params.language}`,
 				project: { id: project.id, name: project.name, identifier: project.identifier },
-				language: params.language,
-				literals: params.literals
+				language: params.language
 			};
 			params.value && (data.value = params.value);
+			params.literals && (data.literals = params.literals);
 
 			const parents = { Prompts: id };
 			await prompts.languages.set({ id: params.language, parents, data });
@@ -188,9 +188,9 @@ export /*bundle*/ class PromptsTemplate {
 			 */
 			if (params.options) {
 				const promises = [];
-				const options = params.options.map(item => {
-					const option = { id: item.id, value: item.value };
+				params.options.map(item => {
 					const parents = { Prompts: id, Languages: params.language };
+					const option = { id: item.id, value: item.value, prompt: params.name };
 					promises.push(prompts.languages.options.set({ parents, data: option }));
 					return option;
 				});

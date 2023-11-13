@@ -156,8 +156,8 @@ export class PromptsRoutes {
 				return;
 			}
 
-			const processedValue = promptTemplate.processedValue;
-			res.json(new HttpResponse({ data: { processedValue } }));
+			const value = promptTemplate.processedValue;
+			res.json(new HttpResponse({ data: { value } }));
 		} catch (exc) {
 			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
 		}
