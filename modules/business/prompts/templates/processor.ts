@@ -75,16 +75,11 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 		this.#language = params.language;
 		this.#options = params.options;
 		this.#literals = params.literals;
-
-		console.log(10, params);
 	}
 
 	async #load(): Promise<void> {
 		const { category, name, language } = this;
-		// const id = (this.#id = `${category}.${name}.${language}`);
 		const id = (this.#id = `${name}.${language}`);
-
-		console.log(11, '===>', id);
 
 		// Get the prompt data
 		await (async () => {
@@ -131,7 +126,7 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 			dependencies.forEach(dependency => {
 				const [projectId, promptId, languageId] = dependency.id.split('.');
 				if (dependency.value) {
-					const specs = {}; ////////////
+					const specs = {};
 					specs[promptId] = dependency.value;
 					this.#data.dependencies.push(specs);
 					console.log(800, this.#data.dependencies);

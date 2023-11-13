@@ -174,6 +174,7 @@ export /*bundle*/ class PromptsTemplate {
 
 			const data = {
 				id: `${project.identifier}.${params.name}.${params.language}`,
+				project: { id: project.id, name: project.name, identifier: project.identifier },
 				language: params.language,
 				literals: params.literals
 			};
