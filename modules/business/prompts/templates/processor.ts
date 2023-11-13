@@ -147,11 +147,11 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 			const responseOptions = await prompts.languages.options.dataset({ records });
 			this.#data.options = [];
 			responseOptions.forEach(option => {
-				if (option.error) return (this.#error = ErrorGenerator.promptOptionsError());
-				if (option.data.error) return (this.#error = ErrorGenerator.promptOptionsError());
+				if (option.error) return (this.#error = ErrorGenerator.promptOptionsError(option.error));
+				if (option.data.error) return (this.#error = ErrorGenerator.promptOptionsError(option.data.error));
 
 				const specs = {};
-				specs[option.data.data.prompt] = option.data.data.value;
+				specs[option.data.data.prompt] = option.data.data.value; //@ftovar8 agregar en el publish el prompt en el option
 				this.#data.options.push(specs);
 			});
 		})();
@@ -184,7 +184,7 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 				literalDependency => !received.includes(Object.keys(literalDependency)[0])
 			);
 			if (notfound.length) {
-				this.#error = ErrorGenerator.promptOptionsNotFound(notfound);
+				this.#error = ErrorGenerator.promptDependenciesNotFound(notfound);
 				return;
 			}
 		})();
@@ -195,7 +195,9 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 			const expected = this.#data.options; // The options as specified in the database
 			if (!expected) return;
 
-			const notfound = expected.filter(option => !received.hasOwnProperty(Object.keys(option)[0]));
+			const notfound = expected.filter(option => {
+				return !received.hasOwnProperty(Object.keys(option)[0]);
+			});
 			if (notfound.length) {
 				this.#error = ErrorGenerator.promptOptionsNotFound(notfound);
 				return;

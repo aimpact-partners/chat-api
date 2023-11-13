@@ -197,7 +197,7 @@ export /*bundle*/ class PromptsTemplate {
 				await Promise.all(promises);
 			}
 
-			return await PromptsTemplate.data(id, params.language);
+			return await PromptsTemplate.data(id);
 		} catch (exc) {
 			const error = ErrorGenerator.internalError(exc);
 			return new Response({ error });
