@@ -5,7 +5,8 @@ export /*bundle*/ enum ErrorCodes {
 	documentNotFound = 404,
 	documentNotSaved = 800,
 	documentAlreadyExist,
-	invalidParameters
+	invalidParameters,
+	languageNotSupport
 }
 
 export /*bundle*/ class ErrorGenerator {
@@ -41,6 +42,14 @@ export /*bundle*/ class ErrorGenerator {
 		return new ChatAPIErrorManager(
 			ErrorCodes.documentNotSaved,
 			`Invalid parameters, "${parameter}" is required in collection "${collectionName}"`,
+			exc
+		);
+	}
+
+	static languageNotSupport(collectionName: string, parameter: string, exc?: Error) {
+		return new ChatAPIErrorManager(
+			ErrorCodes.languageNotSupport,
+			`PromptTemplate not support language "${parameter}"`,
 			exc
 		);
 	}

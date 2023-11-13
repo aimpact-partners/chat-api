@@ -1,5 +1,5 @@
 import { Collection } from '@beyond-js/firestore-collection/collection';
-import { IProjectBaseData } from '@aimpact/chat-api/data/interfaces';
+import type { IProjectBaseData } from '@aimpact/chat-api/data/interfaces';
 
 class Projects extends Collection<IProjectBaseData> {
 	constructor() {

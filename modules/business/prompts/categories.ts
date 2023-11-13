@@ -5,7 +5,7 @@ import { Response } from '@beyond-js/response/main';
 import { ErrorGenerator } from '@aimpact/chat-api/errors';
 import { Projects } from '@aimpact/chat-api/business/projects';
 import { promptsCategories } from '@aimpact/chat-api/data/model';
-import { IPromptCategoryData } from '@aimpact/chat-api/data/interfaces';
+import type { IPromptCategoryData } from '@aimpact/chat-api/data/interfaces';
 
 interface IPromptCategorySpecs {
 	projectId: string;

@@ -1,12 +1,12 @@
-import type { Request, Response, Application } from 'express';
-import * as OpenApiValidator from 'express-openapi-validator';
-import * as dotenv from 'dotenv';
+import { PromptsTemplate, PromptTemplateProcessor } from '@aimpact/chat-api/business/prompts';
 import { join } from 'path';
+import * as dotenv from 'dotenv';
+import * as OpenApiValidator from 'express-openapi-validator';
 import { UserMiddlewareHandler } from '@aimpact/chat-api/middleware';
 import { Response as HttpResponse } from '@beyond-js/response/main';
-import { PromptsTemplate } from '@aimpact/chat-api/business/prompts';
 import { ErrorGenerator } from '@beyond-js/firestore-collection/errors';
 import { PromptsCategoriesRoutes } from './categories';
+import type { Request, Response, Application } from 'express';
 
 dotenv.config();
 
@@ -24,11 +24,13 @@ export class PromptsRoutes {
 
 		app.get('/prompts/templates/project/:projectId', this.list);
 		app.get('/prompts/templates/:id', this.get);
+		app.get('/prompts/templates/:id/data', this.data);
 		app.post('/prompts/templates', this.publish);
 		app.put('/prompts/templates/:id', this.update);
 		app.delete('/prompts/templates/:id', this.delete);
 
-		app.post('/prompts/templates/process', this.process);
+		app.post('/prompts/templates/process/data', this.process);
+		app.post('/prompts/templates/process', this.processSingle);
 	}
 
 	static async list(req: Request, res: Response) {
@@ -50,7 +52,8 @@ export class PromptsRoutes {
 	static async get(req: Request, res: Response): Promise<void> {
 		try {
 			const { id } = req.params;
-			const response = await PromptsTemplate.data(id);
+			const { language } = req.query;
+			const response = await PromptsTemplate.data(id, language);
 			if (response.error) {
 				res.json(new HttpResponse(response));
 				return;
@@ -59,6 +62,27 @@ export class PromptsRoutes {
 				res.json(new HttpResponse({ error: response.data.error }));
 				return;
 			}
+
+			res.json(new HttpResponse({ data: response.data.data }));
+		} catch (exc) {
+			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
+		}
+	}
+
+	static async data(req: Request, res: Response): Promise<void> {
+		try {
+			const { id } = req.params;
+			const { language, option } = req.query;
+			const response = await PromptsTemplate.data(id, language, option);
+			if (response.error) {
+				res.json(new HttpResponse(response));
+				return;
+			}
+			if (!response.data.exists) {
+				res.json(new HttpResponse({ error: response.data.error }));
+				return;
+			}
+
 			res.json(new HttpResponse({ data: response.data.data }));
 		} catch (exc) {
 			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
@@ -102,7 +126,7 @@ export class PromptsRoutes {
 		}
 	}
 
-	static async process(req: Request, res: Response) {
+	static async processSingle(req: Request, res: Response) {
 		try {
 			const { prompt } = req.body;
 			const response = await PromptsTemplate.process(prompt);
@@ -116,6 +140,24 @@ export class PromptsRoutes {
 			}
 
 			res.json(new HttpResponse({ data: response.data }));
+		} catch (exc) {
+			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
+		}
+	}
+
+	static async process(req: Request, res: Response) {
+		try {
+			const params = req.body;
+			const promptTemplate = new PromptTemplateProcessor(params);
+			await promptTemplate.process();
+
+			if (promptTemplate.error) {
+				res.json(new HttpResponse(promptTemplate.error));
+				return;
+			}
+
+			const processedValue = promptTemplate.processedValue;
+			res.json(new HttpResponse({ data: { processedValue } }));
 		} catch (exc) {
 			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
 		}
