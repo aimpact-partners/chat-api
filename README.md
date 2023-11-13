@@ -16,4 +16,4 @@ required APIs. Obtain the service account credentials JSON file.
 ## Configure Google Cloud Service Account
 
 Place the service account credentials JSON file you obtained in the previous step into the root of the project. Rename
-the file to `credentials.json`.
+the file to `credentials/gcloud.json`.
