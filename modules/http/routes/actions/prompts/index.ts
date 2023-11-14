@@ -30,7 +30,7 @@ export class PromptsRoutes {
 		app.delete('/prompts/templates/:id', this.delete);
 
 		app.post('/prompts/templates/:id/process', this.process);
-		app.post('/prompts/templates/:id/process-openai', this.processOpenAI);
+		app.post('/prompts/templates/:id/process-literal', this.processLiteral);
 	}
 
 	static async list(req: Request, res: Response) {
@@ -126,7 +126,7 @@ export class PromptsRoutes {
 		}
 	}
 
-	static async processOpenAI(req: Request, res: Response) {
+	static async processLiteral(req: Request, res: Response) {
 		try {
 			const { prompt } = req.body;
 			const response = await PromptsTemplate.process(prompt);
@@ -148,8 +148,8 @@ export class PromptsRoutes {
 	static async process(req: Request, res: Response) {
 		try {
 			const params = req.body;
+			console.log('paraaaams => ', req.body);
 
-			console.log('paraaaams => ', params);
 			const promptTemplate = new PromptTemplateProcessor(params);
 			await promptTemplate.process();
 
