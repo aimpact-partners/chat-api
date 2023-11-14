@@ -116,7 +116,7 @@
 		"@beyond-js/backend": "^0.1.8",
 		"@beyond-js/events": "^0.0.6",
 		"@beyond-js/kernel": "~0.1.8",
-		"@beyond-js/firestore-collection": "~0.0.2",
+		"@beyond-js/firestore-collection": "~0.0.3",
 		"@beyond-js/response": "~0.0.1",
 		"@google-cloud/storage": "^6.10.1",
 		"@google-cloud/tasks": "^3.1.2",
