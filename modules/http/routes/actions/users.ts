@@ -3,6 +3,16 @@ import type { JwtPayload } from '@types/jsonwebtoken';
 import type { Request, Response, Application } from 'express';
 import { User as Model } from '@aimpact/chat-api/business/user';
 
+interface IUser {
+	uid: string;
+	id: string;
+	name: string;
+	displayName: string;
+	email: string;
+	photoURL: string;
+	phoneNumber: number;
+}
+
 export class UsersRoutes {
 	static setup(app: Application) {
 		app.use((err, req, res, next) => {
@@ -30,7 +40,17 @@ export class UsersRoutes {
 				delete response.data.token;
 				delete response.data.firebaseToken;
 
-				res.json({ status: true, data: response.data });
+				const data: IUser = {
+					uid: response.data.id,
+					id: response.data.id,
+					name: response.data.displayName,
+					displayName: response.data.displayName,
+					email: response.data.email,
+					photoURL: response.data.photoURL,
+					phoneNumber: response.data.phoneNumber
+				};
+
+				res.json({ status: true, data });
 			});
 		} catch (e) {
 			res.json({ status: false, error: e.message });

@@ -3,10 +3,12 @@ import * as admin from 'firebase-admin';
 
 interface IUser {
 	uid: string;
+	id: string;
 	name: string;
 	displayName: string;
 	email: string;
 	photoURL: string;
+	phoneNumber: number;
 }
 interface /*bundle*/ IAuthenticatedRequest extends Request {
 	user?: IUser;
@@ -26,7 +28,15 @@ export /*bundle*/ class UserMiddlewareHandler {
 					.json({ status: false, error: 'Invalid Access token or Access token not provided' });
 			}
 
-			req.user = <IUser>{ uid: decodedToken.uid, name: decodedToken.name, email: decodedToken.email };
+			req.user = <IUser>{
+				uid: decodedToken.uid,
+				id: decodedToken.uid,
+				name: decodedToken.name,
+				displayName: decodedToken.name,
+				email: decodedToken.email,
+				photoURL: decodedToken.photoURL,
+				phoneNumber: decodedToken.phoneNumber
+			};
 			next();
 		} catch (e) {
 			console.error(e);
