@@ -2,15 +2,17 @@ export interface IChat {
 	id: string;
 	name: string;
 	usage: string;
-	userId: string;
+	user: { id: string; name: string };
 	parent?: string;
 	children?: string;
 	category?: string;
-	knowledgeBoxId?: string;
+	metadata: any;
 }
 
 export interface ICreateChatSpecs {
-    name: string;
-    parent?: number;
-    knowledgeBoxId?: string;
+	uid: string;
+	user: { id: string; name: string };
+	name: string;
+	metadata: any;
+	parent?: number;
 }

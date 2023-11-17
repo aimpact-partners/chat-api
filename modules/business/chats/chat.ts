@@ -11,7 +11,7 @@ import { FirestoreService } from './firestore/service';
 
 export /*bundle*/ class Chat {
 	private collection: firestore.CollectionReference;
-	private table = 'Conversations';
+	private table = 'Chats';
 	firestoreService: FirestoreService;
 	#deleter;
 
@@ -26,7 +26,7 @@ export /*bundle*/ class Chat {
 			throw new Error('id is required');
 		}
 
-		const conversationDoc = await db.collection('Conversations').doc(id);
+		const conversationDoc = await db.collection('Chats').doc(id);
 		const doc = await conversationDoc.get();
 		if (!doc.exists) {
 			return { error: 'Conversation not exists' };
@@ -54,8 +54,7 @@ export /*bundle*/ class Chat {
 	static async save(data: IChat) {
 		try {
 			const id = data.id ?? uuid();
-
-			const collection = db.collection('Conversations');
+			const collection = db.collection('Chats');
 			const chatDoc = await collection.doc(id).get();
 			if (!chatDoc.exists) {
 				// if the parent is not received, we set it to root by default
@@ -63,8 +62,8 @@ export /*bundle*/ class Chat {
 			}
 
 			await collection.doc(id).set({ ...data, id }, { merge: true });
-
 			const item = await collection.doc(id).get();
+
 			return item.data() as IChat;
 		} catch (e) {
 			console.error(e);
@@ -94,7 +93,7 @@ export /*bundle*/ class Chat {
 			throw new Error('id is required');
 		}
 
-		const collection = db.collection('Conversations');
+		const collection = db.collection('Chats');
 		const conversationDoc = await collection.doc(id).get();
 		if (!conversationDoc.exists) {
 			throw new Error('conversationId not valid');

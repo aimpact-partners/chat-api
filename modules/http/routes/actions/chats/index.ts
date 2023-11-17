@@ -5,6 +5,7 @@ import { UserMiddlewareHandler } from '@aimpact/chat-api/middleware';
 import * as OpenApiValidator from 'express-openapi-validator';
 import { ChatMessagesRoutes } from './messages';
 import { IChat, ICreateChatSpecs } from './interfaces';
+import { User } from '@aimpact/chat-api/business/user';
 
 export class ChatsRoutes {
 	static setup(app: Application) {
@@ -24,22 +25,15 @@ export class ChatsRoutes {
 			});
 		});
 
-		app.use((err, req, res, next) => {
-			res.status(err.status || 500).json({
-				message: err.message,
-				errors: err.errors
-			});
-		});
-		app.get('/chats', ChatsRoutes.list);
-		app.post('/chats/bulk', ChatsRoutes.bulk);
-		app.put('/chats/:id', ChatsRoutes.update);
-		app.delete('/chats/', ChatsRoutes.delete);
-		app.delete('/chats/:id', ChatsRoutes.delete);
-
 		ChatMessagesRoutes.setup(app);
 
-		app.post('/chats', ChatsRoutes.save);
+		app.get('/chats', ChatsRoutes.list);
 		app.get('/chats/:id', ChatsRoutes.get);
+		app.post('/chats', ChatsRoutes.save);
+		app.post('/chats/bulk', ChatsRoutes.bulk);
+		app.put('/chats/:id', ChatsRoutes.update);
+		app.delete('/chats/:id', ChatsRoutes.delete);
+
 		app.get('/conversations/:id', UserMiddlewareHandler.validate, ChatsRoutes.get);
 		app.post('/conversations', UserMiddlewareHandler.validate, ChatsRoutes.save);
 	}
@@ -76,6 +70,14 @@ export class ChatsRoutes {
 	static async save(req: Request, res: Response) {
 		try {
 			const params: ICreateChatSpecs = req.body;
+
+			if (params.uid) {
+				const model = new User(params.uid);
+				await model.load();
+				params.user = { id: model.id, name: model.displayName };
+				delete params.uid;
+			}
+
 			const data = await Chat.save(params);
 			res.json({ status: true, data });
 		} catch (e) {
