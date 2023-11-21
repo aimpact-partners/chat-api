@@ -17,17 +17,6 @@
 	"modules": {
 		"path": "modules"
 	},
-	"params": {
-		"local": {
-			"AGENT_API": "http://localhost:5050"
-		},
-		"development": {
-			"AGENT_API": "https://agent-api-rb5caohzgq-uc.a.run.app/agent"
-		},
-		"testing": {
-			"AGENT_API": "https://agent-api-rb5caohzgq-uc.a.run.app/agent"
-		}
-	},
 	"libraries": {
 		"imports": [
 			"@beyond-js/reactive"
@@ -109,7 +98,7 @@
 				"name": "backend-production",
 				"environment": "production",
 				"platform": "backend",
-				"host": "https://chat-api-ws-skvkre4apq-uc.a.run.app"
+				"host": "https://chat-api-ws-pjv2z6fura-uc.a.run.app"
 			},
 			{
 				"name": "http-production",
