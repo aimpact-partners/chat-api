@@ -34,7 +34,7 @@ WORKDIR /app
 COPY --from=build-stage /app/node_modules ./node_modules
 
 # Copy only the built files from the previous stage
-COPY --from=build-stage /app/.beyond/builds/backend/code/. .
+COPY --from=build-stage /app/.beyond/builds/backend-production/code/. .
 
 # Your start command here
 CMD [ "node", "index.js" ]
