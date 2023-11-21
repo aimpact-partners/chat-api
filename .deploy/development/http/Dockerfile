@@ -16,7 +16,7 @@ RUN npm install
 COPY . .
 
 # Install beyond
-RUN npm i -g beyond@1.2.0-beta.4
+RUN npm i -g beyond@1.2.0
 
 # Build the project
 RUN beyond build --pkg=@aimpact/chat-api --distribution=http --logs

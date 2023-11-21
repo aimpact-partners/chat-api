@@ -19,7 +19,7 @@ COPY . .
 RUN npm i -g beyond@1.2.0
 
 # Build the project
-RUN beyond build --pkg=@aimpact/chat-api --distribution=http-testing --logs
+RUN beyond build --pkg=@aimpact/chat-api --distribution=http-production --logs
 
 
 # ------------------------------
@@ -34,7 +34,7 @@ WORKDIR /app
 COPY --from=build-stage /app/node_modules ./node_modules
 
 # Copy only the built files from the previous stage
-COPY --from=build-stage /app/.beyond/builds/http-testing/code/. .
+COPY --from=build-stage /app/.beyond/builds/http/code/. .
 
 # Your start command here
 CMD [ "node", "index.js" ]
