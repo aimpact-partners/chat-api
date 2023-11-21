@@ -102,7 +102,7 @@ export class ChatsRoutes {
 
 	static async bulk(req: Request, res: Response) {
 		try {
-			// Logic to create a new chat}
+			// Logic to create a new chat
 			const params: IChat[] = req.body.chats;
 
 			const model = new Chat();
