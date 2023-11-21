@@ -100,6 +100,23 @@
 				"platform": "node"
 			},
 			{
+				"name": "web-production",
+				"environment": "production",
+				"platform": "web",
+				"backend": "backend-production"
+			},
+			{
+				"name": "backend-production",
+				"environment": "production",
+				"platform": "backend",
+				"host": "https://chat-api-ws-skvkre4apq-uc.a.run.app"
+			},
+			{
+				"name": "http-production",
+				"environment": "production",
+				"platform": "node"
+			},
+			{
 				"name": "node-tsc",
 				"environment": "local",
 				"platform": "node",
