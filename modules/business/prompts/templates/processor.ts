@@ -1,5 +1,6 @@
 import { prompts } from '@aimpact/chat-api/data/model';
-import { FirestoreErrorManager, ErrorGenerator } from '@beyond-js/firestore-collection/errors';
+import { FirestoreErrorManager } from '@beyond-js/firestore-collection/errors';
+import { ErrorGenerator } from '@aimpact/chat-api/errors';
 import type { IPromptData } from '@aimpact/chat-api/data/interfaces';
 
 export interface IPromptGenerationParams {

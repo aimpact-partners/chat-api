@@ -6,7 +6,8 @@ export /*bundle*/ enum ErrorCodes {
 	documentNotSaved = 800,
 	documentAlreadyExist,
 	invalidParameters,
-	languageNotSupport
+	languageNotSupport,
+	promptIsOptions
 }
 
 export /*bundle*/ class ErrorGenerator {
@@ -51,6 +52,13 @@ export /*bundle*/ class ErrorGenerator {
 			ErrorCodes.languageNotSupport,
 			`PromptTemplate not support language "${parameter}"`,
 			exc
+		);
+	}
+
+	static promptDependenciesError() {
+		return new ChatAPIErrorManager(
+			ErrorCodes.promptIsOptions,
+			`Error/s found in at least one dependency of the requested prompt`
 		);
 	}
 }
