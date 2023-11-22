@@ -7,7 +7,7 @@ export interface IPromptGenerationParams {
 	name: string;
 	language: string;
 	options: Record<string, string>;
-	literals: { pure: Record<string, string> };
+	literals: Record<string, string>;
 }
 
 export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationParams {
@@ -36,7 +36,7 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 		return this.#options;
 	}
 
-	#literals: { pure: Record<string, string> };
+	#literals: Record<string, string>;
 	get literals() {
 		return this.#literals;
 	}
@@ -161,7 +161,7 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 
 		// Check that all required pure literals has been received
 		(() => {
-			const received = this.literals?.pure; // The key/value literals received to be applied to the prompt
+			const received = this.literals; // The key/value literals received to be applied to the prompt
 			const expected = this.#data.literals?.pure; // The literals as specified in the database
 			if (!expected) return;
 
@@ -217,14 +217,14 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 				});
 			};
 
-			// Replace the literals
-			this.literals?.pure && replacement(this.literals.pure);
-
 			// Process the dependencies that are not options (ex: HEADER)
-			this.#data.dependencies && this.#data.dependencies.forEach(dependency => replacement(dependency));
+			this.#data.dependencies?.forEach(dependency => replacement(dependency));
 
 			// Process the options
-			this.#data.options && this.#data.options.forEach(option => replacement(option));
+			this.#data.options?.forEach(option => replacement(option));
+
+			// Replace the literals
+			this.literals && replacement(this.literals);
 
 			return value;
 		})();
