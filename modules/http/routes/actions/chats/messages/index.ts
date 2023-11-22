@@ -145,7 +145,7 @@ export class ChatMessagesRoutes {
 
 			// update synthesis on conversation
 			const data = { id: conversationId, synthesis: metadata?.synthesis };
-			await Chat.publish(data);
+			await Chat.save(data);
 
 			// set last interaction on conversation
 			await Chat.setLastInteractions(conversationId, 4);
