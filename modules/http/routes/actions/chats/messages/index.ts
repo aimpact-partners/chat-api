@@ -42,9 +42,9 @@ export class ChatMessagesRoutes {
 		if (conversation.error) {
 			return res.status(400).json({ status: false, error: conversation.error });
 		}
-		if (!conversation.project) {
-			return res.status(400).json({ status: false, error: 'the conversation not has a project defined' });
-		}
+		// if (!conversation.project) {
+		// 	return res.status(400).json({ status: false, error: 'the conversation not has a project defined' });
+		// }
 
 		/**
 		 *	Validate the type of request

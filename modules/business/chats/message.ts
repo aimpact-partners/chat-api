@@ -22,7 +22,7 @@ export class Message {
 				throw new Error('role not supported');
 			}
 
-			const collection = db.collection('Conversations');
+			const collection = db.collection('Chats');
 			const conversation = await collection.doc(conversationId);
 			const conversationDoc = await conversation.get();
 			if (!conversationDoc.exists) {

@@ -148,8 +148,6 @@ export class PromptsRoutes {
 	static async process(req: Request, res: Response) {
 		try {
 			const params = req.body;
-			console.log('paraaaams => ', req.body);
-
 			const promptTemplate = new PromptTemplateProcessor(params);
 			await promptTemplate.process();
 
