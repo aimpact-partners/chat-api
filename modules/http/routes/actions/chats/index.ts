@@ -1,8 +1,9 @@
 import type { Request, Response, Application } from 'express';
 import type { IAuthenticatedRequest } from '@aimpact/chat-api/middleware';
+import * as OpenApiValidator from 'express-openapi-validator';
+import { db } from '@beyond-js/firestore-collection/db';
 import { Chat } from '@aimpact/chat-api/business/chats';
 import { UserMiddlewareHandler } from '@aimpact/chat-api/middleware';
-import * as OpenApiValidator from 'express-openapi-validator';
 import { ChatMessagesRoutes } from './messages';
 import { IChat, ICreateChatSpecs } from './interfaces';
 import { User } from '@aimpact/chat-api/business/user';
@@ -104,6 +105,20 @@ export class ChatsRoutes {
 		try {
 			// Logic to create a new chat
 			const params: IChat[] = req.body.chats;
+
+			const uIds = [];
+			params.forEach(chat => {
+				if (!chat.uid) uIds.push(chat.uid);
+			});
+
+			params.forEach(async chat => {
+				if (chat.uid) {
+					const model = new User(chat.uid);
+					await model.load();
+					chat.user = { id: model.id, name: model.displayName };
+					delete chat.uid;
+				}
+			});
 
 			const model = new Chat();
 			const invalid = params.some(item => !model.validate(item));
