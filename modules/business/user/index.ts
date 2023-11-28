@@ -1,7 +1,16 @@
-import * as admin from 'firebase-admin';
 import { db } from '@beyond-js/firestore-collection/db';
 
-export /*bundle*/ class User {
+export /*bundle*/ interface IUser {
+	uid: string;
+	id: string;
+	name: string;
+	displayName: string;
+	email: string;
+	photoURL: string;
+	phoneNumber: number;
+}
+
+export /*bundle*/ class User implements IUser {
 	#accessToken: string;
 
 	#valid: boolean;
@@ -19,6 +28,11 @@ export /*bundle*/ class User {
 		return this.#id;
 	}
 
+	#name: string;
+	get name() {
+		return this.#name;
+	}
+
 	#displayName: string;
 	get displayName() {
 		return this.#displayName;
@@ -29,14 +43,14 @@ export /*bundle*/ class User {
 		return this.#email;
 	}
 
-	#phoneNumber: string;
+	#phoneNumber: number;
 	get phoneNumber() {
 		return this.#phoneNumber;
 	}
 
 	#photoURL: string;
 	get photoURL() {
-		return this.#email;
+		return this.#photoURL;
 	}
 
 	private collection;
@@ -61,6 +75,7 @@ export /*bundle*/ class User {
 
 			this.#uid = this.#id;
 			this.#email = email;
+			this.#name = displayName;
 			this.#displayName = displayName;
 			this.#phoneNumber = phoneNumber;
 			this.#photoURL = photoURL;
@@ -70,5 +85,17 @@ export /*bundle*/ class User {
 			this.#valid = false;
 			return { status: false, error: `Error loading user` };
 		}
+	}
+
+	toJSON(): IUser {
+		return {
+			uid: this.#uid,
+			id: this.#id,
+			name: this.#name,
+			displayName: this.#displayName,
+			email: this.#email,
+			photoURL: this.#photoURL,
+			phoneNumber: this.#phoneNumber
+		};
 	}
 }

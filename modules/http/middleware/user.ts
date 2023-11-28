@@ -1,15 +1,7 @@
 import type { Request, Response } from 'express';
 import * as admin from 'firebase-admin';
+import type { IUser } from '@aimpact/chat-api/business/user';
 
-interface IUser {
-	uid: string;
-	id: string;
-	name: string;
-	displayName: string;
-	email: string;
-	photoURL: string;
-	phoneNumber: number;
-}
 interface /*bundle*/ IAuthenticatedRequest extends Request {
 	user?: IUser;
 }
@@ -28,7 +20,7 @@ export /*bundle*/ class UserMiddlewareHandler {
 					.json({ status: false, error: 'Invalid Access token or Access token not provided' });
 			}
 
-			req.user = <IUser>{
+			req.user = {
 				uid: decodedToken.uid,
 				id: decodedToken.uid,
 				name: decodedToken.name,

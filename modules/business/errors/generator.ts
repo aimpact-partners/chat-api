@@ -7,7 +7,8 @@ export /*bundle*/ enum ErrorCodes {
 	documentAlreadyExist,
 	invalidParameters,
 	languageNotSupport,
-	promptIsOptions
+	promptIsOptions,
+	promptLiteralsNotFound
 }
 
 export /*bundle*/ class ErrorGenerator {
@@ -59,6 +60,13 @@ export /*bundle*/ class ErrorGenerator {
 		return new ChatAPIErrorManager(
 			ErrorCodes.promptIsOptions,
 			`Error/s found in at least one dependency of the requested prompt`
+		);
+	}
+
+	static promptLiteralsNotFound() {
+		return new ChatAPIErrorManager(
+			ErrorCodes.promptLiteralsNotFound,
+			`Error/s found in at least one literals pure of the requested prompt`
 		);
 	}
 }

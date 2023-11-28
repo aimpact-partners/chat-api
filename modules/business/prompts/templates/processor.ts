@@ -163,7 +163,7 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 		// Check that all required pure literals has been received
 		(() => {
 			const received = this.literals; // The key/value literals received to be applied to the prompt
-			const expected = this.#data.literals?.pure; // The literals as specified in the database
+			const expected = this.#data?.literals?.pure; // The literals as specified in the database
 			if (!expected) return;
 
 			const notfound = expected.filter((pureLiteral: string) => !received.hasOwnProperty(pureLiteral));

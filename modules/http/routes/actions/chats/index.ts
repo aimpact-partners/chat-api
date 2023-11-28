@@ -75,7 +75,7 @@ export class ChatsRoutes {
 			if (params.uid) {
 				const model = new User(params.uid);
 				await model.load();
-				params.user = { id: model.id, name: model.displayName };
+				params.user = model.toJSON();
 				delete params.uid;
 			}
 
@@ -106,19 +106,21 @@ export class ChatsRoutes {
 			// Logic to create a new chat
 			const params: IChat[] = req.body.chats;
 
-			const uIds = [];
-			params.forEach(chat => {
-				if (!chat.uid) uIds.push(chat.uid);
+			let uIds = [...new Set(params.map(chat => chat?.uid).filter(uid => uid))];
+			console.log(uIds);
+
+			const snapshot = await db.collection('Users').where('id', 'in', uIds).get();
+			const userInfos: any = {};
+			snapshot.forEach(doc => {
+				userInfos[doc.id] = doc.data();
 			});
+			console.log('userInfos', userInfos);
 
 			params.forEach(async chat => {
-				if (chat.uid) {
-					const model = new User(chat.uid);
-					await model.load();
-					chat.user = { id: model.id, name: model.displayName };
-					delete chat.uid;
-				}
+				chat.user = { id: userInfos[chat.uid].id, name: userInfos[chat.uid].displayName };
+				delete chat.uid;
 			});
+			console.log('params', params);
 
 			const model = new Chat();
 			const invalid = params.some(item => !model.validate(item));

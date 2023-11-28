@@ -1,4 +1,4 @@
-import type { Response, Application } from 'express';
+import type { Request, Response, Application } from 'express';
 import type { IAuthenticatedRequest } from '@aimpact/chat-api/middleware';
 import { Chat } from '@aimpact/chat-api/business/chats';
 import { Agents } from '@aimpact/chat-api/business/agents';
@@ -14,14 +14,14 @@ interface IMessageSpecs {
 
 export class ChatMessagesRoutes {
 	static setup(app: Application) {
-		app.use((err, req, res, next) => {
+		app.use((err, req: Request, res: Response, next) => {
 			res.status(err.status || 500).json({
 				message: err.message,
 				errors: err.errors
 			});
 		});
 
-		app.post('/chat/:id/messages', UserMiddlewareHandler.validate, ChatMessagesRoutes.sendMessage);
+		app.post('/chats/:id/messages', UserMiddlewareHandler.validate, ChatMessagesRoutes.sendMessage);
 		app.post('/conversations/:id/messages', UserMiddlewareHandler.validate, ChatMessagesRoutes.sendMessage);
 	}
 
@@ -59,7 +59,10 @@ export class ChatMessagesRoutes {
 		 * @param res 
 		 * @returns Promise<{ data?: IMessageSpecs; error?: string }>
 		 */
-		const processRequest = async (req, res): Promise<{ data?: IMessageSpecs; error?: string }> => {
+		const processRequest = async (
+			req: Request,
+			res: Response
+		): Promise<{ data?: IMessageSpecs; error?: string }> => {
 			const textRequest = req.headers['content-type'] === 'application/json';
 			if (textRequest) return { data: req.body };
 
@@ -124,8 +127,8 @@ export class ChatMessagesRoutes {
 				answer += chunk ? chunk : '';
 				chunk && res.write(chunk);
 
-				if (part.stage) {
-					metadata = part.stage;
+				if (part.metadata) {
+					metadata = part.metadata;
 					break;
 				}
 			}

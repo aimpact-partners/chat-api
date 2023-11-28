@@ -4,14 +4,15 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 const { AGENT_API_URL, AGENT_API_TOKEN } = process.env;
 
-interface IAnswerStage {
+interface IMetadata {
+	answer: string;
 	synthesis: string;
 }
 
 interface ISendMessageResponse {
 	status: boolean;
 	error?: string;
-	iterator?: AsyncIterable<{ chunk?: string; stage?: IAnswerStage }>;
+	iterator?: AsyncIterable<{ chunk?: string; metadata?: IMetadata }>;
 }
 
 export /*bundle*/ class Agents {
@@ -36,7 +37,7 @@ export /*bundle*/ class Agents {
 			return { status: false, error: 'the conversation has no established default language' };
 		}
 
-		const { user, metadata, synthesis, message: msgs } = conversation;
+		const { user, synthesis, message: msgs } = conversation;
 		const messages = { last: msgs ? msgs.lastTwo : [], count: msgs ? msgs.count : 0 };
 
 		const url = AGENT_API_URL;
@@ -47,7 +48,7 @@ export /*bundle*/ class Agents {
 		};
 
 		// Prepare the parameters
-		const body = JSON.stringify({ metadata, language, user, messages, synthesis, prompt });
+		const body = JSON.stringify({ metadata: conversation.metadata, language, user, messages, synthesis, prompt });
 
 		// Fetch the agent
 		let response: any;
@@ -72,10 +73,10 @@ export /*bundle*/ class Agents {
 			return { status: false, error };
 		}
 
-		const stage: { started: boolean; value: string; parsed?: object } = { started: false, value: '' };
+		const metadata: { started: boolean; value: string; parsed?: object } = { started: false, value: '' };
 
 		// Define a function to read the stream incrementally
-		async function* iterator(): AsyncIterable<{ chunk?: string; stage?: IAnswerStage }> {
+		async function* iterator(): AsyncIterable<{ chunk?: string; metadata?: IAnswerStage }> {
 			// Use the response body as a stream
 			const reader = response.body.getReader();
 
@@ -85,29 +86,29 @@ export /*bundle*/ class Agents {
 
 				// Process each chunk
 				const chunk = new TextDecoder().decode(value);
-				if (!stage.started) {
+				if (!metadata.started) {
 					if (!chunk.includes('ÿ')) {
 						yield { chunk };
 					} else {
-						stage.started = true;
+						metadata.started = true;
 						const split = chunk.split('ÿ');
-						stage.value += split[1];
+						metadata.value += split[1];
 						if (split[0]) yield { chunk: split[0] };
 					}
 				} else {
-					stage.value += chunk;
+					metadata.value += chunk;
 				}
 			}
 
-			// Parse the stage data
+			// Parse the metadata data
 			try {
-				stage.parsed = JSON.parse(stage.value);
+				metadata.parsed = JSON.parse(metadata.value);
 			} catch (exc) {
 				console.error(exc);
 				return;
 			}
 
-			yield { stage: <IAnswerStage>stage.parsed };
+			yield { metadata: <IMetadata>metadata.parsed };
 		}
 
 		return { status: true, iterator: iterator() };
