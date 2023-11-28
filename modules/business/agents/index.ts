@@ -48,7 +48,15 @@ export /*bundle*/ class Agents {
 		};
 
 		// Prepare the parameters
-		const body = JSON.stringify({ metadata: conversation.metadata, language, user, messages, synthesis, prompt });
+		const body = JSON.stringify({
+			metadata: conversation.metadata,
+			chatId: conversation.id,
+			language,
+			user,
+			messages,
+			synthesis,
+			prompt
+		});
 
 		// Fetch the agent
 		let response: any;
@@ -76,7 +84,7 @@ export /*bundle*/ class Agents {
 		const metadata: { started: boolean; value: string; parsed?: object } = { started: false, value: '' };
 
 		// Define a function to read the stream incrementally
-		async function* iterator(): AsyncIterable<{ chunk?: string; metadata?: IAnswerStage }> {
+		async function* iterator(): AsyncIterable<{ chunk?: string; metadata?: IMetadata }> {
 			// Use the response body as a stream
 			const reader = response.body.getReader();
 
