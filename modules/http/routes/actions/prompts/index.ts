@@ -152,7 +152,7 @@ export class PromptsRoutes {
 			await promptTemplate.process();
 
 			if (promptTemplate.error) {
-				res.json(new HttpResponse(promptTemplate.error));
+				res.json(new HttpResponse({ error: promptTemplate.error }));
 				return;
 			}
 

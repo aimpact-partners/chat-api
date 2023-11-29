@@ -80,7 +80,7 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 
 	async #load(): Promise<void> {
 		const { category, name, language } = this;
-		const id = (this.#id = `${name}.${language}`);
+		this.#id = `${name}.${language}`;
 
 		// Get the prompt data
 		await (async () => {
@@ -160,6 +160,10 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 	async process() {
 		await this.#load();
 
+		if (!this.valid) {
+			return this.#error;
+		}
+
 		// Check that all required pure literals has been received
 		(() => {
 			const received = this.literals; // The key/value literals received to be applied to the prompt
@@ -179,9 +183,7 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 			const expected = this.#data.dependencies; // The literals as specified in the database
 			if (!expected) return;
 
-			const notfound = expected.filter(
-				literalDependency => !received.includes(Object.keys(literalDependency)[0])
-			);
+			const notfound = expected.filter(literal => !received.includes(Object.keys(literal)[0]));
 			if (notfound.length) {
 				this.#error = ErrorGenerator.promptDependenciesNotFound(notfound);
 				return;
@@ -203,7 +205,7 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 			}
 		})();
 
-		if (!this.valid) return;
+		if (!this.valid) return this.#error;
 
 		// Process the value of the prompt with the replacement of the received literals and options
 		this.#processedValue = (() => {
@@ -212,8 +214,9 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 				Object.entries(received).forEach(([name, val]) => {
 					// Convert camelCase to SCREAMING_SNAKE_CASE
 					// let screaming = name.replace(/([a-z])([A-Z])/g, '$1_$2').toUpperCase();
+
 					// Replace the literal
-					const regex = new RegExp(`\{${name}\}`, 'g');
+					const regex = new RegExp(`\{${name.toUpperCase()}\}`, 'g');
 					value = value.replace(regex, val);
 				});
 			};
