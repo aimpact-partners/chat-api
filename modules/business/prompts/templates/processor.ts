@@ -85,9 +85,14 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 		// Get the prompt data
 		await (async () => {
 			const response = await prompts.languages.data({ id: language, parents: { Prompts: name } });
-			if (response.error) return (this.#error = new FirestoreErrorManager(response.error));
-			if (!response.data.exists) return (this.#error = new FirestoreErrorManager(response.data.error));
-
+			if (response.error) {
+				this.#error = ErrorGenerator.documentNotFound('Prompts', this.#id, response.error);
+				return;
+			}
+			if (!response.data.exists) {
+				this.#error = ErrorGenerator.documentNotFound('Prompts', this.#id, response.error);
+				return;
+			}
 			const data = response.data.data;
 			this.#data = data;
 		})();
@@ -127,7 +132,7 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 			dependencies.forEach(dependency => {
 				const [projectId, promptId, languageId] = dependency.id.split('.');
 				if (dependency.value) {
-					const specs = {};
+					const specs: Record<string, string> = {};
 					specs[promptId] = dependency.value;
 					this.#data.dependencies.push(specs);
 					return;
@@ -150,7 +155,7 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 				if (option.error) return (this.#error = ErrorGenerator.promptOptionsError(option.error));
 				if (option.data.error) return (this.#error = ErrorGenerator.promptOptionsError(option.data.error));
 
-				const specs = {};
+				const specs: Record<string, string> = {};
 				specs[option.data.data.prompt] = option.data.data.value; //@ftovar8 agregar en el publish el prompt en el option
 				this.#data.options.push(specs);
 			});
@@ -213,11 +218,14 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 			const replacement = (received: Record<string, string>): void => {
 				Object.entries(received).forEach(([name, val]) => {
 					// Convert camelCase to SCREAMING_SNAKE_CASE
-					// let screaming = name.replace(/([a-z])([A-Z])/g, '$1_$2').toUpperCase();
+					let screaming = name.replace(/([a-z])([A-Z])/g, '$1_$2').toUpperCase();
+					// Replace the literal
+					const regex = new RegExp(screaming, 'g');
+					value = value.replace(regex, value);
 
 					// Replace the literal
-					const regex = new RegExp(`\{${name.toUpperCase()}\}`, 'g');
-					value = value.replace(regex, val);
+					// const regex = new RegExp(`\{${name.toUpperCase()}\}`, 'g');
+					// value = value.replace(regex, val);
 				});
 			};
 
