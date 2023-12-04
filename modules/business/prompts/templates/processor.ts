@@ -75,7 +75,10 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 		this.#name = params.name;
 		this.#language = params.language;
 		this.#options = params.options;
-		this.#literals = params.literals;
+
+		const obj: Record<string, string> = {};
+		Object.keys(params.literals).forEach((key: string) => (obj[key.toUpperCase()] = params.literals[key]));
+		this.#literals = obj;
 	}
 
 	async #load(): Promise<void> {
@@ -215,17 +218,19 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 		// Process the value of the prompt with the replacement of the received literals and options
 		this.#processedValue = (() => {
 			let value = this.#value;
-			const replacement = (received: Record<string, string>): void => {
+			const replacement = (received: Record<string, string>, literal = false): void => {
 				Object.entries(received).forEach(([name, val]) => {
-					// Convert camelCase to SCREAMING_SNAKE_CASE
-					let screaming = name.replace(/([a-z])([A-Z])/g, '$1_$2').toUpperCase();
-					// Replace the literal
-					const regex = new RegExp(screaming, 'g');
-					value = value.replace(regex, value);
+					if (literal) {
+						let screaming = `{${name}}`.replace(/{([a-z])([A-Z])}/g, '$1_$2');
+						// Replace the Pure literal
+						const regex = new RegExp(screaming, 'g');
+						value = value.replace(regex, val);
 
-					// Replace the literal
-					// const regex = new RegExp(`\{${name.toUpperCase()}\}`, 'g');
-					// value = value.replace(regex, val);
+						return;
+					}
+					// Replace the Dependencies and options literal
+					const regex = new RegExp(`{${name}}`, 'g');
+					value = value.replace(regex, val);
 				});
 			};
 
@@ -236,7 +241,7 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 			this.#data.options?.forEach(option => replacement(option));
 
 			// Replace the literals
-			this.literals && replacement(this.literals);
+			this.literals && replacement(this.literals, true);
 
 			return value;
 		})();
