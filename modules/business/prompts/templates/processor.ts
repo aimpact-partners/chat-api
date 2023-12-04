@@ -76,6 +76,8 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 		this.#language = params.language;
 		this.#options = params.options;
 
+		if (!params.literals) return;
+
 		const obj: Record<string, string> = {};
 		Object.keys(params.literals).forEach((key: string) => (obj[key.toUpperCase()] = params.literals[key]));
 		this.#literals = obj;
