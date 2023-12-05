@@ -1,3 +1,5 @@
+import type { Readable } from 'stream';
+import type { IAuthenticatedRequest } from '@aimpact/chat-api/middleware';
 import { join } from 'path';
 import * as stream from 'stream';
 import * as Busboy from 'busboy';
@@ -6,6 +8,7 @@ import { getExtension } from '../../../utils/get-extension';
 import { generateCustomName } from '../../../utils/generate-name';
 import { PendingPromise } from '@beyond-js/kernel/core';
 import { OpenAIBackend } from '@aimpact/chat-api/backend-openai';
+import { ErrorGenerator } from '@aimpact/chat-api/http/errors';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -26,18 +29,20 @@ interface IFileSpecs {
 	knowledgeBoxId?: string;
 }
 
-function processTranscription(req): Promise<IAudioSpecs> {
+function processTranscription(req: IAuthenticatedRequest): Promise<IAudioSpecs> {
 	const { user, conversation } = req;
 
 	const promise = new PendingPromise();
 	const bb = Busboy({ headers: req.headers });
 	const transcription = new PendingPromise();
 
-	const files = [];
-	const fields: IFileSpecs = {};
+	// const files = [];
+	const files: { file: any; info: { filename: string; mimeType: string } }[] = [];
+	const fields: Record<string, IFileSpecs> = {};
 
-	bb.on('field', (name, val) => (fields[name] = val));
-	bb.on('file', (nameV, file, info) => {
+	bb.on('field', (name: string, val: any) => (fields[name] = val));
+
+	bb.on('file', (name: string, file: Readable, info: { filename: string; mimeType: string }) => {
 		let size = 0;
 		file.on('data', data => (size += data.length));
 		const pass = new stream.PassThrough();
@@ -46,22 +51,26 @@ function processTranscription(req): Promise<IAudioSpecs> {
 		oaiBackend.transcriptionStream(file, 'es').then(response => transcription.resolve(response));
 	});
 	bb.on('finish', async () => {
+		if (!files.length) {
+			promise.resolve({ error: ErrorGenerator.invalidParameters(['file']) });
+			return;
+		}
+
 		const [item] = files;
-		const {
-			file,
-			info: { filename, mimeType }
-		} = item;
+		const { file, info } = item;
+		const { filename, mimeType } = info;
 
 		const name = `${generateCustomName(filename)}${getExtension(mimeType)}`;
-		let dest = join(conversation.project, user.uid, 'audio', name);
+
+		let dest = join(conversation.project ?? 'ailearn', user.uid, 'audio', name);
 		dest = dest.replace(/\\/g, '/');
-		const response = await transcription;
 
 		const fileManager = new FilestoreFile();
 		const bucketFile = fileManager.getFile(dest);
 		const write = bucketFile.createWriteStream();
 		file.pipe(write);
 
+		const response = await transcription;
 		promise.resolve({ transcription: response, fields, file: { name, dest, mimeType } });
 	});
 
@@ -70,7 +79,7 @@ function processTranscription(req): Promise<IAudioSpecs> {
 	return promise;
 }
 
-export const processAudio = async function (req): Promise<IAudioSpecs> {
+export const processAudio = async function (req: IAuthenticatedRequest): Promise<IAudioSpecs> {
 	try {
 		const { transcription, fields, file } = await processTranscription(req);
 

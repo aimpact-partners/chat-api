@@ -37,8 +37,8 @@ export /*bundle*/ class Agents {
 			return { status: false, error: 'the conversation has no established default language' };
 		}
 
-		const { user, synthesis, message: msgs } = conversation;
-		const messages = { last: msgs ? msgs.lastTwo : [], count: msgs ? msgs.count : 0 };
+		const { user, synthesis, messages: msgs } = conversation;
+		const messages = { last: msgs && msgs.lastTwo ? msgs.lastTwo : [], count: msgs && msgs.count ? msgs.count : 0 };
 
 		const url = AGENT_API_URL;
 		const method = 'POST';

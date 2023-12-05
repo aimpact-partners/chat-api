@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import * as admin from 'firebase-admin';
 import type { IUser } from '@aimpact/chat-api/business/user';
 
-interface /*bundle*/ IAuthenticatedRequest extends Request {
+export interface /*bundle*/ IAuthenticatedRequest extends Request {
 	user?: IUser;
 }
 

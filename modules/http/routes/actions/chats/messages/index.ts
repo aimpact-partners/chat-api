@@ -60,7 +60,7 @@ export class ChatMessagesRoutes {
 		 * @returns Promise<{ data?: IMessageSpecs; error?: string }>
 		 */
 		const processRequest = async (
-			req: Request,
+			req: IAuthenticatedRequest,
 			res: Response
 		): Promise<{ data?: IMessageSpecs; error?: string }> => {
 			const textRequest = req.headers['content-type'] === 'application/json';
