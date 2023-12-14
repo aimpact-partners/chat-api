@@ -1,7 +1,0 @@
-{
-	"name": "kb",
-	"platforms": ["node"],
-	"ts": {
-		"files": ["*"]
-	}
-}

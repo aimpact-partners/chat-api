@@ -2,7 +2,8 @@
 .vscode
 .idea
 .env
-node_modules
+node_modules/
+!modules/node_modules/
 runners/.env
 uploads
 package-lock.json

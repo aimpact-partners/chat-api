@@ -1,6 +1,6 @@
 {
 	"name": "@aimpact/chat-api",
-	"version": "1.0.1",
+	"version": "0.2.0",
 	"title": "CHAT API for custom chats using Agents",
 	"description": "",
 	"license": "ISC",
@@ -17,17 +17,6 @@
 	"modules": {
 		"path": "modules"
 	},
-	"params": {
-		"local": {
-			"AGENT_API": "http://localhost:5050"
-		},
-		"development": {
-			"AGENT_API": "https://agent-api-rb5caohzgq-uc.a.run.app/agent"
-		},
-		"testing": {
-			"AGENT_API": "https://agent-api-rb5caohzgq-uc.a.run.app/agent"
-		}
-	},
 	"libraries": {
 		"imports": [
 			"@beyond-js/reactive"
@@ -37,18 +26,16 @@
 		"distributions": [
 			{
 				"name": "web",
-				"environment": "development",
+				"environment": "local",
 				"platform": "web",
 				"backend": "backend",
 				"ports": {
-					"bundles": 3380,
-					"http": 3581,
-					"inspect": 3282
+					"bundles": 3377
 				}
 			},
 			{
 				"name": "backend",
-				"environment": "development",
+				"environment": "local",
 				"platform": "backend",
 				"host": "https://chat-api-ws-v2-rb5caohzgq-uc.a.run.app",
 				"ports": {
@@ -59,7 +46,7 @@
 			},
 			{
 				"name": "http",
-				"environment": "development",
+				"environment": "local",
 				"platform": "node",
 				"ports": {
 					"bundles": 6583,
@@ -68,35 +55,65 @@
 				}
 			},
 			{
+				"name": "web-development",
+				"environment": "development",
+				"platform": "web",
+				"backend": "backend-development"
+			},
+			{
+				"name": "backend-development",
+				"environment": "development",
+				"platform": "backend",
+				"host": "https://chat-api-ws-v2-rb5caohzgq-uc.a.run.app"
+			},
+			{
+				"name": "http-development",
+				"environment": "development",
+				"platform": "node"
+			},
+			{
 				"name": "web-testing",
 				"environment": "testing",
 				"platform": "web",
-				"backend": "backend-testing",
-				"ports": {
-					"bundles": 3385,
-					"http": 3586,
-					"inspect": 3287
-				}
+				"backend": "backend-testing"
 			},
 			{
 				"name": "backend-testing",
 				"environment": "testing",
 				"platform": "backend",
-				"host": "https://chat-api-ws-skvkre4apq-uc.a.run.app",
-				"ports": {
-					"bundles": 6590,
-					"http": 6591,
-					"inspect": 6592
-				}
+				"host": "https://chat-api-ws-skvkre4apq-uc.a.run.app"
 			},
 			{
 				"name": "http-testing",
 				"environment": "testing",
+				"platform": "node"
+			},
+			{
+				"name": "web-production",
+				"environment": "production",
+				"platform": "web",
+				"backend": "backend-production"
+			},
+			{
+				"name": "backend-production",
+				"environment": "production",
+				"platform": "backend",
+				"host": "https://chat-api-ws-pjv2z6fura-uc.a.run.app"
+			},
+			{
+				"name": "http-production",
+				"environment": "production",
+				"platform": "node"
+			},
+			{
+				"name": "node-tsc",
+				"environment": "local",
 				"platform": "node",
+				"ts": {
+					"compiler": "tsc"
+				},
 				"ports": {
-					"bundles": 6593,
-					"http": 6594,
-					"inspect": 6595
+					"bundles": 6501
 				}
 			}
 		]
@@ -105,6 +122,8 @@
 		"@beyond-js/backend": "^0.1.8",
 		"@beyond-js/events": "^0.0.6",
 		"@beyond-js/kernel": "~0.1.8",
+		"@beyond-js/firestore-collection": "~0.0.3",
+		"@beyond-js/response": "~0.0.1",
 		"@google-cloud/storage": "^6.10.1",
 		"@google-cloud/tasks": "^3.1.2",
 		"@pinecone-database/pinecone": "^0.1.6",
@@ -130,9 +149,13 @@
 	"devDependencies": {
 		"@beyond-js/bee": "0.0.6",
 		"@beyond-js/local": "~0.1.3",
+		"@types/express": "^4.17.17",
 		"@types/jsonwebtoken": "^9.0.2",
 		"@types/react": "^18.0.26",
 		"@types/react-dom": "^18.0.9",
+		"@types/node": "~20.6.0",
+		"@types/uuid": "~9.0.7",
+		"@types/busboy": "1.5.3",
 		"swagger-ui-express": "^5.0.0",
 		"yaml": "^2.3.1"
 	}
