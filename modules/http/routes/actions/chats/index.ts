@@ -29,11 +29,12 @@ export class ChatsRoutes {
 		ChatMessagesRoutes.setup(app);
 
 		app.get('/chats', ChatsRoutes.list);
-		app.get('/chats/:id', ChatsRoutes.get);
-		app.post('/chats', ChatsRoutes.save);
 		app.post('/chats/bulk', ChatsRoutes.bulk);
 		app.put('/chats/:id', ChatsRoutes.update);
 		app.delete('/chats/:id', ChatsRoutes.delete);
+
+		app.get('/chats/:id', UserMiddlewareHandler.validate, ChatsRoutes.get);
+		app.post('/chats', UserMiddlewareHandler.validate, ChatsRoutes.save);
 
 		app.get('/conversations/:id', UserMiddlewareHandler.validate, ChatsRoutes.get);
 		app.post('/conversations', UserMiddlewareHandler.validate, ChatsRoutes.save);

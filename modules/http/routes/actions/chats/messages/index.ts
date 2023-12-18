@@ -14,12 +14,12 @@ interface IMessageSpecs {
 
 export class ChatMessagesRoutes {
 	static setup(app: Application) {
-		app.use((err, req: Request, res: Response) => {
-			res.status(err.status || 500).json({
-				message: err.message,
-				errors: err.errors
-			});
-		});
+		// app.use((err, req: Request, res: Response, next) => {
+		// 	res.status(err.status || 500).json({
+		// 		message: err.message,
+		// 		errors: err.errors
+		// 	});
+		// });
 
 		app.post('/chats/:id/messages', UserMiddlewareHandler.validate, ChatMessagesRoutes.sendMessage);
 		app.post('/conversations/:id/messages', UserMiddlewareHandler.validate, ChatMessagesRoutes.sendMessage);
