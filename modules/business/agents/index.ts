@@ -16,28 +16,28 @@ interface ISendMessageResponse {
 }
 
 export /*bundle*/ class Agents {
-	static async sendMessage(conversationId: string, prompt: string): Promise<ISendMessageResponse> {
-		let conversation: any;
+	static async sendMessage(chatId: string, prompt: string): Promise<ISendMessageResponse> {
+		let chat: any;
 		try {
-			conversation = await Chat.get(conversationId);
+			chat = await Chat.get(chatId);
 		} catch (exc) {
 			console.error(exc);
-			return { status: false, error: 'Error fetching conversation data from store' };
+			return { status: false, error: 'Error fetching chat data from store' };
 		}
 
-		if (!conversation) {
-			return { status: false, error: 'conversationId not valid' };
+		if (!chat) {
+			return { status: false, error: 'chatId not valid' };
 		}
 
-		if (!conversation.language) {
-			return { status: false, error: 'the conversation has no established language' };
+		if (!chat.language) {
+			return { status: false, error: 'the chat has no established language' };
 		}
-		const language = conversation.language.default;
+		const language = chat.language.default;
 		if (!language) {
-			return { status: false, error: 'the conversation has no established default language' };
+			return { status: false, error: 'the chat has no established default language' };
 		}
 
-		const { user, synthesis, messages: msgs } = conversation;
+		const { user, synthesis, messages: msgs } = chat;
 		const messages = { last: msgs && msgs.lastTwo ? msgs.lastTwo : [], count: msgs && msgs.count ? msgs.count : 0 };
 
 		const url = AGENT_API_URL;
@@ -49,8 +49,8 @@ export /*bundle*/ class Agents {
 
 		// Prepare the parameters
 		const body = JSON.stringify({
-			metadata: conversation.metadata,
-			chatId: conversation.id,
+			metadata: chat.metadata,
+			chatId: chat.id,
 			language,
 			user,
 			messages,

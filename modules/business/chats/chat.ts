@@ -1,11 +1,10 @@
+import type { IChatData, IMessage } from '@aimpact/chat-api/data/interfaces';
+import type { firestore } from 'firebase-admin';
 import { v4 as uuid } from 'uuid';
 import { db } from '@beyond-js/firestore-collection/db';
 import { Message } from './message';
 import { Messages } from './messages';
 import { Timestamp } from '@aimpact/chat-api/utils/timestamp';
-import type { IChat, IMessage } from '@aimpact/chat-api/data/interfaces';
-
-import type { firestore } from 'firebase-admin';
 import { BatchDeleter } from './firestore/delete';
 import { FirestoreService } from './firestore/service';
 
@@ -26,36 +25,37 @@ export /*bundle*/ class Chat {
 			throw new Error('id is required');
 		}
 
-		const conversationDoc = await db.collection('Chats').doc(id);
-		const doc = await conversationDoc.get();
+		const ChatDoc = await db.collection('Chats').doc(id);
+		const doc = await ChatDoc.get();
 		if (!doc.exists) {
-			return { error: 'Conversation not exists' };
+			return { error: 'Chat not exists' };
 		}
 
-		const conversationData: IChat = doc.data();
+		const ChatData: IChatData = doc.data();
 
-		// if (conversationData.user.id !== uid) {
-		// 	return { error: 'The user does not have access permissions on this conversation' };
+		// if (ChatData.user.id !== uid) {
+		// 	return { error: 'The user does not have access permissions on this Chat' };
 		// }
 
 		if (messages) {
-			const messagesSnapshot = await conversationDoc.collection('messages').orderBy('timestamp').get();
-			conversationData.messages = messagesSnapshot.docs.map(doc => {
+			const messagesSnapshot = await ChatDoc.collection('messages').orderBy('timestamp').get();
+			ChatData.messages = messagesSnapshot.docs.map(doc => {
 				const data = doc.data();
 				data.timestamp = Timestamp.format(data.timestamp);
 				return data;
 			});
-			conversationData.messages.sort((a, b) => a.timestamp - b.timestamp);
+			ChatData.messages.sort((a, b) => a.timestamp - b.timestamp);
 		}
 
-		return conversationData;
+		return ChatData;
 	}
 
-	static async save(data: IChat) {
+	static async save(data: IChatData) {
 		try {
 			const id = data.id ?? uuid();
 			const collection = db.collection('Chats');
 			const chatDoc = await collection.doc(id).get();
+
 			if (!chatDoc.exists) {
 				// if the parent is not received, we set it to root by default
 				data.parent === undefined && (data.parent = '0');
@@ -64,7 +64,7 @@ export /*bundle*/ class Chat {
 			await collection.doc(id).set({ ...data, id }, { merge: true });
 			const item = await collection.doc(id).get();
 
-			return item.data() as IChat;
+			return item.data() as IChatData;
 		} catch (e) {
 			console.error(e);
 			throw new Error('Error saving item');
@@ -77,12 +77,12 @@ export /*bundle*/ class Chat {
 	 * @param message
 	 * @returns
 	 */
-	static async saveMessage(conversationId: string, params: IMessage) {
-		return Message.publish(conversationId, params);
+	static async saveMessage(ChatId: string, params: IMessage) {
+		return Message.publish(ChatId, params);
 	}
 
 	/**
-	 * sets the last interaction made in the conversation
+	 * sets the last interaction made in the Chat
 	 * assuming an interaction is the message/response pair
 	 * taking message(role:user)/response(role:system)
 	 * @param id
@@ -94,9 +94,9 @@ export /*bundle*/ class Chat {
 		}
 
 		const collection = db.collection('Chats');
-		const conversationDoc = await collection.doc(id).get();
-		if (!conversationDoc.exists) {
-			throw new Error('conversationId not valid');
+		const ChatDoc = await collection.doc(id).get();
+		if (!ChatDoc.exists) {
+			throw new Error('ChatId not valid');
 		}
 
 		const messages = await Messages.getByLimit(id, limit);
@@ -112,7 +112,7 @@ export /*bundle*/ class Chat {
 	 * Functions migradas del objeto Chat inicial
 	 * @TODO validar funcionamiento
 	 */
-	async saveAll(items: IChat[]) {
+	async saveAll(items: IChatData[]) {
 		if (!items.length) {
 			throw new Error('items are required');
 		}

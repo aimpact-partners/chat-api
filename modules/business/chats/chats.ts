@@ -7,7 +7,7 @@ export /*bundle*/ class Chats {
 				throw new Error('userId is required');
 			}
 
-			const query = db.collection('Conversations').where('userId', '==', specs.userId);
+			const query = db.collection('Chats').where('userId', '==', specs.userId);
 			const items = await query.get();
 			const entries = items.map(item => item.data());
 

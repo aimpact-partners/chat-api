@@ -1,4 +1,5 @@
 import type { Readable } from 'stream';
+import type { IChatData } from '@aimpact/chat-api/data/interfaces';
 import type { IAuthenticatedRequest } from '@aimpact/chat-api/middleware';
 import { join } from 'path';
 import * as stream from 'stream';
@@ -29,8 +30,8 @@ interface IFileSpecs {
 	knowledgeBoxId?: string;
 }
 
-function processTranscription(req: IAuthenticatedRequest): Promise<IAudioSpecs> {
-	const { user, conversation } = req;
+function processTranscription(req: IAuthenticatedRequest, chat: IChatData): Promise<IAudioSpecs> {
+	const { user } = req;
 
 	const promise = new PendingPromise();
 	const bb = Busboy({ headers: req.headers });
@@ -61,8 +62,7 @@ function processTranscription(req: IAuthenticatedRequest): Promise<IAudioSpecs> 
 		const { filename, mimeType } = info;
 
 		const name = `${generateCustomName(filename)}${getExtension(mimeType)}`;
-
-		let dest = join(conversation.project ?? 'ailearn', user.uid, 'audio', name);
+		let dest = join(chat.project.identifier ?? 'undefined-project', user.uid, 'audio', name);
 		dest = dest.replace(/\\/g, '/');
 
 		const fileManager = new FilestoreFile();
@@ -79,9 +79,9 @@ function processTranscription(req: IAuthenticatedRequest): Promise<IAudioSpecs> 
 	return promise;
 }
 
-export const processAudio = async function (req: IAuthenticatedRequest): Promise<IAudioSpecs> {
+export const processAudio = async function (req: IAuthenticatedRequest, chat: IChatData): Promise<IAudioSpecs> {
 	try {
-		const { transcription, fields, file } = await processTranscription(req);
+		const { transcription, fields, file } = await processTranscription(req, chat);
 
 		if (!transcription.status) {
 			return { error: `Error transcribing audio: ${transcription.error}` };
