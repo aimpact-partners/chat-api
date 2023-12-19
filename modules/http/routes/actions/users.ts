@@ -65,7 +65,6 @@ export class UsersRoutes {
 				email: req.body.email,
 				firebaseToken: req.body.firebaseToken,
 				token: req.body.token,
-				custom: req.body.token,
 				photoURL: req.body.photoURL,
 				phoneNumber: req.body.phoneNumber
 			};

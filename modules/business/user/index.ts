@@ -93,7 +93,6 @@ export /*bundle*/ class User implements IUser {
 			const decodedToken = await admin.auth().verifyIdToken(user.firebaseToken);
 			const customToken = jwt.sign({ uid: decodedToken.uid }, process.env.SECRET_KEY);
 			user.token = customToken;
-			user.custom = customToken;
 
 			const userRef = await this.collection.doc(user.id);
 			const { exists } = await userRef.get();
@@ -117,8 +116,6 @@ export /*bundle*/ class User implements IUser {
 			}
 
 			const updatedUser = await userRef.get();
-
-			console.log(2, updatedUser);
 			return { status: true, data: { user: updatedUser.data() } };
 		} catch (exc) {
 			console.error(exc);
