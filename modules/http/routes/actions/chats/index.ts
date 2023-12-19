@@ -41,6 +41,7 @@ export class ChatsRoutes {
 	static async list(req: IAuthenticatedRequest, res: Response) {
 		try {
 			const { uid } = req.user;
+			console.log(1, uid);
 			const response = await Chats.byUser(uid);
 			if (response.error) {
 				return res.status(404).json({ error: 'Chats not found.' });
