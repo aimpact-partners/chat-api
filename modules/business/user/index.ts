@@ -3,6 +3,7 @@ import { db } from '@beyond-js/firestore-collection/db';
 import * as admin from 'firebase-admin';
 import * as jwt from 'jsonwebtoken';
 import * as dayjs from 'dayjs';
+import { ErrorGenerator } from '@aimpact/chat-api/business/errors';
 
 export /*bundle*/ interface IUser extends IUsersBaseData {}
 
@@ -86,12 +87,13 @@ export /*bundle*/ class User implements IUser {
 	async login(user: IUsersData) {
 		try {
 			if (!user.id || !user.firebaseToken) {
-				return { status: false, error: 'INVALID_USER' };
+				return ErrorGenerator.invalidParameters('Users', 'id');
 			}
 
 			const decodedToken = await admin.auth().verifyIdToken(user.firebaseToken);
 			const customToken = jwt.sign({ uid: decodedToken.uid }, process.env.SECRET_KEY);
 			user.token = customToken;
+			user.custom = customToken;
 
 			const userRef = await this.collection.doc(user.id);
 			const { exists } = await userRef.get();
@@ -118,9 +120,9 @@ export /*bundle*/ class User implements IUser {
 
 			console.log(2, updatedUser);
 			return { status: true, data: { user: updatedUser.data() } };
-		} catch (e) {
-			console.error(e);
-			return { status: false, error: 'INVALID_TOKEN' };
+		} catch (exc) {
+			console.error(exc);
+			return ErrorGenerator.internalError(exc);
 		}
 	}
 

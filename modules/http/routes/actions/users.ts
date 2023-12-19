@@ -57,6 +57,7 @@ export class UsersRoutes {
 		if (!id || !firebaseToken) {
 			return res.json(new HttpResponse({ error: ErrorGenerator.invalidParameters(['id', 'firebaseToken']) }));
 		}
+
 		try {
 			const specs = <IUsersData>{
 				id: req.body.id,
