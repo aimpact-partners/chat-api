@@ -2,7 +2,7 @@ import { FirestoreErrorManager } from '@beyond-js/firestore-collection/errors';
 import { db } from '@beyond-js/firestore-collection/db';
 import { v4 as uuid } from 'uuid';
 import { Response } from '@beyond-js/response/main';
-import { ErrorGenerator } from '@aimpact/chat-api/errors';
+import { ErrorGenerator } from '@aimpact/chat-api/business/errors';
 import { Projects } from '@aimpact/chat-api/business/projects';
 import { promptsCategories } from '@aimpact/chat-api/data/model';
 import type { IPromptCategoryData } from '@aimpact/chat-api/data/interfaces';

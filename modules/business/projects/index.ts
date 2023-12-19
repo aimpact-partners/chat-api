@@ -1,5 +1,5 @@
 import { FirestoreErrorManager } from '@beyond-js/firestore-collection/errors';
-import { ErrorGenerator } from '@aimpact/chat-api/errors';
+import { ErrorGenerator } from '@aimpact/chat-api/business/errors';
 import { Response } from '@beyond-js/response/main';
 import { v4 as uuid } from 'uuid';
 import { db } from '@beyond-js/firestore-collection/db';

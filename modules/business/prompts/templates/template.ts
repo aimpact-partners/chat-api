@@ -1,13 +1,11 @@
 import type { IPromptTemplateBaseData, IPromptTemplateData } from '@aimpact/chat-api/data/interfaces';
 import { FirestoreErrorManager } from '@beyond-js/firestore-collection/errors';
 import { db } from '@beyond-js/firestore-collection/db';
-import { v4 as uuid } from 'uuid';
 import { Response } from '@beyond-js/response/main';
 import { prompts } from '@aimpact/chat-api/data/model';
-import { ErrorGenerator } from '@aimpact/chat-api/errors';
+import { ErrorGenerator } from '@aimpact/chat-api/business/errors';
 import { Projects } from '@aimpact/chat-api/business/projects';
 import { OpenAIBackend } from '@aimpact/chat-api/backend-openai';
-import { PromptCategories } from '../categories';
 
 export /*bundle*/ class PromptsTemplate {
 	static async data(id: string, language?: string, option?: string) {
