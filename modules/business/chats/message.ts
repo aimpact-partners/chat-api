@@ -1,12 +1,12 @@
 import { v4 as uuid } from 'uuid';
 import { db } from '@beyond-js/firestore-collection/db';
 import { Timestamp } from '@aimpact/chat-api/utils/timestamp';
-import type { IMessage } from '@aimpact/chat-api/data/interfaces';
+import type { IMessageData } from '@aimpact/chat-api/data/interfaces';
 
 const MESSAGE_ROLE = ['system', 'user', 'assistant', 'function'];
 
 export class Message {
-	static async publish(chatId: string, params: IMessage) {
+	static async publish(chatId: string, params: IMessageData) {
 		try {
 			if (!chatId) {
 				throw new Error('chatId is required');
@@ -33,7 +33,7 @@ export class Message {
 			delete params.id;
 
 			const timestamp = Timestamp.set(params.timestamp);
-			const specs = { id, chatId, ...params, timestamp };
+			const specs = { id, chatId, ...params, chat: { id: chatId }, timestamp };
 			await chat.collection('messages').doc(id).set(specs);
 
 			const data = chatDoc.data();

@@ -1,7 +1,8 @@
+import type { IProjectData } from '@aimpact/chat-api/data/interfaces';
+import { v4 as uuid } from 'uuid';
 import { FirestoreErrorManager } from '@beyond-js/firestore-collection/errors';
 import { ErrorGenerator } from '@aimpact/chat-api/business/errors';
 import { Response } from '@beyond-js/response/main';
-import { v4 as uuid } from 'uuid';
 import { db } from '@beyond-js/firestore-collection/db';
 import { projects } from '@aimpact/chat-api/data/model';
 
@@ -10,17 +11,17 @@ export /*bundle*/ class Projects {
 		return await projects.data({ id });
 	}
 
-	static async save(params) {
+	static async save(params: IProjectData) {
 		try {
 			const id = params.id ?? uuid();
-			const { name, description } = params;
+			const { name, description, agent } = params;
 
 			const data = await Projects.data(id);
 			if (data.error) return data;
 			if (data.data.exists) return Projects.update(params);
 
 			const identifier = name.toLowerCase().replace(/\s+/g, '-');
-			const specs = { data: { id, name, description, identifier } };
+			const specs = { data: { id, name, description, identifier, agent } };
 			const response = await projects.set(specs);
 			if (response.error) return new FirestoreErrorManager(response.error.code, response.error.text);
 

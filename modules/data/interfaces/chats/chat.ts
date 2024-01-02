@@ -1,4 +1,4 @@
-import { IMessage } from './message';
+import { IMessageData } from './message';
 
 export /*bundle*/ interface IChatBaseData {
 	id: string;
@@ -12,6 +12,6 @@ export /*bundle*/ interface IChatBaseData {
 
 export /*bundle*/ interface IChatData extends IChatBaseData {
 	project: { id: string; name: string; identifier: string; agent: { url: string } };
-	messages?: IMessage[];
+	messages?: IMessageData[];
 	usage?: { completionTokens: number; promptTokens: number; totalTokens: number };
 }

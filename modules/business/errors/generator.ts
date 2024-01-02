@@ -52,7 +52,7 @@ export /*bundle*/ class ErrorGenerator {
 	static languageNotSupport(collectionName: string, parameter: string, exc?: Error) {
 		return new BusinessErrorManager(
 			ErrorCodes.languageNotSupport,
-			`PromptTemplate not support language "${parameter}"`,
+			`${collectionName} not support "${parameter}" language`,
 			exc
 		);
 	}

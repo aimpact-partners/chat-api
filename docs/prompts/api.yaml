@@ -7,11 +7,51 @@ info:
         email: hello@aimpact.partners
 
 paths:
+    /prompts/templates:
+        post:
+            summary: Publish a new prompt.
+            tags:
+                - Prompts Templates
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            allOf:
+                                - $ref: '#/components/schemas/IPromptTemplateDataParams'
+                                - type: object
+                            required:
+                                - name
+                                - description
+                                - language
+                            properties:
+                                categories:
+                                    type: array
+                                    items:
+                                        type: string
+
+            responses:
+                200:
+                    description: Prompt published successfully.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponse'
+                400:
+                    description: Bad request. Possible errors regarding missing or incorrect data.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                $ref: '#/components/schemas/IResponseBadRequest'
+
     /prompts/templates/{id}:
         get:
             summary: Get a Prompt.
             tags:
                 - Prompts Templates
+            description: id is composed by projectIdentifier.promptName (myProject.myPrompt)
             responses:
                 200:
                     description: Prompt Geted successfully.
@@ -63,45 +103,6 @@ paths:
                             properties:
                                 value:
                                     type: string
-
-            responses:
-                200:
-                    description: Prompt published successfully.
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                $ref: '#/components/schemas/IResponse'
-                400:
-                    description: Bad request. Possible errors regarding missing or incorrect data.
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                $ref: '#/components/schemas/IResponseBadRequest'
-
-    /prompts/templates:
-        post:
-            summary: Publish a new prompt.
-            tags:
-                - Prompts Templates
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            allOf:
-                                - $ref: '#/components/schemas/IPromptTemplateDataParams'
-                                - type: object
-                            required:
-                                - name
-                                - description
-                                - language
-                            properties:
-                                categories:
-                                    type: array
-                                    items:
-                                        type: string
 
             responses:
                 200:
@@ -207,6 +208,15 @@ components:
             properties:
                 projectId:
                     type: string
+                language:
+                    type: object
+                    properties:
+                        default:
+                            type: string
+                        languages:
+                            type: array
+                            items:
+                                type: string
 
         IPromptTemplateBaseData:
             allOf:
@@ -238,7 +248,14 @@ components:
                 description:
                     type: string
                 language:
-                    type: string
+                    type: object
+                    properties:
+                        default:
+                            type: string
+                        languages:
+                            type: array
+                            items:
+                                type: string
                 format:
                     type: string
                     enum:
@@ -271,6 +288,15 @@ components:
                             type: array
                             items:
                                 type: string
+                project:
+                    type: object
+                    properties:
+                        identifier:
+                            type: string
+                        name:
+                            type: string
+                        id:
+                            type: string
 
         IPromptTemplateCategoryData:
             properties:

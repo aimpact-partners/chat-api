@@ -1,10 +1,16 @@
-import { Collection } from '@beyond-js/firestore-collection/collection';
-import type { IChatData } from '@aimpact/chat-api/data/interfaces';
+import { Collection, SubCollection } from '@beyond-js/firestore-collection/collection';
+import type { IChatData, IMessageData } from '@aimpact/chat-api/data/interfaces';
 
 class Chats extends Collection<IChatData> {
+	#messages: SubCollection<IMessageData>;
+	get messages() {
+		return this.#messages;
+	}
+
 	constructor() {
 		super('Chats');
+		this.#messages = new SubCollection('messages', this);
 	}
 }
 
-export /*bundle*/ const chats: Collection<IChatData> = new Chats();
+export /*bundle*/ const chats = new Chats();

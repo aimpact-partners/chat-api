@@ -1,4 +1,8 @@
-import type { IPromptTemplateBaseData, IPromptTemplateData } from '@aimpact/chat-api/data/interfaces';
+import type {
+	IPromptTemplateBaseData,
+	IPromptTemplateData,
+	IPromptTemplateLanguageData
+} from '@aimpact/chat-api/data/interfaces';
 import { FirestoreErrorManager } from '@beyond-js/firestore-collection/errors';
 import { db } from '@beyond-js/firestore-collection/db';
 import { Response } from '@beyond-js/response/main';
@@ -10,37 +14,31 @@ import { OpenAIBackend } from '@aimpact/chat-api/backend-openai';
 export /*bundle*/ class PromptsTemplate {
 	static async data(id: string, language?: string, option?: string) {
 		const prompt = await prompts.data({ id });
-		if (prompt.error) return prompt;
+		if (prompt.error) return new Response({ error: prompt.error });
 		if (!prompt.data.exists) {
-			const error = ErrorGenerator.documentNotFound('prompts-templates', prompt.data.error);
+			const error = ErrorGenerator.documentNotFound('Prompts', id);
 			return new Response({ error });
 		}
 
-		/**
-		 * solo retornamos el prompt sin la traducciones
-		 */
-		if (!language) return prompt;
-
+		// If the language is not received, it is returned with the default language
 		const promptData = prompt.data.data;
-		if (!promptData.languages.includes(language)) {
-			const error = ErrorGenerator.documentNotFound(
-				'prompts-templates',
-				id,
-				`PromptTemplate not support language "${language}"`
-			);
+		if (!language) language = promptData.language.default;
+
+		if (!promptData.language.languages.includes(language)) {
+			const error = ErrorGenerator.languageNotSupport('Prompts', language);
 			return new Response({ error });
 		}
 
 		const languageDoc = await prompts.languages.data({ id: language, parents: { Prompts: id } });
-		if (languageDoc.error) return languageDoc;
+		if (languageDoc.error) return new Response({ error: languageDoc.error });
 		if (!languageDoc.data.exists) {
-			const error = ErrorGenerator.documentNotFound('prompts-templates', languageDoc.data.error);
+			const error = ErrorGenerator.documentNotFound('Prompts', `${id}.${language}`);
 			return new Response({ error });
 		}
 
 		if (!option) {
-			const value = Object.assign({}, promptData, { ...{ language: languageDoc.data.data } });
-			return new Response({ data: { exists: true, data: value } });
+			const value = Object.assign({}, promptData, { value: languageDoc.data.data.value });
+			return new Response({ data: value });
 		}
 
 		const parents = { Prompts: id, Languages: language };
@@ -49,7 +47,7 @@ export /*bundle*/ class PromptsTemplate {
 		const value = Object.assign({}, promptData, { ...{ language: languageDoc.data.data } });
 		value.language.option = subCollection.data.data;
 
-		return new Response({ data: { exists: true, data: value } });
+		return new Response({ data: value });
 	}
 
 	static async list(projectId: string, filter: string) {
@@ -112,10 +110,6 @@ export /*bundle*/ class PromptsTemplate {
 
 	static async save(params: IPromptTemplateBaseData) {
 		try {
-			// const dataResponse = await PromptsTemplate.data(params.id);
-			// if (dataResponse.error) return dataResponse;
-			// if (dataResponse.data.exists) return { status: false, error: 'Prompt already exists' };
-
 			if (!params.projectId) {
 				const error = ErrorGenerator.invalidParameters('prompts-templates', 'projectId');
 				return new Response({ error });
@@ -132,7 +126,7 @@ export /*bundle*/ class PromptsTemplate {
 				const error = ErrorGenerator.invalidParameters('prompts-templates', 'name');
 				return new Response({ error });
 			}
-			if (!params.language) {
+			if (!params.language || !params.language.default) {
 				const error = ErrorGenerator.invalidParameters('prompts-templates', 'language');
 				return new Response({ error });
 			}
@@ -145,21 +139,22 @@ export /*bundle*/ class PromptsTemplate {
 				return new Response({ error });
 			}
 
-			let categories;
+			// let categories;
 			// if (params.categories) {
 			// 	const responseCategory = await PromptCategories.data(params.categories);
 			// 	categories= categoriesData;
 			// }
 
 			const project = dataProject.data.data;
-			const identifier = params.name.toLowerCase().replace(/\s+/g, '-');
+			const name = params.name.toLowerCase();
+			const identifier = name.replace(/\s+/g, '-');
 			const id = params.id ? params.id : `${project.identifier}.${identifier}`;
 			const toSave: IPromptTemplateData = {
 				project: { id: project.id, name: project.name, identifier: project.identifier },
 				id,
-				name: params.name,
+				name,
 				identifier: `${project.identifier}.${identifier}`,
-				languages: [params.language],
+				language: params.language,
 				format: params.format,
 				is: params.is
 			};
@@ -170,29 +165,29 @@ export /*bundle*/ class PromptsTemplate {
 			const response = await prompts.set(specs);
 			if (response.error) return new FirestoreErrorManager(response.error.code, response.error.text);
 
-			const data = {
-				id: `${project.identifier}.${params.name}.${params.language}`,
+			const data: IPromptTemplateLanguageData = {
+				id: `${project.identifier}.${name}.${params.language}`,
 				project: { id: project.id, name: project.name, identifier: project.identifier },
-				language: params.language
+				language: params.language.default
 			};
 			params.value && (data.value = params.value);
 			params.literals && (data.literals = params.literals);
 
 			const parents = { Prompts: id };
-			await prompts.languages.set({ id: params.language, parents, data });
+			await prompts.languages.set({ id: params.language.default, parents, data });
 
 			/**
 			 * Options
 			 */
 			if (params.options) {
-				const promises = [];
-				params.options.map(item => {
-					const parents = { Prompts: id, Languages: params.language };
-					const option = { id: item.id, value: item.value, prompt: params.name };
-					promises.push(prompts.languages.options.set({ parents, data: option }));
-					return option;
-				});
-				await Promise.all(promises);
+				// const promises = [];
+				// params.options.map(item => {
+				// 	const parents = { Prompts: id, Languages: params.language };
+				// 	const option = { id: item.id, value: item.value, prompt: name };
+				// 	promises.push(prompts.languages.options.set({ parents, data: option }));
+				// 	return option;
+				// });
+				// await Promise.all(promises);
 			}
 
 			return await PromptsTemplate.data(id);

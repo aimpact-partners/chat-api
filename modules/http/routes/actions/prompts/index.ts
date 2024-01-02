@@ -58,12 +58,8 @@ export class PromptsRoutes {
 				res.json(new HttpResponse(response));
 				return;
 			}
-			if (!response.data.exists) {
-				res.json(new HttpResponse({ error: response.data.error }));
-				return;
-			}
 
-			res.json(new HttpResponse({ data: response.data.data }));
+			res.json(new HttpResponse({ data: response.data }));
 		} catch (exc) {
 			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
 		}
@@ -115,12 +111,8 @@ export class PromptsRoutes {
 				res.json(new HttpResponse(response));
 				return;
 			}
-			if (response.data.error) {
-				res.json(new HttpResponse({ error: response.data.error }));
-				return;
-			}
 
-			res.json(new HttpResponse({ data: response.data.data }));
+			res.json(new HttpResponse({ data: response.data }));
 		} catch (exc) {
 			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
 		}

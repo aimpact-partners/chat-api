@@ -1,5 +1,6 @@
-import type { Request, Response, Application } from 'express';
+import type { Response, Application } from 'express';
 import type { IAuthenticatedRequest } from '@aimpact/chat-api/middleware';
+import type { IChatData } from '@aimpact/chat-api/data/interfaces';
 import { Chat } from '@aimpact/chat-api/business/chats';
 import { Agents } from '@aimpact/chat-api/business/agents';
 import { UserMiddlewareHandler } from '@aimpact/chat-api/middleware';
@@ -31,16 +32,18 @@ export class ChatMessagesRoutes {
 			return res.status(400).json({ status: false, error: 'Parameter chatId is required' });
 		}
 
-		let chat;
+		let chat: IChatData;
 		try {
-			chat = await Chat.get(chatId, req.user.uid);
+			const response = await Chat.get(chatId, '8cGf2jOlDLZRCY6rQWWsLnhjMB62');
+			if (response.error) {
+				return res.status(400).json({ status: false, error: response.error });
+			}
+			chat = response.data;
 		} catch (e) {
 			console.error(e);
 			res.json({ status: false, error: e.message });
 		}
-		if (chat.error) {
-			return res.status(400).json({ status: false, error: chat.error });
-		}
+
 		// if (!chat.project) {
 		// 	return res.status(400).json({ status: false, error: 'the chat not has a project defined' });
 		// }

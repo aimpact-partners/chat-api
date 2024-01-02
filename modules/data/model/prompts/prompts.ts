@@ -1,5 +1,5 @@
-import { Collection, SubCollection } from '@beyond-js/firestore-collection/collection';
-import type { IPromptTemplateData, IPromptLanguageData } from '@aimpact/chat-api/data/interfaces';
+import type { IPromptTemplateData } from '@aimpact/chat-api/data/interfaces';
+import { Collection } from '@beyond-js/firestore-collection/collection';
 import { Languages } from './languages';
 
 class Prompts extends Collection<IPromptTemplateData> {

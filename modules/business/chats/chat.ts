@@ -1,4 +1,4 @@
-import type { IChatData, IMessage } from '@aimpact/chat-api/data/interfaces';
+import type { IChatData, IMessageData } from '@aimpact/chat-api/data/interfaces';
 import type { firestore } from 'firebase-admin';
 import { v4 as uuid } from 'uuid';
 import { db } from '@beyond-js/firestore-collection/db';
@@ -7,6 +7,24 @@ import { Messages } from './messages';
 import { Timestamp } from '@aimpact/chat-api/utils/timestamp';
 import { BatchDeleter } from './firestore/delete';
 import { FirestoreService } from './firestore/service';
+
+import { User } from '@aimpact/chat-api/business/user';
+import { chats, projects } from '@aimpact/chat-api/data/model';
+import { ErrorGenerator } from '@aimpact/chat-api/business/errors';
+import { BusinessResponse } from '@aimpact/chat-api/business/response';
+
+export /*bundle*/ interface IChatParameters {
+	id: string;
+	name: string;
+	metadata: {};
+	parent?: string;
+	children?: string;
+	language: {
+		default: string;
+	};
+	uid: string;
+	projectId: string;
+}
 
 export /*bundle*/ class Chat {
 	private collection: firestore.CollectionReference;
@@ -20,54 +38,108 @@ export /*bundle*/ class Chat {
 		this.firestoreService = new FirestoreService(this.table);
 	}
 
-	static async get(id: string, uid: string, messages: boolean = false) {
+	static async get(id: string, uid?: string, messages: boolean = false): Promise<BusinessResponse<IChatData>> {
 		if (!id) {
-			throw new Error('id is required');
+			return new BusinessResponse({ error: ErrorGenerator.invalidParameters('Chats', 'id') });
 		}
 
-		const ChatDoc = await db.collection('Chats').doc(id);
-		const doc = await ChatDoc.get();
-		if (!doc.exists) {
-			return { error: 'Chat not exists' };
-		}
-
-		const ChatData: IChatData = doc.data();
-
-		// if (ChatData.user.id !== uid) {
-		// 	return { error: 'The user does not have access permissions on this Chat' };
-		// }
-
-		if (messages) {
-			const messagesSnapshot = await ChatDoc.collection('messages').orderBy('timestamp').get();
-			ChatData.messages = messagesSnapshot.docs.map(doc => {
-				const data = doc.data();
-				data.timestamp = Timestamp.format(data.timestamp);
-				return data;
-			});
-			ChatData.messages.sort((a, b) => a.timestamp - b.timestamp);
-		}
-
-		return ChatData;
-	}
-
-	static async save(data: IChatData) {
 		try {
-			const id = data.id ?? uuid();
-			const collection = db.collection('Chats');
-			const chatDoc = await collection.doc(id).get();
-
-			if (!chatDoc.exists) {
-				// if the parent is not received, we set it to root by default
-				data.parent === undefined && (data.parent = '0');
+			const response = await chats.data({ id });
+			if (response.error) {
+				return new BusinessResponse({ error: response.error });
+			}
+			if (!response.data.exists) {
+				return new BusinessResponse({ error: response.data.error });
 			}
 
-			await collection.doc(id).set({ ...data, id }, { merge: true });
-			const item = await collection.doc(id).get();
+			const ChatData: IChatData = response.data.data;
+			// if (ChatData.user.id !== uid) {
+			// 	return { error: 'The user does not have access permissions on this Chat' };
+			// }
 
-			return item.data() as IChatData;
-		} catch (e) {
-			console.error(e);
-			throw new Error('Error saving item');
+			if (messages) {
+				const messagesSnapshot = await db
+					.collection('Chats')
+					.doc(id)
+					.collection('messages')
+					.orderBy('timestamp')
+					.get();
+				ChatData.messages = messagesSnapshot.docs.map(doc => {
+					const data = doc.data();
+					return {
+						id: data.id,
+						content: data.content,
+						answer: data.answer,
+						chatId: data.chatId,
+						chat: data.chat,
+						role: data.role,
+						timestamp: Timestamp.format(data.timestamp)
+					};
+				});
+				ChatData.messages.sort((a, b) => a.timestamp - b.timestamp);
+			}
+
+			return new BusinessResponse({ data: ChatData });
+		} catch (exc) {
+			console.error(exc);
+			return new BusinessResponse({ error: ErrorGenerator.internalError(exc) });
+		}
+	}
+
+	static async save(data: IChatParameters) {
+		try {
+			const id = data.id ?? uuid();
+
+			const response = await chats.data({ id });
+			if (response.error) {
+				return new BusinessResponse({ error: response.error });
+			}
+
+			const specs = <IChatData>{ id: id };
+			data.name && (specs.name = data.name);
+			data.metadata && (specs.metadata = data.metadata);
+			data.parent && (specs.parent = data.parent);
+			data.children && (specs.children = data.children);
+			data.language && (specs.language = data.language);
+
+			if (!response.data.exists) {
+				// if the parent is not received, we set it to root by default
+				!data.parent && (specs.parent = '0');
+			}
+
+			if (data.projectId) {
+				const response = await projects.data({ id: data.projectId });
+				if (response.error) {
+					return new BusinessResponse({ error: response.error });
+				}
+				if (!response.data.exists) {
+					return new BusinessResponse({ error: response.data.error });
+				}
+				const project = response.data.data;
+				specs.project = {
+					id: project.id,
+					name: project.name,
+					identifier: project.identifier,
+					agent: project.agent
+				};
+			}
+
+			if (data.uid) {
+				const model = new User(data.uid);
+				await model.load();
+				specs.user = model.toJSON();
+			}
+
+			await chats.merge({ id, data: specs });
+			const chatResponse = await chats.data({ id });
+			if (chatResponse.error) {
+				return new BusinessResponse({ error: response.error });
+			}
+
+			return new BusinessResponse({ data: chatResponse.data.data });
+		} catch (exc) {
+			console.error(exc);
+			return new BusinessResponse({ error: ErrorGenerator.internalError(exc) });
 		}
 	}
 
@@ -77,7 +149,7 @@ export /*bundle*/ class Chat {
 	 * @param message
 	 * @returns
 	 */
-	static async saveMessage(ChatId: string, params: IMessage) {
+	static async saveMessage(ChatId: string, params: IMessageData) {
 		return Message.publish(ChatId, params);
 	}
 

@@ -6,7 +6,6 @@ import { Chat, Chats } from '@aimpact/chat-api/business/chats';
 import { UserMiddlewareHandler } from '@aimpact/chat-api/middleware';
 import { ChatMessagesRoutes } from './messages';
 import { IChat, ICreateChatSpecs } from './interfaces';
-import { User } from '@aimpact/chat-api/business/user';
 import { Response as HttpResponse } from '@beyond-js/response/main';
 import { ErrorGenerator } from '@beyond-js/firestore-collection/errors';
 
@@ -41,7 +40,6 @@ export class ChatsRoutes {
 	static async list(req: IAuthenticatedRequest, res: Response) {
 		try {
 			const { uid } = req.user;
-			console.log(1, uid);
 			const response = await Chats.byUser(uid);
 			if (response.error) {
 				return res.status(404).json({ error: 'Chats not found.' });
@@ -60,8 +58,12 @@ export class ChatsRoutes {
 			const { uid } = req.user;
 
 			// true for get messages
-			const data = await Chat.get(id, uid, true);
-			res.json(new HttpResponse({ data }));
+			const response = await Chat.get(id, uid, true);
+			if (response.error) {
+				return res.json(new HttpResponse({ error: response.error }));
+			}
+
+			res.json(new HttpResponse({ data: response.data }));
 		} catch (exc) {
 			console.error(exc);
 			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
@@ -72,15 +74,12 @@ export class ChatsRoutes {
 		try {
 			const params: ICreateChatSpecs = req.body;
 
-			if (params.uid) {
-				const model = new User(params.uid);
-				await model.load();
-				params.user = model.toJSON();
-				delete params.uid;
+			const response = await Chat.save(params);
+			if (response.error) {
+				return res.json(new HttpResponse({ error: response.error }));
 			}
 
-			const data = await Chat.save(params);
-			res.json(new HttpResponse({ data }));
+			res.json(new HttpResponse({ data: response.data }));
 		} catch (exc) {
 			console.error(exc);
 			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
