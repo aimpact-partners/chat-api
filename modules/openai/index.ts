@@ -1,16 +1,11 @@
 import OpenAI from 'openai';
-import * as fs from 'fs';
 import fetch from 'node-fetch';
 import * as FormData from 'form-data';
 import { gptTurboPlus, davinci3, whisper } from './utils/models';
 import * as dotenv from 'dotenv';
+
 dotenv.config();
 
-interface IResponse {
-	data: {
-		text: string;
-	};
-}
 export /*bundle*/
 class OpenAIBackend {
 	#openai = new OpenAI({ apiKey: process.env.OPEN_AI_KEY });
@@ -32,13 +27,13 @@ class OpenAIBackend {
 		}
 	}
 
-	async chatCompletions(messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[]) {
+	async chatCompletions(
+		messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
+		model = gptTurboPlus,
+		temperature = 0.2
+	) {
 		try {
-			const response = await this.#openai.chat.completions.create({
-				model: gptTurboPlus,
-				messages: messages,
-				temperature: 0.2
-			});
+			const response = await this.#openai.chat.completions.create({ model, messages, temperature });
 
 			return { status: true, data: response.choices[0].message.content };
 		} catch (e) {
@@ -76,11 +71,6 @@ class OpenAIBackend {
 			const code = e.message.includes('401' ? 401 : 500);
 			return { status: false, error: e.message, code };
 		}
-	}
-
-	async prepareFile(fullPath: string): Promise<Buffer> {
-		const data = await fs.promises.readFile(fullPath);
-		return data;
 	}
 
 	async transcriptionStream(

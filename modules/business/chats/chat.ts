@@ -40,7 +40,7 @@ export /*bundle*/ class Chat {
 
 	static async get(id: string, uid?: string, messages: boolean = false): Promise<BusinessResponse<IChatData>> {
 		if (!id) {
-			return new BusinessResponse({ error: ErrorGenerator.invalidParameters('Chats', 'id') });
+			return new BusinessResponse({ error: ErrorGenerator.invalidParameters(['id']) });
 		}
 
 		try {

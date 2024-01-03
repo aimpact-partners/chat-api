@@ -6,6 +6,7 @@ export /*bundle*/ enum ErrorCodes {
 	documentNotSaved = 800,
 	documentAlreadyExist,
 	invalidParameters,
+	projectNotFound,
 	languageNotSupport,
 	promptDependenciesError,
 	promptIsOptions,
@@ -41,12 +42,15 @@ export /*bundle*/ class ErrorGenerator {
 		);
 	}
 
-	static invalidParameters(collectionName: string, parameter: string, exc?: Error) {
+	static invalidParameters(parameters: string[]) {
 		return new BusinessErrorManager(
 			ErrorCodes.invalidParameters,
-			`Invalid parameters, "${parameter}" is required in collection "${collectionName}"`,
-			exc
+			`Invalid parameters: ${JSON.stringify(parameters)}`
 		);
+	}
+
+	static projectNotFound(id: string) {
+		return new BusinessErrorManager(ErrorCodes.projectNotFound, `Project "${id}" not found`);
 	}
 
 	static languageNotSupport(collectionName: string, parameter: string, exc?: Error) {

@@ -26,6 +26,7 @@ export /*bundle*/ interface IPromptTemplateData extends IBaseData {
 	identifier: string;
 	project: { id: string; name: string; identifier: string };
 	categories?: IPromptCategoryData[];
+	value: string;
 }
 
 export /*bundle*/ interface IPromptTemplateLanguageData {

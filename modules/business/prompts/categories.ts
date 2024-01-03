@@ -22,11 +22,11 @@ export /*bundle*/ class PromptCategories {
 	static async save(params: IPromptCategorySpecs) {
 		try {
 			if (!params.projectId) {
-				const error = ErrorGenerator.invalidParameters('prompts-categories', 'projectId');
+				const error = ErrorGenerator.invalidParameters(['projectId']);
 				return new Response({ error });
 			}
 			if (!params.name) {
-				const error = ErrorGenerator.invalidParameters('prompts-categories', 'name');
+				const error = ErrorGenerator.invalidParameters(['name']);
 				return new Response({ error });
 			}
 

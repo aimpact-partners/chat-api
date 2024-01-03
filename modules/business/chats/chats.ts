@@ -6,7 +6,7 @@ export /*bundle*/ class Chats {
 	static async byUser(id: string) {
 		try {
 			if (!id) {
-				return ErrorGenerator.invalidParameters('Chats', 'userId');
+				return ErrorGenerator.invalidParameters(['id']);
 			}
 
 			const docs = await db.collection('Chats').where('user.id', '==', id).get();
@@ -15,7 +15,8 @@ export /*bundle*/ class Chats {
 
 			return new BusinessResponse({ data: { items } });
 		} catch (exc) {
-			return ErrorGenerator.internalError(exc);
+			console.error(exc);
+			return new BusinessResponse({ error: ErrorGenerator.internalError(exc) });
 		}
 	}
 }
