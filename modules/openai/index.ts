@@ -56,17 +56,16 @@ class OpenAIBackend {
 				: 'Por favor, transcribe el siguiente texto en Español';
 
 		try {
-			const body = {
+			const response = await this.#openai.audio.transcriptions.create({
 				file,
 				model: whisper,
 				language: lang,
 				prompt,
 				response_format: 'json',
 				temperature: 0.2
-			};
-			const response = await this.#openai.audio.transcriptions.create(body);
+			});
 
-			return { status: true, data: response.data };
+			return { status: true, data: response.text };
 		} catch (e) {
 			const code = e.message.includes('401' ? 401 : 500);
 			return { status: false, error: e.message, code };

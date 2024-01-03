@@ -87,7 +87,7 @@ export /*bundle*/ class User implements IUser {
 	async login(user: IUsersData) {
 		try {
 			if (!user.id || !user.firebaseToken) {
-				return ErrorGenerator.invalidParameters('Users', 'id');
+				return ErrorGenerator.invalidParameters(['id']);
 			}
 
 			const decodedToken = await admin.auth().verifyIdToken(user.firebaseToken);
