@@ -1,10 +1,10 @@
 import { Collection } from '@beyond-js/firestore-collection/collection';
-import type { IProjectBaseData } from '@aimpact/chat-api/data/interfaces';
+import type { IProjectData } from '@aimpact/chat-api/data/interfaces';
 
-class Projects extends Collection<IProjectBaseData> {
+class Projects extends Collection<IProjectData> {
 	constructor() {
 		super('Projects');
 	}
 }
 
-export /*bundle*/ const projects: Collection<IProjectBaseData> = new Projects();
+export /*bundle*/ const projects: Collection<IProjectData> = new Projects();

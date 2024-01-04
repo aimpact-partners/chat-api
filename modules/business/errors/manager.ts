@@ -1,6 +1,6 @@
 import { ErrorManager } from '@beyond-js/response/main';
 
-export /*bundle*/ class ChatAPIErrorManager extends ErrorManager {
+export /*bundle*/ class BusinessErrorManager extends ErrorManager {
 	get is() {
 		return 'chat-api';
 	}

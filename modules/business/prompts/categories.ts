@@ -2,7 +2,7 @@ import { FirestoreErrorManager } from '@beyond-js/firestore-collection/errors';
 import { db } from '@beyond-js/firestore-collection/db';
 import { v4 as uuid } from 'uuid';
 import { Response } from '@beyond-js/response/main';
-import { ErrorGenerator } from '@aimpact/chat-api/errors';
+import { ErrorGenerator } from '@aimpact/chat-api/business/errors';
 import { Projects } from '@aimpact/chat-api/business/projects';
 import { promptsCategories } from '@aimpact/chat-api/data/model';
 import type { IPromptCategoryData } from '@aimpact/chat-api/data/interfaces';
@@ -22,11 +22,11 @@ export /*bundle*/ class PromptCategories {
 	static async save(params: IPromptCategorySpecs) {
 		try {
 			if (!params.projectId) {
-				const error = ErrorGenerator.invalidParameters('prompts-categories', 'projectId');
+				const error = ErrorGenerator.invalidParameters(['projectId']);
 				return new Response({ error });
 			}
 			if (!params.name) {
-				const error = ErrorGenerator.invalidParameters('prompts-categories', 'name');
+				const error = ErrorGenerator.invalidParameters(['name']);
 				return new Response({ error });
 			}
 

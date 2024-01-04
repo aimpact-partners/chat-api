@@ -57,8 +57,8 @@ export class ProjectsRoutes {
 
 	static async publish(req: Request, res: Response) {
 		try {
-			const { id, name, description } = req.body;
-			const response = await Projects.save({ id, name, description });
+			const { id, name, description, agent } = req.body;
+			const response = await Projects.save({ id, name, description, agent });
 
 			if (response.error) {
 				res.json(new HttpResponse(response));

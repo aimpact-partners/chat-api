@@ -1,10 +1,10 @@
 import { db } from '@beyond-js/firestore-collection/db';
 
 export class Messages {
-	static async getByLimit(conversationId: string, limit: number) {
+	static async getByLimit(chatId: string, limit: number) {
 		try {
-			const conversationDoc = await db.collection('Chats').doc(conversationId).get();
-			const messagesSnapshot = await conversationDoc.ref
+			const chatDoc = await db.collection('Chats').doc(chatId).get();
+			const messagesSnapshot = await chatDoc.ref
 				.collection('messages')
 				.orderBy('timestamp', 'desc')
 				.limit(limit)

@@ -1,14 +1,11 @@
+import type { IUsersData, IUsersBaseData } from '@aimpact/chat-api/data/interfaces';
 import { db } from '@beyond-js/firestore-collection/db';
+import * as admin from 'firebase-admin';
+import * as jwt from 'jsonwebtoken';
+import * as dayjs from 'dayjs';
+import { ErrorGenerator } from '@aimpact/chat-api/business/errors';
 
-export /*bundle*/ interface IUser {
-	uid: string;
-	id: string;
-	name: string;
-	displayName: string;
-	email: string;
-	photoURL: string;
-	phoneNumber: number;
-}
+export /*bundle*/ interface IUser extends IUsersBaseData {}
 
 export /*bundle*/ class User implements IUser {
 	#accessToken: string;
@@ -84,6 +81,45 @@ export /*bundle*/ class User implements IUser {
 		} catch (error) {
 			this.#valid = false;
 			return { status: false, error: `Error loading user` };
+		}
+	}
+
+	async login(user: IUsersData) {
+		try {
+			if (!user.id || !user.firebaseToken) {
+				return ErrorGenerator.invalidParameters(['id']);
+			}
+
+			const decodedToken = await admin.auth().verifyIdToken(user.firebaseToken);
+			const customToken = jwt.sign({ uid: decodedToken.uid }, process.env.SECRET_KEY);
+			user.token = customToken;
+
+			const userRef = await this.collection.doc(user.id);
+			const { exists } = await userRef.get();
+			if (exists) {
+				// If the user already exists in the database, update the lastLogin field
+				await userRef.update({ ...user, lastLogin: dayjs().unix() });
+			} else {
+				// If the user doesn't exist in the database, create a new document for them
+				await userRef.set({
+					id: user.id,
+					displayName: user.displayName,
+					email: user.email,
+					firebaseToken: user.firebaseToken,
+					token: user.token,
+					custom: user.token,
+					photoURL: user.photoURL,
+					phoneNumber: user.phoneNumber,
+					createdOn: dayjs().unix(),
+					lastLogin: dayjs().unix()
+				});
+			}
+
+			const updatedUser = await userRef.get();
+			return { status: true, data: { user: updatedUser.data() } };
+		} catch (exc) {
+			console.error(exc);
+			return ErrorGenerator.internalError(exc);
 		}
 	}
 

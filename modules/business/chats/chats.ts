@@ -1,19 +1,22 @@
 import { db } from '@beyond-js/firestore-collection/db';
+import { ErrorGenerator } from '@aimpact/chat-api/business/errors';
+import { BusinessResponse } from '@aimpact/chat-api/business/response';
 
 export /*bundle*/ class Chats {
-	static async byUser(specs) {
+	static async byUser(id: string) {
 		try {
-			if (!specs.userId) {
-				throw new Error('userId is required');
+			if (!id) {
+				return ErrorGenerator.invalidParameters(['id']);
 			}
 
-			const query = db.collection('Conversations').where('userId', '==', specs.userId);
-			const items = await query.get();
-			const entries = items.map(item => item.data());
+			const docs = await db.collection('Chats').where('user.id', '==', id).get();
+			const items = [];
+			docs.forEach(item => items.push(item.data()));
 
-			return entries;
-		} catch (e) {
-			throw Error(e.message);
+			return new BusinessResponse({ data: { items } });
+		} catch (exc) {
+			console.error(exc);
+			return new BusinessResponse({ error: ErrorGenerator.internalError(exc) });
 		}
 	}
 }

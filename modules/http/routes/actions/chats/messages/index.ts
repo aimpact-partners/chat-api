@@ -1,5 +1,6 @@
-import type { Request, Response, Application } from 'express';
+import type { Response, Application } from 'express';
 import type { IAuthenticatedRequest } from '@aimpact/chat-api/middleware';
+import type { IChatData } from '@aimpact/chat-api/data/interfaces';
 import { Chat } from '@aimpact/chat-api/business/chats';
 import { Agents } from '@aimpact/chat-api/business/agents';
 import { UserMiddlewareHandler } from '@aimpact/chat-api/middleware';
@@ -14,36 +15,37 @@ interface IMessageSpecs {
 
 export class ChatMessagesRoutes {
 	static setup(app: Application) {
-		app.use((err, req: Request, res: Response, next) => {
-			res.status(err.status || 500).json({
-				message: err.message,
-				errors: err.errors
-			});
-		});
+		// app.use((err, req: Request, res: Response, next) => {
+		// 	res.status(err.status || 500).json({
+		// 		message: err.message,
+		// 		errors: err.errors
+		// 	});
+		// });
 
 		app.post('/chats/:id/messages', UserMiddlewareHandler.validate, ChatMessagesRoutes.sendMessage);
 		app.post('/conversations/:id/messages', UserMiddlewareHandler.validate, ChatMessagesRoutes.sendMessage);
 	}
 
 	static async sendMessage(req: IAuthenticatedRequest, res: Response) {
-		const conversationId = req.params.id;
-		if (!conversationId) {
-			return res.status(400).json({ status: false, error: 'Parameter conversationId is required' });
+		const chatId = req.params.id;
+		if (!chatId) {
+			return res.status(400).json({ status: false, error: 'Parameter chatId is required' });
 		}
 
-		let conversation;
+		let chat: IChatData;
 		try {
-			conversation = await Chat.get(conversationId, req.user.uid);
-			req.conversation = conversation;
+			const response = await Chat.get(chatId, '8cGf2jOlDLZRCY6rQWWsLnhjMB62');
+			if (response.error) {
+				return res.status(400).json({ status: false, error: response.error });
+			}
+			chat = response.data;
 		} catch (e) {
 			console.error(e);
 			res.json({ status: false, error: e.message });
 		}
-		if (conversation.error) {
-			return res.status(400).json({ status: false, error: conversation.error });
-		}
-		// if (!conversation.project) {
-		// 	return res.status(400).json({ status: false, error: 'the conversation not has a project defined' });
+
+		// if (!chat.project) {
+		// 	return res.status(400).json({ status: false, error: 'the chat not has a project defined' });
 		// }
 
 		/**
@@ -60,14 +62,13 @@ export class ChatMessagesRoutes {
 		 * @returns Promise<{ data?: IMessageSpecs; error?: string }>
 		 */
 		const processRequest = async (
-			req: IAuthenticatedRequest,
-			res: Response
+			req: IAuthenticatedRequest
 		): Promise<{ data?: IMessageSpecs; error?: string }> => {
 			const textRequest = req.headers['content-type'] === 'application/json';
 			if (textRequest) return { data: req.body };
 
 			try {
-				const { transcription, fields, error } = await processAudio(req);
+				const { transcription, fields, error } = await processAudio(req, chat);
 				if (error) return { error };
 
 				if (transcription.error) return { error: transcription.error };
@@ -84,7 +85,7 @@ export class ChatMessagesRoutes {
 				return { error: e.message };
 			}
 		};
-		const { data, error } = await processRequest(req, res);
+		const { data, error } = await processRequest(req);
 		if (error) {
 			console.error(error);
 			return res.json({ status: false, error });
@@ -106,7 +107,7 @@ export class ChatMessagesRoutes {
 		try {
 			// Store the user message as soon as it arrives
 			const userMessage = { id, content, role: 'user', timestamp };
-			let response = await Chat.saveMessage(conversationId, userMessage);
+			let response = await Chat.saveMessage(chatId, userMessage);
 			if (response.error) {
 				return done({ status: false, error: response.error });
 			}
@@ -117,7 +118,7 @@ export class ChatMessagesRoutes {
 				res.write('😸' + JSON.stringify(action) + '🖋️');
 			}
 
-			const { iterator, error } = await Agents.sendMessage(conversationId, content);
+			const { iterator, error } = await Agents.sendMessage(chatId, content);
 			if (error) {
 				return done({ status: false, error: error });
 			}
@@ -140,18 +141,18 @@ export class ChatMessagesRoutes {
 		try {
 			// set assistant message on firestore
 			const agentMessage = { id: systemId, content: answer, answer: metadata.answer, role: 'assistant' };
-			const response = await Chat.saveMessage(conversationId, agentMessage);
+			const response = await Chat.saveMessage(chatId, agentMessage);
 			if (response.error) {
 				console.error('Error saving agent response:', response.error);
 				return done({ status: false, error: 'Error saving agent response' });
 			}
 
-			// update synthesis on conversation
-			const data = { id: conversationId, synthesis: metadata?.synthesis };
+			// update synthesis on chat
+			const data = { id: chatId, synthesis: metadata?.synthesis };
 			await Chat.save(data);
 
-			// set last interaction on conversation
-			await Chat.setLastInteractions(conversationId, 4);
+			// set last interaction on chat
+			await Chat.setLastInteractions(chatId, 4);
 		} catch (exc) {
 			return done({ status: false, error: 'Error saving agent response' });
 		}

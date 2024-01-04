@@ -1,15 +1,15 @@
 import { v4 as uuid } from 'uuid';
 import { db } from '@beyond-js/firestore-collection/db';
 import { Timestamp } from '@aimpact/chat-api/utils/timestamp';
-import type { IMessage } from '@aimpact/chat-api/data/interfaces';
+import type { IMessageData } from '@aimpact/chat-api/data/interfaces';
 
 const MESSAGE_ROLE = ['system', 'user', 'assistant', 'function'];
 
 export class Message {
-	static async publish(conversationId: string, params: IMessage) {
+	static async publish(chatId: string, params: IMessageData) {
 		try {
-			if (!conversationId) {
-				throw new Error('conversationId is required');
+			if (!chatId) {
+				throw new Error('chatId is required');
 			}
 			if (!params.content) {
 				throw new Error('message content is required');
@@ -23,25 +23,25 @@ export class Message {
 			}
 
 			const collection = db.collection('Chats');
-			const conversation = await collection.doc(conversationId);
-			const conversationDoc = await conversation.get();
-			if (!conversationDoc.exists) {
-				throw new Error('Conversation not exists');
+			const chat = await collection.doc(chatId);
+			const chatDoc = await chat.get();
+			if (!chatDoc.exists) {
+				throw new Error('chat not exists');
 			}
 
 			const id = params.id ? params.id : uuid();
 			delete params.id;
 
 			const timestamp = Timestamp.set(params.timestamp);
-			const specs = { id, conversationId, ...params, timestamp };
-			await conversation.collection('messages').doc(id).set(specs);
+			const specs = { id, chatId, ...params, chat: { id: chatId }, timestamp };
+			await chat.collection('messages').doc(id).set(specs);
 
-			const data = conversationDoc.data();
+			const data = chatDoc.data();
 			const count = (data.messages?.count || 0) + 1;
 
-			await conversation.update({ messages: { count } }, { merge: true });
+			await chat.update({ messages: { count } });
 
-			const dataCollection = conversation.collection('messages').doc(id);
+			const dataCollection = chat.collection('messages').doc(id);
 			const dataDoc = await dataCollection.get();
 			const dataMessage = dataDoc.data();
 			dataMessage.timestamp && (dataMessage.timestamp = Timestamp.format(dataMessage.timestamp));

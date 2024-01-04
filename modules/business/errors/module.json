@@ -1,5 +1,5 @@
 {
-	"name": "errors",
+	"name": "business/errors",
 	"platforms": ["node", "backend"],
 	"bundle": "ts",
 	"files": "*"
