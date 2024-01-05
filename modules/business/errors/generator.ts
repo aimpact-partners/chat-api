@@ -1,4 +1,5 @@
 import { BusinessErrorManager } from './manager';
+import { ErrorManager } from '@beyond-js/response/main';
 
 export /*bundle*/ enum ErrorCodes {
 	internalError = 1,
@@ -8,9 +9,12 @@ export /*bundle*/ enum ErrorCodes {
 	invalidParameters,
 	projectNotFound,
 	languageNotSupport,
+	promptLiteralsNotFound,
+	promptDependenciesNotFound,
+	promptOptionsNotFound,
 	promptDependenciesError,
-	promptIsOptions,
-	promptLiteralsNotFound
+	promptOptionsError,
+	promptIsOptions
 }
 
 export /*bundle*/ class ErrorGenerator {
@@ -61,17 +65,32 @@ export /*bundle*/ class ErrorGenerator {
 		);
 	}
 
-	static promptDependenciesError() {
+	static promptOptionsError(error: ErrorManager) {
+		return new BusinessErrorManager(ErrorCodes.promptOptionsError, error.text);
+	}
+
+	static promptDependenciesError(error: ErrorManager) {
+		return new BusinessErrorManager(ErrorCodes.promptDependenciesError, error.text);
+	}
+
+	static promptLiteralsNotFound(items: string[]) {
 		return new BusinessErrorManager(
-			ErrorCodes.promptDependenciesError,
+			ErrorCodes.promptLiteralsNotFound,
+			`Error/s found in at least one literals pure of the requested prompt, literals: ${items.join(', ')}`
+		);
+	}
+
+	static promptDependenciesNotFound() {
+		return new BusinessErrorManager(
+			ErrorCodes.promptDependenciesNotFound,
 			`Error/s found in at least one dependency of the requested prompt`
 		);
 	}
 
-	static promptLiteralsNotFound() {
+	static promptOptionsNotFound() {
 		return new BusinessErrorManager(
-			ErrorCodes.promptLiteralsNotFound,
-			`Error/s found in at least one literals pure of the requested prompt`
+			ErrorCodes.promptOptionsNotFound,
+			`Error/s found in at least one dependency of the requested prompt`
 		);
 	}
 }

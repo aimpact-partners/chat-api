@@ -91,11 +91,11 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 		await (async () => {
 			const response = await prompts.languages.data({ id: language, parents: { Prompts: name } });
 			if (response.error) {
-				this.#error = ErrorGenerator.documentNotFound('Prompts', this.#id, response.error);
+				this.#error = ErrorGenerator.documentNotFound('Prompts', this.#id);
 				return;
 			}
 			if (!response.data.exists) {
-				this.#error = ErrorGenerator.documentNotFound('Prompts', this.#id, response.error);
+				this.#error = ErrorGenerator.documentNotFound('Prompts', this.#id);
 				return;
 			}
 			const data = response.data.data;
@@ -128,7 +128,8 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 
 			// Process the dependencies and check for possible errors
 			for (const { error, data } of response) {
-				if (error || !data.exists) return (this.#error = ErrorGenerator.promptDependenciesError());
+				if (error || !data.exists)
+					return (this.#error = ErrorGenerator.promptDependenciesError(error ?? data.error));
 				dependencies.push(data.data);
 			}
 
@@ -195,7 +196,7 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 
 			const notfound = expected.filter(literal => !received.includes(Object.keys(literal)[0]));
 			if (notfound.length) {
-				this.#error = ErrorGenerator.promptDependenciesNotFound(notfound);
+				this.#error = ErrorGenerator.promptDependenciesNotFound();
 				return;
 			}
 		})();
