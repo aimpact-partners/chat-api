@@ -202,7 +202,7 @@ export /*bundle*/ class PromptsTemplate {
 			if (response.error) return new FirestoreErrorManager(response.error.code, response.error.text);
 
 			const data: IPromptTemplateLanguageData = {
-				id: `${project.identifier}.${name}.${params.language}`,
+				id: `${project.identifier}.${name}.${params.language.default}`,
 				project: { id: project.id, name: project.name, identifier: project.identifier },
 				language: params.language.default
 			};
