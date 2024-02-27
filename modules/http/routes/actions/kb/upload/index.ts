@@ -18,7 +18,7 @@ interface IFileSpecs {
 	type?: string;
 	container?: string;
 	userId?: string;
-	knowledgeBoxId?: string;
+	kbId?: string;
 }
 
 /**
@@ -41,8 +41,8 @@ const callTask = (id: string, path: string, container: string) => {
 			httpMethod: 1,
 			url: `${config.params.EMBEDDING_API}/${id}`,
 			headers: { 'Content-Type': 'application/json' },
-			body: Buffer.from(JSON.stringify(specs)).toString('base64'),
-		},
+			body: Buffer.from(JSON.stringify(specs)).toString('base64')
+		}
 	};
 	tasksClient.createTask({ parent, task });
 };
@@ -69,15 +69,19 @@ export /*bundle*/ const uploader = async function (req: Request, res: Response) 
 	};
 
 	const onFinish = () => {
-		const { project, userId, type, container, knowledgeBoxId } = fields;
-		if (!project || !userId || !type || !container) {
+		const { project, userId, kbId } = fields;
+		if (!project || !userId) {
 			return res.json({
 				status: false,
-				error: `Error uploading files: All fields (project, user, type, container) are required`,
+				error: `Error uploading files: All fields (project, userId) are required`
 			});
 		}
 
-		const bucketName = join(project, userId, type, container);
+		const container = fields.container ?? 'public';
+		console.log('cortamos on finish', project, userId, kbId, container);
+		return;
+
+		const bucketName = join(project, userId, 'kb', container);
 		let tempPath: string = join(os.tmpdir(), bucketName); // store on temporal directory
 		tempPath = tempPath.replace(/\\/g, '/');
 		fs.mkdirSync(tempPath, { recursive: true });
@@ -101,11 +105,12 @@ export /*bundle*/ const uploader = async function (req: Request, res: Response) 
 		});
 
 		// Publish KnowledgeBox on firestore
-		storeKnowledgeBox({ container, userId, knowledgeBoxId, docs }).then(id => {
+		storeKnowledgeBox({ container, userId, kbId, docs }).then(id => {
 			callTask(id, tempPath, container);
+			//aqui hay que llamar a read directory
 			return res.json({
 				status: true,
-				data: { knowledgeBoxId: id, message: 'File(s) uploaded successfully' },
+				data: { kbId: id, message: 'File(s) uploaded successfully' }
 			});
 		});
 	};
@@ -116,12 +121,11 @@ export /*bundle*/ const uploader = async function (req: Request, res: Response) 
 		bb.on('field', (name, val, info) => (fields[name] = val));
 		bb.on('finish', onFinish);
 
-		// process.env.CLOUD_RUN ? bb.end(req.rawBody) : req.pipe(bb);
 		req.pipe(bb);
 	} catch (error) {
 		res.json({
 			status: false,
-			error: `Error uploading file(s): ${error.message}`,
+			error: `Error uploading file(s): ${error.message}`
 		});
 	}
 };

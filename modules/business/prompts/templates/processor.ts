@@ -247,7 +247,7 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 			// Replace the literals
 			this.literals && replacement(this.literals, true);
 
-			// console.log('debbug prompt', value);
+			// console.log('debbug prompt', `\n`, value, `\n`);
 			return value;
 		})();
 	}
