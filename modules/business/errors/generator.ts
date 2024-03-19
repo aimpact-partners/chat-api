@@ -14,7 +14,8 @@ export /*bundle*/ enum ErrorCodes {
 	promptOptionsNotFound,
 	promptDependenciesError,
 	promptOptionsError,
-	promptIsOptions
+	promptIsOptions,
+	userAlreadyExists
 }
 
 export /*bundle*/ class ErrorGenerator {
@@ -91,6 +92,14 @@ export /*bundle*/ class ErrorGenerator {
 		return new BusinessErrorManager(
 			ErrorCodes.promptOptionsNotFound,
 			`Error/s found in at least one dependency of the requested prompt`
+		);
+	}
+
+	static userAlreadyExists(id: string, exc?: Error) {
+		return new BusinessErrorManager(
+			ErrorCodes.userAlreadyExists,
+			`The user "${id}" is already registered in the application`,
+			exc
 		);
 	}
 }

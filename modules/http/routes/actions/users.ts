@@ -1,20 +1,78 @@
-import * as jwt from 'jsonwebtoken';
-import type { JwtPayload } from '@types/jsonwebtoken';
-import type { Request, Response, Application } from 'express';
 import type { IUsersData } from '@aimpact/chat-api/data/interfaces';
+import type { Request, Response, Application } from 'express';
 import type { IUser } from '@aimpact/chat-api/business/user';
-import { User as Model } from '@aimpact/chat-api/business/user';
+import type { JwtPayload } from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
+import { User } from '@aimpact/chat-api/business/user';
 import { Response as HttpResponse } from '@beyond-js/response/main';
 import { ErrorGenerator } from '@aimpact/chat-api/http/errors';
 
 export class UsersRoutes {
 	static setup(app: Application) {
-		app.use((err, req, res, next) => {
-			res.status(err.status || 500).json({ message: err.message, errors: err.errors });
-		});
+		// app.use((err, req: Request, res: Response, next) => {
+		// 	res.status(err.status || 500).json({ message: err.message, errors: err.errors });
+		// });
 
 		app.post('/auth/login', UsersRoutes.login);
+		app.post('/auth/register', UsersRoutes.register);
 		app.post('/integrations/tokens/verify', UsersRoutes.verify);
+	}
+
+	static async login(req: Request, res: Response) {
+		const { id, firebaseToken } = req.body;
+		const errors = [];
+		!id && errors.push('id');
+		!firebaseToken && errors.push('firebaseToken');
+		if (errors.length) return res.json(new HttpResponse({ error: ErrorGenerator.invalidParameters(errors) }));
+
+		try {
+			const specs = <IUsersData>{
+				id: req.body.id,
+				displayName: req.body.displayName,
+				email: req.body.email,
+				firebaseToken: req.body.firebaseToken,
+				token: req.body.token,
+				photoURL: req.body.photoURL,
+				phoneNumber: req.body.phoneNumber
+			};
+
+			const user = new User(specs.id);
+			const response = await user.login(specs);
+			if (response.error) return res.json(new HttpResponse({ error: response.error }));
+
+			res.json(new HttpResponse({ data: response.data }));
+		} catch (exc) {
+			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
+		}
+	}
+
+	static async register(req: Request, res: Response) {
+		const { id, firebaseToken } = req.body;
+
+		const errors = [];
+		!id && errors.push('id');
+		!firebaseToken && errors.push('firebaseToken');
+		if (errors.length) return res.json(new HttpResponse({ error: ErrorGenerator.invalidParameters(errors) }));
+
+		try {
+			const specs = <IUsersData>{
+				id: req.body.id,
+				displayName: req.body.displayName,
+				email: req.body.email,
+				firebaseToken: req.body.firebaseToken,
+				token: req.body.token,
+				photoURL: req.body.photoURL,
+				phoneNumber: req.body.phoneNumber
+			};
+
+			const user = new User(specs.id);
+			const response = await user.register(specs);
+			if (response.error) return res.json(new HttpResponse({ error: response.error }));
+
+			res.json(new HttpResponse({ data: response.data }));
+		} catch (exc) {
+			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
+		}
 	}
 
 	static async verify(req: Request, res: Response) {
@@ -25,7 +83,7 @@ export class UsersRoutes {
 					return res.json({ status: false, error: 'Invalid token' });
 				}
 
-				const user = new Model(decoded.uid);
+				const user = new User(decoded.uid);
 				const response = await user.load();
 
 				if (!response.status) return res.json(response);
@@ -49,36 +107,6 @@ export class UsersRoutes {
 			});
 		} catch (e) {
 			res.json({ status: false, error: e.message });
-		}
-	}
-
-	static async login(req: Request, res: Response) {
-		const { id, firebaseToken } = req.body;
-		if (!id || !firebaseToken) {
-			return res.json(new HttpResponse({ error: ErrorGenerator.invalidParameters(['id', 'firebaseToken']) }));
-		}
-
-		try {
-			const specs = <IUsersData>{
-				id: req.body.id,
-				displayName: req.body.displayName,
-				email: req.body.email,
-				firebaseToken: req.body.firebaseToken,
-				token: req.body.token,
-				photoURL: req.body.photoURL,
-				phoneNumber: req.body.phoneNumber
-			};
-
-			const user = new Model(specs.id);
-			const response = await user.login(specs);
-			if (response.error) {
-				return res.json(new HttpResponse({ error: response.error }));
-			}
-
-			res.json(new HttpResponse({ data: response.data }));
-		} catch (exc) {
-			console.error(exc);
-			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
 		}
 	}
 }
