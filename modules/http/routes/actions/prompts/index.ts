@@ -129,9 +129,9 @@ export class PromptsRoutes {
 	static async translate(req: Request, res: Response) {
 		try {
 			const { id } = req.params;
-			const { language, value } = req.body;
+			const { language, text } = req.body;
 
-			const response = await PromptsTemplate.translate(id, { language, value });
+			const response = await PromptsTemplate.translate(id, { language, text });
 			res.json(new HttpResponse(response));
 		} catch (exc) {
 			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));

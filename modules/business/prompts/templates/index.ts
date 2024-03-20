@@ -225,12 +225,12 @@ export /*bundle*/ class PromptsTemplate {
 		}
 	}
 
-	static async translate(id: string, params) {
-		const { language, value } = params;
+	static async translate(id: string, params: { language: string; text: string }) {
+		const { language, text } = params;
 
 		const errors = [];
 		!id && errors.push('id');
-		!value && errors.push('value');
+		!text && errors.push('text');
 		!language && errors.push('language');
 		if (errors.length) return new BusinessResponse({ error: ErrorGenerator.invalidParameters(errors) });
 
@@ -245,13 +245,14 @@ export /*bundle*/ class PromptsTemplate {
 			const data: IPromptTemplateLanguageData = {
 				id: `${prompt.identifier}.${language}`,
 				language,
-				value,
-				literals: prompt.literals,
+				value: text,
+				literals: prompt.literals ?? {},
 				project: prompt.project
 			};
 			// SET value on language subcollection
 			const parents = { Prompts: id };
-			await prompts.languages.set({ id: language, parents, data });
+			const { error } = await prompts.languages.set({ id: language, parents, data });
+			if (error) return new BusinessResponse({ error: error });
 
 			if (!prompt.language.languages.includes(language)) {
 				const updatedLanguages = prompt.language;
