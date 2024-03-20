@@ -174,8 +174,9 @@ export /*bundle*/ class User implements IUser {
 			if (response.error) return { error: response.error };
 			return { data: response.data.data };
 		})());
+		if (error) return new BusinessResponse({ error });
 
-		return new BusinessResponse({ data, error });
+		return new BusinessResponse({ data: { user: { data } } });
 	}
 
 	toJSON(): IUser {
