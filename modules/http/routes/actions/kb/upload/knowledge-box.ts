@@ -1,11 +1,11 @@
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuid } from 'uuid';
 import { db } from '@beyond-js/firestore-collection/db';
 
 const table = 'KnowledgeBoxes';
 interface ISpecs {
 	container: string;
 	userId: string;
-	knowledgeBoxId?: string;
+	kbId?: string;
 	docs: any[];
 }
 
@@ -14,19 +14,19 @@ export const setKnowledgeBox = async function (id: string, data) {
 	await collection.doc(id).update(data);
 };
 
-export const storeKnowledgeBox = async ({ container, userId, knowledgeBoxId, docs }: ISpecs) => {
+export const storeKnowledgeBox = async ({ container, userId, kbId, docs }: ISpecs) => {
 	const collection = db.collection(table);
 
-	if (!knowledgeBoxId) {
-		const id = uuidv4();
+	if (!kbId) {
+		const id = uuid();
 		const timeCreated: number = new Date().getTime();
 		const data = { id, userId, path: container, timeCreated, status: 'pending' };
 		await collection.doc(id).set(data);
-		knowledgeBoxId = id;
+		kbId = id;
 	}
 
 	const batch = db.batch();
-	const documentsSubcollection = collection.doc(knowledgeBoxId).collection('documents');
+	const documentsSubcollection = collection.doc(kbId).collection('documents');
 
 	for (let docData of docs) {
 		let newDocRef = documentsSubcollection.doc();
@@ -35,5 +35,5 @@ export const storeKnowledgeBox = async ({ container, userId, knowledgeBoxId, doc
 
 	await batch.commit();
 
-	return knowledgeBoxId;
+	return kbId;
 };

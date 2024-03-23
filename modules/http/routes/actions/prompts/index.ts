@@ -30,6 +30,8 @@ export class PromptsRoutes {
 		app.put('/prompts/templates/:id', this.update);
 		app.delete('/prompts/templates/:id', this.delete);
 
+		app.post('/prompts/templates/:id/translate', this.translate);
+
 		app.post('/prompts/templates/:id/process', this.process);
 		app.post('/prompts/templates/:id/process-literal', this.processLiteral);
 	}
@@ -39,10 +41,7 @@ export class PromptsRoutes {
 			const { projectId } = req.params;
 			const filter = req.query.is;
 			const response = await PromptsTemplate.list(projectId, filter);
-			if (response.error) {
-				res.json(new HttpResponse({ error: response.error }));
-				return;
-			}
+			if (response.error) return res.json(new HttpResponse({ error: response.error }));
 
 			res.json(new HttpResponse({ data: response.data }));
 		} catch (exc) {
@@ -50,15 +49,12 @@ export class PromptsRoutes {
 		}
 	}
 
-	static async get(req: Request, res: Response): Promise<void> {
+	static async get(req: Request, res: Response) {
 		try {
 			const { id } = req.params;
 			const { language } = req.query;
 			const response = await PromptsTemplate.data(id, language);
-			if (response.error) {
-				res.json(new HttpResponse(response));
-				return;
-			}
+			if (response.error) return res.json(new HttpResponse(response));
 
 			res.json(new HttpResponse({ data: response.data }));
 		} catch (exc) {
@@ -66,16 +62,12 @@ export class PromptsRoutes {
 		}
 	}
 
-	static async identifier(req: Request, res: Response): Promise<void> {
+	static async identifier(req: Request, res: Response) {
 		try {
 			const { id } = req.params;
-			console.log('id', id);
 			const { language } = req.query;
 			const response = await PromptsTemplate.identifier(id, language);
-			if (response.error) {
-				res.json(new HttpResponse(response));
-				return;
-			}
+			if (response.error) return res.json(new HttpResponse(response));
 
 			res.json(new HttpResponse({ data: response.data }));
 		} catch (exc) {
@@ -83,19 +75,13 @@ export class PromptsRoutes {
 		}
 	}
 
-	static async data(req: Request, res: Response): Promise<void> {
+	static async data(req: Request, res: Response) {
 		try {
 			const { id } = req.params;
 			const { language, option } = req.query;
 			const response = await PromptsTemplate.data(id, language, option);
-			if (response.error) {
-				res.json(new HttpResponse(response));
-				return;
-			}
-			if (!response.data.exists) {
-				res.json(new HttpResponse({ error: response.data.error }));
-				return;
-			}
+			if (response.error) return res.json(new HttpResponse(response));
+			if (!response.data.exists) return res.json(new HttpResponse({ error: response.data.error }));
 
 			res.json(new HttpResponse({ data: response.data.data }));
 		} catch (exc) {
@@ -132,12 +118,21 @@ export class PromptsRoutes {
 		try {
 			const specs = req.body;
 			const response = await PromptsTemplate.save(specs);
-			if (response.error) {
-				res.json(new HttpResponse(response));
-				return;
-			}
+			if (response.error) return res.json(new HttpResponse(response));
 
 			res.json(new HttpResponse({ data: response.data }));
+		} catch (exc) {
+			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
+		}
+	}
+
+	static async translate(req: Request, res: Response) {
+		try {
+			const { id } = req.params;
+			const { language, text } = req.body;
+
+			const response = await PromptsTemplate.translate(id, { language, text });
+			res.json(new HttpResponse(response));
 		} catch (exc) {
 			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
 		}

@@ -1,9 +1,12 @@
 import type { IUsersData, IUsersBaseData } from '@aimpact/chat-api/data/interfaces';
-import { db } from '@beyond-js/firestore-collection/db';
+import type { Transaction } from 'firebase-admin/firestore';
 import * as admin from 'firebase-admin';
 import * as jwt from 'jsonwebtoken';
 import * as dayjs from 'dayjs';
+import { users } from '@aimpact/chat-api/data/model';
+import { db } from '@beyond-js/firestore-collection/db';
 import { ErrorGenerator } from '@aimpact/chat-api/business/errors';
+import { BusinessResponse } from '@aimpact/chat-api/business/response';
 
 export /*bundle*/ interface IUser extends IUsersBaseData {}
 
@@ -84,25 +87,18 @@ export /*bundle*/ class User implements IUser {
 		}
 	}
 
-	async login(user: IUsersData) {
-		try {
-			if (!user.id || !user.firebaseToken) {
-				return ErrorGenerator.invalidParameters(['id']);
-			}
+	async register(user: IUsersData) {
+		return await db.runTransaction(async (transaction: Transaction) => {
+			try {
+				const response = await users.data({ id: user.id, transaction });
+				if (response.error) return new BusinessResponse({ error: response.error });
+				if (response.data.exists)
+					return new BusinessResponse({ error: ErrorGenerator.userAlreadyExists(user.id) });
 
-			const decodedToken = await admin.auth().verifyIdToken(user.firebaseToken);
-			const customToken = jwt.sign({ uid: decodedToken.uid }, process.env.SECRET_KEY);
-			user.token = customToken;
-
-			const userRef = await this.collection.doc(user.id);
-			const { exists } = await userRef.get();
-			if (exists) {
-				// If the user already exists in the database, update the lastLogin field
-				await userRef.update({ ...user, lastLogin: dayjs().unix() });
-			} else {
-				// If the user doesn't exist in the database, create a new document for them
-				await userRef.set({
+				const data: IUsersData = {
 					id: user.id,
+					uid: user.id,
+					name: user.displayName,
 					displayName: user.displayName,
 					email: user.email,
 					firebaseToken: user.firebaseToken,
@@ -112,15 +108,75 @@ export /*bundle*/ class User implements IUser {
 					phoneNumber: user.phoneNumber,
 					createdOn: dayjs().unix(),
 					lastLogin: dayjs().unix()
-				});
-			}
+				};
+				const { error } = await users.set({ data, transaction });
+				if (error) return new BusinessResponse({ error });
 
-			const updatedUser = await userRef.get();
-			return { status: true, data: { user: updatedUser.data() } };
-		} catch (exc) {
-			console.error(exc);
-			return ErrorGenerator.internalError(exc);
-		}
+				return new BusinessResponse({ data });
+			} catch (exc) {
+				return new BusinessResponse({ error: ErrorGenerator.internalError(exc) });
+			}
+		});
+	}
+
+	async login(user: IUsersData) {
+		if (!user.id || !user.firebaseToken)
+			return new BusinessResponse({ error: ErrorGenerator.invalidParameters(['id']) });
+
+		let error;
+		({ error } = await (async () => {
+			return await db.runTransaction(async (transaction: Transaction) => {
+				try {
+					const decodedToken = await admin.auth().verifyIdToken(user.firebaseToken);
+					const customToken = jwt.sign({ uid: decodedToken.uid }, process.env.SECRET_KEY);
+					user.token = customToken;
+
+					const response = await users.data({ id: user.id, transaction });
+					if (response.error) return { error: response.error };
+
+					if (response.data.exists) {
+						// If the user already exists in the database, update the lastLogin field
+						await users.merge({ id: user.id, data: { ...user, lastLogin: dayjs().unix() }, transaction });
+					} else {
+						// If the user doesn't exist in the database, create a new document for them
+						await users.set({
+							data: {
+								id: user.id,
+								uid: user.id,
+								name: user.displayName,
+								displayName: user.displayName,
+								email: user.email,
+								firebaseToken: user.firebaseToken,
+								token: user.token,
+								custom: user.token,
+								photoURL: user.photoURL,
+								phoneNumber: user.phoneNumber,
+								createdOn: dayjs().unix(),
+								lastLogin: dayjs().unix()
+							},
+							transaction
+						});
+					}
+
+					return { error: void 0 };
+				} catch (exc) {
+					return { error: ErrorGenerator.internalError(exc) };
+				}
+			});
+		})());
+
+		if (error) return new BusinessResponse({ error });
+
+		// Get user
+		let data: IUsersData;
+		({ data, error } = await (async () => {
+			const response = await users.data({ id: user.id });
+			if (response.error) return { error: response.error };
+			return { data: response.data.data };
+		})());
+		if (error) return new BusinessResponse({ error });
+
+		return new BusinessResponse({ data: { user: { data } } });
 	}
 
 	toJSON(): IUser {

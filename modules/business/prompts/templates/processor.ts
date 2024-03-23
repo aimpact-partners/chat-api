@@ -128,8 +128,9 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 
 			// Process the dependencies and check for possible errors
 			for (const { error, data } of response) {
-				if (error || !data.exists)
+				if (error || !data.exists) {
 					return (this.#error = ErrorGenerator.promptDependenciesError(error ?? data.error));
+				}
 				dependencies.push(data.data);
 			}
 
@@ -246,6 +247,9 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 			// Replace the literals
 			this.literals && replacement(this.literals, true);
 
+			// console.log('/-----------------------------------');
+			// console.log(value);
+			// console.log('----------------------------------- /');
 			return value;
 		})();
 	}

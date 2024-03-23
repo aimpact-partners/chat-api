@@ -3,6 +3,7 @@ import { UsersRoutes } from './actions/users';
 import { ChatsRoutes } from './actions/chats';
 import { PromptsRoutes } from './actions/prompts';
 import { ProjectsRoutes } from './actions/projects';
+import { UploadRoutes } from './actions/upload';
 import type { Request, Response, Application } from 'express';
 
 export /*bundle*/ class Routes {
@@ -13,6 +14,7 @@ export /*bundle*/ class Routes {
 			KBRoutes.setup(app);
 			UsersRoutes.setup(app);
 			ChatsRoutes.setup(app);
+			UploadRoutes.setup(app);
 			PromptsRoutes.setup(app);
 			ProjectsRoutes.setup(app);
 		} catch (e) {

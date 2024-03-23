@@ -30,26 +30,27 @@ export /*bundle*/ class Agents {
 		}
 
 		if (!chat) {
-			return { status: false, error: 'chatId not valid' };
+			return { status: false, error: `chatId "${chatId}" not valid` };
 		}
 		if (!chat.language) {
-			return { status: false, error: 'the chat has no established language' };
+			return { status: false, error: `Chat "${chatId}" has no established language` };
 		}
 		const language = chat.language.default;
 		if (!language) {
-			return { status: false, error: 'the chat has no established default language' };
+			return { status: false, error: `Chat "${chatId}" has no established default language` };
 		}
 		if (!chat.project) {
-			return { status: false, error: 'the chat has no established project' };
+			return { status: false, error: `Chat "${chatId}" does not have an established project` };
 		}
-		if (!chat.project.agent?.url) {
-			return { status: false, error: 'the chat has no established agent' };
+
+		const url = chat.project.agent?.url ?? AGENT_API_URL;
+		if (!url) {
+			return { status: false, error: `Chat ${chatId} does not have a project url set` };
 		}
 
 		const { user, synthesis, messages: msgs } = chat;
 		const messages = { last: msgs && msgs.lastTwo ? msgs.lastTwo : [], count: msgs && msgs.count ? msgs.count : 0 };
 
-		const url = chat.project.agent?.url ?? AGENT_API_URL;
 		const method = 'POST';
 		const headers = {
 			'Content-Type': 'application/json',

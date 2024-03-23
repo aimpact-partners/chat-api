@@ -19,8 +19,7 @@ export /*bundle*/ class PromptsTemplate {
 			const prompt = await prompts.data({ id });
 			if (prompt.error) return new BusinessResponse({ error: prompt.error });
 			if (!prompt.data.exists) {
-				const error = ErrorGenerator.documentNotFound('Prompts', id);
-				return new BusinessResponse({ error });
+				return new BusinessResponse({ error: ErrorGenerator.documentNotFound('Prompts', id) });
 			}
 
 			// If the language is not received, it is returned with the default language
@@ -112,23 +111,17 @@ export /*bundle*/ class PromptsTemplate {
 	}
 
 	static async delete(id: string) {
-		if (!id) {
-			return new BusinessResponse({ error: ErrorGenerator.invalidParameters(['id']) });
-		}
+		if (!id) return new BusinessResponse({ error: ErrorGenerator.invalidParameters(['id']) });
 
 		try {
 			const response = await prompts.data({ id });
-			if (response.error) {
-				return new BusinessResponse({ error: response.error });
-			}
-			if (!response.data.exists) {
-				return new BusinessResponse({ error: response.data.error });
-			}
+			if (response.error) return new BusinessResponse({ error: response.error });
+			if (!response.data.exists) return new BusinessResponse({ error: response.data.error });
 
 			const responseDelete = await prompts.delete({ id });
-			if (responseDelete.error) {
-				return new BusinessResponse({ error: responseDelete.error });
-			}
+			if (responseDelete.error) return new BusinessResponse({ error: responseDelete.error });
+
+			//FALTA eliminar las subcolecciones de languages
 
 			return new BusinessResponse({ data: responseDelete.data });
 		} catch (exc) {
@@ -143,7 +136,6 @@ export /*bundle*/ class PromptsTemplate {
 
 			const dataResponse = await PromptsTemplate.data(id);
 			if (dataResponse.error) return dataResponse;
-			if (!dataResponse.data.exists) return dataResponse;
 
 			const specs = { data: { id, name, description } };
 			const response = await prompts.merge(specs);
@@ -202,7 +194,7 @@ export /*bundle*/ class PromptsTemplate {
 			if (response.error) return new FirestoreErrorManager(response.error.code, response.error.text);
 
 			const data: IPromptTemplateLanguageData = {
-				id: `${project.identifier}.${name}.${params.language}`,
+				id: `${project.identifier}.${name}.${params.language.default}`,
 				project: { id: project.id, name: project.name, identifier: project.identifier },
 				language: params.language.default
 			};
@@ -227,6 +219,48 @@ export /*bundle*/ class PromptsTemplate {
 			}
 
 			return await PromptsTemplate.data(id);
+		} catch (exc) {
+			console.error(exc);
+			return new BusinessResponse({ error: ErrorGenerator.internalError(exc) });
+		}
+	}
+
+	static async translate(id: string, params: { language: string; text: string }) {
+		const { language, text } = params;
+
+		const errors = [];
+		!id && errors.push('id');
+		!text && errors.push('text');
+		!language && errors.push('language');
+		if (errors.length) return new BusinessResponse({ error: ErrorGenerator.invalidParameters(errors) });
+
+		try {
+			const response = await prompts.data({ id });
+			if (response.error) return new BusinessResponse({ error: response.error });
+			if (!response.data.exists)
+				return new BusinessResponse({ error: ErrorGenerator.documentNotFound('Prompts', id) });
+
+			const prompt = response.data.data;
+
+			const data: IPromptTemplateLanguageData = {
+				id: `${prompt.identifier}.${language}`,
+				language,
+				value: text,
+				literals: prompt.literals ?? {},
+				project: prompt.project
+			};
+			// SET value on language subcollection
+			const parents = { Prompts: id };
+			const { error } = await prompts.languages.set({ id: language, parents, data });
+			if (error) return new BusinessResponse({ error: error });
+
+			if (!prompt.language.languages.includes(language)) {
+				const updatedLanguages = prompt.language;
+				updatedLanguages.languages.push(language);
+				await prompts.merge({ id, data: { language: updatedLanguages } });
+			}
+
+			return new BusinessResponse({ data });
 		} catch (exc) {
 			console.error(exc);
 			return new BusinessResponse({ error: ErrorGenerator.internalError(exc) });

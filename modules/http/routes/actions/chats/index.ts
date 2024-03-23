@@ -28,7 +28,9 @@ export class ChatsRoutes {
 
 		app.get('/chats', UserMiddlewareHandler.validate, ChatsRoutes.list);
 		app.get('/chats/:id', UserMiddlewareHandler.validate, ChatsRoutes.get);
-		app.post('/chats', UserMiddlewareHandler.validate, ChatsRoutes.save);
+
+		app.post('/chats', ChatsRoutes.save);
+		// app.post('/chats', UserMiddlewareHandler.validate, ChatsRoutes.save);
 
 		/**
 		 * @deprecated
