@@ -38,8 +38,6 @@ export class UsersRoutes {
 
 			const user = new User(specs.id);
 			const response = await user.login(specs);
-
-			console.log('chat', response);
 			if (response.error) return res.json(new HttpResponse({ error: response.error }));
 
 			res.json(new HttpResponse({ data: response.data }));

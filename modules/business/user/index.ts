@@ -123,8 +123,7 @@ export /*bundle*/ class User implements IUser {
 		if (!user.id || !user.firebaseToken)
 			return new BusinessResponse({ error: ErrorGenerator.invalidParameters(['id']) });
 
-		let error;
-		let data: IUsersData;
+		let error, data;
 		({ data, error } = await (async () => {
 			return await db.runTransaction(async (transaction: Transaction) => {
 				try {
@@ -135,33 +134,34 @@ export /*bundle*/ class User implements IUser {
 					const response = await users.data({ id: user.id, transaction });
 					if (response.error) return { error: response.error };
 
-					let data;
 					if (response.data.exists) {
 						// If the user already exists in the database, update the lastLogin field
-						data = { id: user.id, data: { ...user, lastLogin: dayjs().unix() }, transaction };
-						await users.merge(data);
-					} else {
-						// If the user doesn't exist in the database, create a new document for them
-						data = {
-							id: user.id,
-							uid: user.id,
-							name: user.displayName,
-							displayName: user.displayName,
-							email: user.email,
-							firebaseToken: user.firebaseToken,
-							token: user.token,
-							custom: user.token,
-							photoURL: user.photoURL,
-							phoneNumber: user.phoneNumber,
-							createdOn: dayjs().unix(),
-							lastLogin: dayjs().unix()
-						};
-						await users.set({ data, transaction });
+						await users.merge({ id: user.id, data: { ...user, lastLogin: dayjs().unix() }, transaction });
+						const response = await users.data({ id: user.id, transaction });
+
+						if (response.error) return { error: response.error };
+						return { data: response.data.data };
 					}
 
+					// If the user doesn't exist in the database, create a new document for them
+					const data = {
+						id: user.id,
+						uid: user.id,
+						name: user.displayName,
+						displayName: user.displayName,
+						email: user.email,
+						firebaseToken: user.firebaseToken,
+						token: user.token,
+						custom: user.token,
+						photoURL: user.photoURL,
+						phoneNumber: user.phoneNumber,
+						createdOn: dayjs().unix(),
+						lastLogin: dayjs().unix()
+					};
+					const r = await users.set({ data, transaction });
+					if (r.error) return { error: r.error };
 					return { data };
 				} catch (exc) {
-					console.log(9, exc);
 					return { error: ErrorGenerator.internalError(exc) };
 				}
 			});
