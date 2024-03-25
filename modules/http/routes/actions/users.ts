@@ -38,10 +38,13 @@ export class UsersRoutes {
 
 			const user = new User(specs.id);
 			const response = await user.login(specs);
+
+			console.log('chat', response);
 			if (response.error) return res.json(new HttpResponse({ error: response.error }));
 
 			res.json(new HttpResponse({ data: response.data }));
 		} catch (exc) {
+			console.log('chat exc', exc);
 			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
 		}
 	}
