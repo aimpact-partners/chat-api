@@ -137,9 +137,6 @@ export /*bundle*/ class User implements IUser {
 					if (response.data.exists) {
 						// If the user already exists in the database, update the lastLogin field
 						await users.merge({ id: user.id, data: { ...user, lastLogin: dayjs().unix() }, transaction });
-						const response = await users.data({ id: user.id, transaction });
-
-						if (response.error) return { error: response.error };
 						return { data: response.data.data };
 					}
 
