@@ -78,8 +78,6 @@ export /*bundle*/ const uploader = async function (req: Request, res: Response) 
 		}
 
 		const container = fields.container ?? 'public';
-		console.log('cortamos on finish', project, userId, kbId, container);
-		return;
 
 		const bucketName = join(project, userId, 'kb', container);
 		let tempPath: string = join(os.tmpdir(), bucketName); // store on temporal directory

@@ -42,7 +42,6 @@ export class UsersRoutes {
 
 			res.json(new HttpResponse({ data: response.data }));
 		} catch (exc) {
-			console.log('chat exc', exc);
 			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
 		}
 	}

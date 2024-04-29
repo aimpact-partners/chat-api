@@ -178,9 +178,8 @@ export /*bundle*/ class Chat {
 					.orderBy('timestamp', 'desc')
 					.limit(limit)
 					.get();
-				const messages = collection.docs.map(doc => doc.data());
 
-				console.log('setLast', messages, messages.length);
+				const messages = collection.docs.map(doc => doc.data());
 				const lastTwo = messages.map(({ role, content, answer, synthesis }) => {
 					const data: ILastIterationsData = {
 						role,
@@ -190,7 +189,6 @@ export /*bundle*/ class Chat {
 					return data;
 				});
 
-				console.log('lastTwo', lastTwo);
 				const count = chat.data.data?.messages?.count ?? 0;
 				const data = { messages: { count, lastTwo } };
 
