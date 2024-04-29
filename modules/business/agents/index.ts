@@ -20,33 +20,25 @@ export /*bundle*/ class Agents {
 		let chat: any;
 		try {
 			const response = await Chat.get(chatId);
-			if (response.error) {
-				return { status: false, error: 'Chat not valid' };
-			}
+			if (response.error) return { status: false, error: 'Chat not valid' };
+
 			chat = response.data;
 		} catch (exc) {
 			console.error(exc);
 			return { status: false, error: 'Error fetching chat data from store' };
 		}
 
-		if (!chat) {
-			return { status: false, error: `chatId "${chatId}" not valid` };
-		}
-		if (!chat.language) {
-			return { status: false, error: `Chat "${chatId}" has no established language` };
-		}
+		if (!chat) return { status: false, error: `chatId "${chatId}" not valid` };
+		if (!chat.language) return { status: false, error: `Chat "${chatId}" has no established language` };
+
 		const language = chat.language.default;
-		if (!language) {
-			return { status: false, error: `Chat "${chatId}" has no established default language` };
-		}
-		if (!chat.project) {
-			return { status: false, error: `Chat "${chatId}" does not have an established project` };
-		}
+		if (!language) return { status: false, error: `Chat "${chatId}" has no established default language` };
+		if (!chat.project) return { status: false, error: `Chat "${chatId}" does not have an established project` };
 
 		const url = chat.project.agent?.url ?? AGENT_API_URL;
-		if (!url) {
-			return { status: false, error: `Chat ${chatId} does not have a project url set` };
-		}
+		// const url = AGENT_API_URL;
+		// console.log('url', url);
+		if (!url) return { status: false, error: `Chat ${chatId} does not have a project url set` };
 
 		const { user, synthesis, messages: msgs } = chat;
 		const messages = { last: msgs && msgs.lastTwo ? msgs.lastTwo : [], count: msgs && msgs.count ? msgs.count : 0 };

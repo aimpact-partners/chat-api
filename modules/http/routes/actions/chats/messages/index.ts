@@ -1,6 +1,6 @@
 import type { Response, Application } from 'express';
 import type { IAuthenticatedRequest } from '@aimpact/chat-api/middleware';
-import type { IChatData } from '@aimpact/chat-api/data/interfaces';
+import type { IChatData, RoleType } from '@aimpact/chat-api/data/interfaces';
 import { Chat } from '@aimpact/chat-api/business/chats';
 import { Agents } from '@aimpact/chat-api/business/agents';
 import { UserMiddlewareHandler } from '@aimpact/chat-api/middleware';
@@ -28,16 +28,12 @@ export class ChatMessagesRoutes {
 
 	static async sendMessage(req: IAuthenticatedRequest, res: Response) {
 		const chatId = req.params.id;
-		if (!chatId) {
-			return res.status(400).json({ status: false, error: 'Parameter chatId is required' });
-		}
+		if (!chatId) return res.status(400).json({ status: false, error: 'Parameter chatId is required' });
 
 		let chat: IChatData;
 		try {
-			const response = await Chat.get(chatId, '8cGf2jOlDLZRCY6rQWWsLnhjMB62');
-			if (response.error) {
-				return res.status(400).json({ status: false, error: response.error });
-			}
+			const response = await Chat.get(chatId, 'false');
+			if (response.error) return res.status(400).json({ status: false, error: response.error });
 			chat = response.data;
 		} catch (e) {
 			console.error(e);
@@ -100,17 +96,16 @@ export class ChatMessagesRoutes {
 		res.setHeader('Content-Type', 'text/plain');
 		res.setHeader('Transfer-Encoding', 'chunked');
 
+		const { user } = req;
 		const { id, content, timestamp, systemId } = data;
 
 		let answer = '';
 		let metadata: { answer: string; synthesis: string };
 		try {
 			// Store the user message as soon as it arrives
-			const userMessage = { id, content, role: 'user', timestamp };
-			let response = await Chat.saveMessage(chatId, userMessage);
-			if (response.error) {
-				return done({ status: false, error: response.error });
-			}
+			const userMessage = { id, content, role: <RoleType>'user', timestamp };
+			let response = await Chat.saveMessage(chatId, userMessage, user);
+			if (response.error) return done({ status: false, error: response.error.text });
 
 			const audioRequest = req.headers['content-type'] !== 'application/json';
 			if (audioRequest) {
@@ -119,9 +114,7 @@ export class ChatMessagesRoutes {
 			}
 
 			const { iterator, error } = await Agents.sendMessage(chatId, content);
-			if (error) {
-				return done({ status: false, error: error });
-			}
+			if (error) return done({ status: false, error: error });
 
 			for await (const part of iterator) {
 				const { chunk } = part;
@@ -140,19 +133,26 @@ export class ChatMessagesRoutes {
 
 		try {
 			// set assistant message on firestore
-			const agentMessage = { id: systemId, content: answer, answer: metadata.answer, role: 'assistant' };
-			const response = await Chat.saveMessage(chatId, agentMessage);
+			const agentMessage = {
+				id: systemId,
+				content: answer,
+				answer: metadata.answer,
+				role: <RoleType>'assistant',
+				synthesis: metadata?.synthesis
+			};
+			const response = await Chat.saveMessage(chatId, agentMessage, user);
 			if (response.error) {
 				console.error('Error saving agent response:', response.error);
 				return done({ status: false, error: 'Error saving agent response' });
 			}
 
 			// update synthesis on chat
-			const data = { id: chatId, synthesis: metadata?.synthesis };
-			await Chat.save(data);
+			const { error } = await Chat.saveSynthesis(chatId, metadata?.synthesis);
+			if (error) return done({ status: false, error: 'Error saving synthesis' });
 
 			// set last interaction on chat
-			await Chat.setLastInteractions(chatId, 4);
+			const iterationsResponse = await Chat.setLastInteractions(chatId, 4);
+			if (iterationsResponse.error) return done({ status: false, error: 'Error saving lastInteractions' });
 		} catch (exc) {
 			return done({ status: false, error: 'Error saving agent response' });
 		}

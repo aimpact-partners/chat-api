@@ -15,7 +15,9 @@ export /*bundle*/ enum ErrorCodes {
 	promptDependenciesError,
 	promptOptionsError,
 	promptIsOptions,
-	userAlreadyExists
+	userAlreadyExists,
+	roleNotSupported,
+	unauthorizedUserForChat
 }
 
 export /*bundle*/ class ErrorGenerator {
@@ -99,6 +101,18 @@ export /*bundle*/ class ErrorGenerator {
 		return new BusinessErrorManager(
 			ErrorCodes.userAlreadyExists,
 			`The user "${id}" is already registered in the application`,
+			exc
+		);
+	}
+
+	static roleNotSupported(role: string, exc?: Error) {
+		return new BusinessErrorManager(ErrorCodes.roleNotSupported, `Role not "${role}" supported`, exc);
+	}
+
+	static unauthorizedUserForChat(exc?: Error) {
+		return new BusinessErrorManager(
+			ErrorCodes.unauthorizedUserForChat,
+			`Unauthorized user to send messages in chat`,
 			exc
 		);
 	}

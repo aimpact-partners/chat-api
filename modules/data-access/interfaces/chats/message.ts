@@ -1,8 +1,16 @@
-export /*bundle*/ interface IMessageData {
+import type { firestore } from 'firebase-admin';
+
+export /*bundle*/ type RoleType = 'system' | 'user' | 'assistant' | 'function';
+
+export /*bundle*/ interface IMessageBase {
 	id: string;
-	role: 'system' | 'user' | 'assistant' | 'function';
+	role: RoleType;
 	content: string;
+	timestamp: number | firestore.FieldValue;
+}
+
+export /*bundle*/ interface IMessageData extends IMessageBase {
 	chatId: string;
 	chat: { id: string };
-	timestamp: number;
+	synthesis?: string;
 }
