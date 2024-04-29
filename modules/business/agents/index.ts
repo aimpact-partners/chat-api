@@ -36,8 +36,6 @@ export /*bundle*/ class Agents {
 		if (!chat.project) return { status: false, error: `Chat "${chatId}" does not have an established project` };
 
 		const url = chat.project.agent?.url ?? AGENT_API_URL;
-		// const url = AGENT_API_URL;
-		// console.log('url', url);
 		if (!url) return { status: false, error: `Chat ${chatId} does not have a project url set` };
 
 		const { user, synthesis, messages: msgs } = chat;
