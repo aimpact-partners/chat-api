@@ -2,7 +2,7 @@ import { BusinessErrorManager } from './manager';
 import { ErrorManager } from '@beyond-js/response/main';
 
 export /*bundle*/ enum ErrorCodes {
-	internalError = 1,
+	internalError = 500,
 	documentNotFound = 404,
 	documentNotSaved = 800,
 	documentAlreadyExist,
@@ -17,12 +17,17 @@ export /*bundle*/ enum ErrorCodes {
 	promptIsOptions,
 	userAlreadyExists,
 	roleNotSupported,
-	unauthorizedUserForChat
+	unauthorizedUserForChat,
+	chatNotValid,
+	chatWithoutLanguages,
+	chatWithoutDefaultLanguage,
+	chatWithoutAssociatedProject,
+	chatNotHasProjectUrlSet
 }
 
 export /*bundle*/ class ErrorGenerator {
-	static internalError(exc?: Error) {
-		return new BusinessErrorManager(ErrorCodes.internalError, 'Internal server error', exc);
+	static internalError(log?: string, message?: string, exc?: Error) {
+		return new BusinessErrorManager(ErrorCodes.internalError, `Internal server error [${log}]: ${message}`, exc);
 	}
 
 	static documentNotFound(collectionName: string, documentId: string, exc?: Error) {
@@ -114,6 +119,31 @@ export /*bundle*/ class ErrorGenerator {
 			ErrorCodes.unauthorizedUserForChat,
 			`Unauthorized user to send messages in chat`,
 			exc
+		);
+	}
+
+	static chatNotValid(id: string) {
+		return new BusinessErrorManager(ErrorCodes.chatNotValid, `chatId "${id}" not valid`);
+	}
+	static chatWithoutLanguages(id: string) {
+		return new BusinessErrorManager(ErrorCodes.chatWithoutLanguages, `Chat "${id}" has no established language`);
+	}
+	static chatWithoutDefaultLanguage(id: string) {
+		return new BusinessErrorManager(
+			ErrorCodes.chatWithoutDefaultLanguage,
+			`Chat "${id}" has no established default language`
+		);
+	}
+	static chatWithoutAssociatedProject(id: string) {
+		return new BusinessErrorManager(
+			ErrorCodes.chatWithoutAssociatedProject,
+			`Chat "${id}" does not have an established project`
+		);
+	}
+	static chatNotHasProjectUrlSet(id: string) {
+		return new BusinessErrorManager(
+			ErrorCodes.chatNotHasProjectUrlSet,
+			`Chat ${id} does not have a project url set`
 		);
 	}
 }

@@ -4,6 +4,7 @@ import type { IChatData, RoleType } from '@aimpact/chat-api/data/interfaces';
 import { Chat } from '@aimpact/chat-api/business/chats';
 import { Agents } from '@aimpact/chat-api/business/agents';
 import { UserMiddlewareHandler } from '@aimpact/chat-api/middleware';
+import { ErrorGenerator } from '@aimpact/chat-api/http/errors';
 import { processAudio } from './audio';
 
 interface IMessageSpecs {
@@ -11,6 +12,11 @@ interface IMessageSpecs {
 	content: string;
 	systemId: string;
 	timestamp?: number;
+}
+
+interface IError {
+	code: number;
+	text: string;
 }
 
 export class ChatMessagesRoutes {
@@ -39,10 +45,6 @@ export class ChatMessagesRoutes {
 			console.error(e);
 			res.json({ status: false, error: e.message });
 		}
-
-		// if (!chat.project) {
-		// 	return res.status(400).json({ status: false, error: 'the chat not has a project defined' });
-		// }
 
 		/**
 		 *	Validate the type of request
@@ -87,7 +89,7 @@ export class ChatMessagesRoutes {
 			return res.json({ status: false, error });
 		}
 
-		const done = (specs: { status: boolean; error?: string }) => {
+		const done = (specs: { status: boolean; error?: IError }) => {
 			const { status, error } = specs;
 			res.write('ÿ');
 			res.write(JSON.stringify({ status, error }));
@@ -100,12 +102,12 @@ export class ChatMessagesRoutes {
 		const { id, content, timestamp, systemId } = data;
 
 		let answer = '';
-		let metadata: { answer: string; synthesis: string };
+		let metadata: { answer: string; synthesis: string; error?: IError };
 		try {
 			// Store the user message as soon as it arrives
 			const userMessage = { id, content, role: <RoleType>'user', timestamp };
 			let response = await Chat.saveMessage(chatId, userMessage, user);
-			if (response.error) return done({ status: false, error: response.error.text });
+			if (response.error) return done({ status: false, error: response.error });
 
 			const audioRequest = req.headers['content-type'] !== 'application/json';
 			if (audioRequest) {
@@ -114,7 +116,7 @@ export class ChatMessagesRoutes {
 			}
 
 			const { iterator, error } = await Agents.sendMessage(chatId, content);
-			if (error) return done({ status: false, error: error });
+			if (error) return done({ status: false, error });
 
 			for await (const part of iterator) {
 				const { chunk } = part;
@@ -128,8 +130,10 @@ export class ChatMessagesRoutes {
 			}
 		} catch (exc) {
 			console.error(exc);
-			return done({ status: false, error: 'Error processing agent response' });
+			return done({ status: false, error: ErrorGenerator.internalError('C101') });
 		}
+
+		if (metadata.error) return done({ status: false, error: metadata.error });
 
 		try {
 			// set assistant message on firestore
@@ -141,20 +145,17 @@ export class ChatMessagesRoutes {
 				synthesis: metadata?.synthesis
 			};
 			const response = await Chat.saveMessage(chatId, agentMessage, user);
-			if (response.error) {
-				console.error('Error saving agent response:', response.error);
-				return done({ status: false, error: 'Error saving agent response' });
-			}
+			if (response.error) return done({ status: false, error: response.error });
 
 			// update synthesis on chat
 			const { error } = await Chat.saveSynthesis(chatId, metadata?.synthesis);
-			if (error) return done({ status: false, error: 'Error saving synthesis' });
+			if (error) return done({ status: false, error });
 
 			// set last interaction on chat
 			const iterationsResponse = await Chat.setLastInteractions(chatId, 4);
-			if (iterationsResponse.error) return done({ status: false, error: 'Error saving lastInteractions' });
+			if (iterationsResponse.error) return done({ status: false, error: iterationsResponse.error });
 		} catch (exc) {
-			return done({ status: false, error: 'Error saving agent response' });
+			return done({ status: false, error: ErrorGenerator.internalError('C100') });
 		}
 
 		done({ status: true });
