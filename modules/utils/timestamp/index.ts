@@ -11,6 +11,6 @@ export /*bundle*/ class Timestamp {
 			const date: Date = value.toDate();
 			return date.getTime();
 		}
-		return typeof value === 'number' ? value : parseInt(value, 10);
+		return typeof value === 'number' ? value : parseInt(value);
 	}
 }

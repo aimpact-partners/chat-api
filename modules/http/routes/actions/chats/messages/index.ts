@@ -130,7 +130,7 @@ export class ChatMessagesRoutes {
 			}
 		} catch (exc) {
 			console.error(exc);
-			return done({ status: false, error: ErrorGenerator.internalError('C101') });
+			return done({ status: false, error: ErrorGenerator.internalError('HRC100') });
 		}
 
 		if (metadata.error) return done({ status: false, error: metadata.error });
@@ -155,7 +155,7 @@ export class ChatMessagesRoutes {
 			const iterationsResponse = await Chat.setLastInteractions(chatId, 4);
 			if (iterationsResponse.error) return done({ status: false, error: iterationsResponse.error });
 		} catch (exc) {
-			return done({ status: false, error: ErrorGenerator.internalError('C100') });
+			return done({ status: false, error: ErrorGenerator.internalError('HRC101') });
 		}
 
 		done({ status: true });

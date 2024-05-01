@@ -1,4 +1,5 @@
 import { db } from '@beyond-js/firestore-collection/db';
+import { Timestamp } from '@aimpact/chat-api/utils/timestamp';
 
 export class Messages {
 	static async getByLimit(chatId: string, limit: number) {
@@ -10,7 +11,17 @@ export class Messages {
 				.limit(limit)
 				.get();
 
-			const messages = messagesSnapshot.docs.map(doc => doc.data());
+			const messages = messagesSnapshot.docs.map(doc => {
+				const data = doc.data();
+				return {
+					id: data.id,
+					content: data.content,
+					chatId: data.chatId,
+					chat: data.chat,
+					role: data.role,
+					timestamp: Timestamp.format(data.timestamp)
+				};
+			});
 			messages.sort((a, b) => a.timestamp - b.timestamp);
 			return messages;
 		} catch (e) {

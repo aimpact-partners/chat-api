@@ -5,7 +5,6 @@ import type { Transaction } from 'firebase-admin/firestore';
 import { v4 as uuid } from 'uuid';
 import { db } from '@beyond-js/firestore-collection/db';
 import { Message } from './message';
-import { Messages } from './messages';
 import { Timestamp } from '@aimpact/chat-api/utils/timestamp';
 import { BatchDeleter } from './firestore/delete';
 import { FirestoreService } from './firestore/service';
@@ -39,7 +38,7 @@ export /*bundle*/ class Chat {
 		this.firestoreService = new FirestoreService(this.table);
 	}
 
-	static async get(id: string, uid?: string, messages: boolean = false): Promise<BusinessResponse<IChatData>> {
+	static async get(id: string, uid?: string, showMessages: boolean = false): Promise<BusinessResponse<IChatData>> {
 		if (!id) return new BusinessResponse({ error: ErrorGenerator.invalidParameters(['id']) });
 
 		try {
@@ -47,25 +46,24 @@ export /*bundle*/ class Chat {
 			if (response.error) return new BusinessResponse({ error: response.error });
 			if (!response.data.exists) return new BusinessResponse({ error: response.data.error });
 
-			const ChatData: IChatData = response.data.data;
-
-			if (!messages) return new BusinessResponse({ data: ChatData });
+			const { data } = response.data;
+			if (!showMessages) return new BusinessResponse({ data });
 
 			const collection = await chats.doc({ id }).collection('messages').orderBy('timestamp').get();
-			const ChatMessages = collection.docs.map(doc => {
+			const messages = collection.docs.map(doc => {
 				const data = doc.data();
 				return {
 					id: data.id,
 					content: data.content,
-					answer: data.answer,
 					chatId: data.chatId,
 					chat: data.chat,
 					role: data.role,
 					timestamp: Timestamp.format(data.timestamp)
 				};
 			});
+			messages.sort((a, b) => a.timestamp - b.timestamp);
 
-			return new BusinessResponse({ data: Object.assign({}, ChatData, { messages: ChatMessages }) });
+			return new BusinessResponse({ data: Object.assign({}, data, { messages }) });
 		} catch (exc) {
 			console.error(exc);
 			return new BusinessResponse({ error: ErrorGenerator.internalError(exc) });
