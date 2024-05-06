@@ -46,7 +46,7 @@
 			},
 			{
 				"name": "http-beta",
-				"environment": "production",
+				"environment": "quality",
 				"platform": "node"
 			},
 			{
