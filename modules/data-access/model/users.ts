@@ -1,10 +1,10 @@
 import { Collection } from '@beyond-js/firestore-collection/collection';
-import type { IUsersData } from '@aimpact/chat-api/data/interfaces';
+import type { IUserData } from '@aimpact/chat-api/data/interfaces';
 
-class Users extends Collection<IUsersData> {
+class Users extends Collection<IUserData> {
 	constructor() {
 		super('Users');
 	}
 }
 
-export /*bundle*/ const users: Collection<IUsersData> = new Users();
+export /*bundle*/ const users: Collection<IUserData> = new Users();

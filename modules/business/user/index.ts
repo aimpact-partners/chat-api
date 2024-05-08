@@ -1,4 +1,4 @@
-import type { IUsersData, IUsersBaseData } from '@aimpact/chat-api/data/interfaces';
+import type { IUserData, IUserBase } from '@aimpact/chat-api/data/interfaces';
 import type { Transaction } from 'firebase-admin/firestore';
 import * as admin from 'firebase-admin';
 import * as jwt from 'jsonwebtoken';
@@ -8,7 +8,7 @@ import { db } from '@beyond-js/firestore-collection/db';
 import { ErrorGenerator } from '@aimpact/chat-api/business/errors';
 import { BusinessResponse } from '@aimpact/chat-api/business/response';
 
-export /*bundle*/ interface IUser extends IUsersBaseData {}
+export /*bundle*/ interface IUser extends IUserBase {}
 
 export /*bundle*/ class User implements IUser {
 	#accessToken: string;
@@ -60,34 +60,34 @@ export /*bundle*/ class User implements IUser {
 		this.collection = db.collection(this.table);
 	}
 
-	async load() {
+	async load(): Promise<BusinessResponse<IUserData>> {
 		try {
 			if (!this.#id) {
 				this.#valid = false;
-				return { status: false, error: `The user does not have an id to be loaded` };
+				return new BusinessResponse({ error: ErrorGenerator.invalidParameters(['id']) });
 			}
 
-			const userRef = await this.collection.doc(this.#id);
-			const userSnapshot = await userRef.get();
-			const { displayName, email, photoURL, phoneNumber } = userSnapshot.data();
+			const response = await users.data({ id: this.#id });
+			if (response.error) return new BusinessResponse({ error: response.error });
+			const { data } = response.data;
 
 			this.#valid = true;
 
 			this.#uid = this.#id;
-			this.#email = email;
-			this.#name = displayName;
-			this.#displayName = displayName;
-			this.#phoneNumber = phoneNumber;
-			this.#photoURL = photoURL;
+			this.#email = data.email;
+			this.#name = data.displayName;
+			this.#displayName = data.displayName;
+			this.#phoneNumber = data.phoneNumber;
+			this.#photoURL = data.photoURL;
 
-			return { status: true, data: userSnapshot.data() };
-		} catch (error) {
+			return new BusinessResponse({ data });
+		} catch (exc) {
 			this.#valid = false;
-			return { status: false, error: `Error loading user` };
+			return new BusinessResponse({ error: ErrorGenerator.internalError(exc) });
 		}
 	}
 
-	async register(user: IUsersData) {
+	async register(user: IUserData) {
 		return await db.runTransaction(async (transaction: Transaction) => {
 			try {
 				const response = await users.data({ id: user.id, transaction });
@@ -95,7 +95,7 @@ export /*bundle*/ class User implements IUser {
 				if (response.data.exists)
 					return new BusinessResponse({ error: ErrorGenerator.userAlreadyExists(user.id) });
 
-				const data: IUsersData = {
+				const data: IUserData = {
 					id: user.id,
 					uid: user.id,
 					name: user.displayName,
@@ -119,54 +119,53 @@ export /*bundle*/ class User implements IUser {
 		});
 	}
 
-	async login(user: IUsersData) {
-		if (!user.id || !user.firebaseToken)
-			return new BusinessResponse({ error: ErrorGenerator.invalidParameters(['id']) });
+	async login(user: IUserData): Promise<BusinessResponse<IUserData>> {
+		const errors = [];
+		!user.id && errors.push('id');
+		!user.firebaseToken && errors.push('firebaseToken');
+		if (errors.length) return new BusinessResponse({ error: ErrorGenerator.invalidParameters(errors) });
 
-		let error, data;
-		({ data, error } = await (async () => {
-			return await db.runTransaction(async (transaction: Transaction) => {
-				try {
-					const decodedToken = await admin.auth().verifyIdToken(user.firebaseToken);
-					const customToken = jwt.sign({ uid: decodedToken.uid }, process.env.SECRET_KEY);
-					user.token = customToken;
+		const login = async (transaction: Transaction) => {
+			const decodedToken = await admin.auth().verifyIdToken(user.firebaseToken);
+			const customToken = jwt.sign({ uid: decodedToken.uid }, process.env.SECRET_KEY);
 
-					const response = await users.data({ id: user.id, transaction });
-					if (response.error) return { error: response.error };
+			const response = await users.data({ id: user.id, transaction });
+			if (response.error) return { error: response.error };
 
-					if (response.data.exists) {
-						// If the user already exists in the database, update the lastLogin field
-						const updateFields = { id: user.id, data: { ...user, lastLogin: dayjs().unix() }, transaction };
-						await users.merge(updateFields);
-						const data = Object.assign({}, response.data.data, updateFields);
-						return { data };
-					}
+			// If the user already exists in the database, update the lastLogin field
+			if (response.data.exists) {
+				const data = { ...user, lastLogin: dayjs().unix() };
+				await users.merge({ data, transaction });
+				return { data: Object.assign({}, response.data.data, data) };
+			}
 
-					// If the user doesn't exist in the database, create a new document for them
-					const data = {
-						id: user.id,
-						uid: user.id,
-						name: user.displayName,
-						displayName: user.displayName,
-						email: user.email,
-						firebaseToken: user.firebaseToken,
-						token: user.token,
-						custom: user.token,
-						photoURL: user.photoURL,
-						phoneNumber: user.phoneNumber,
-						createdOn: dayjs().unix(),
-						lastLogin: dayjs().unix()
-					};
-					const r = await users.set({ data, transaction });
-					if (r.error) return { error: r.error };
-					return { data };
-				} catch (exc) {
-					return { error: ErrorGenerator.internalError(exc) };
-				}
-			});
-		})());
+			// If the user doesn't exist in the database, create a new document for them
+			const date = dayjs().unix();
+			const data = {
+				id: user.id,
+				uid: user.id,
+				name: user.displayName,
+				displayName: user.displayName,
+				email: user.email,
+				firebaseToken: user.firebaseToken,
+				token: customToken,
+				custom: customToken,
+				photoURL: user.photoURL,
+				phoneNumber: user.phoneNumber,
+				createdOn: date,
+				lastLogin: date
+			};
+			const r = await users.set({ data, transaction });
 
-		return new BusinessResponse({ data, error });
+			return r.error ? { error: r.error } : { data };
+		};
+
+		try {
+			const { data, error } = await db.runTransaction(login);
+			return new BusinessResponse({ data, error });
+		} catch (exc) {
+			return new BusinessResponse({ error: ErrorGenerator.internalError(exc) });
+		}
 	}
 
 	toJSON(): IUser {

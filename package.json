@@ -17,11 +17,6 @@
 	"modules": {
 		"path": "modules"
 	},
-	"libraries": {
-		"imports": [
-			"@beyond-js/reactive"
-		]
-	},
 	"deployment": {
 		"distributions": [
 			{
@@ -70,7 +65,7 @@
 	"dependencies": {
 		"@beyond-js/backend": "^0.1.8",
 		"@beyond-js/events": "^0.0.7",
-		"@beyond-js/firestore-collection": "~0.0.6",
+		"@beyond-js/firestore-collection": "~0.0.7",
 		"@beyond-js/kernel": "~0.1.8",
 		"@beyond-js/response": "~0.0.3",
 		"@google-cloud/storage": "^6.10.1",

@@ -1,4 +1,4 @@
-import type { IUsersBaseData } from '@aimpact/chat-api/data/interfaces';
+import type { IUserBase } from '@aimpact/chat-api/data/interfaces';
 import type { Transaction } from 'firebase-admin/firestore';
 import { chats } from '@aimpact/chat-api/data/model';
 import { v4 as uuid } from 'uuid';
@@ -19,7 +19,7 @@ export interface IMessageSpecs {
 }
 
 export class Message {
-	static async publish(chatId: string, params: IMessageSpecs, user: IUsersBaseData) {
+	static async publish(chatId: string, params: IMessageSpecs, user: IUserBase) {
 		try {
 			if (!chatId) return new BusinessResponse({ error: ErrorGenerator.invalidParameters(['chatId']) });
 			if (!params.content) return new BusinessResponse({ error: ErrorGenerator.invalidParameters(['content']) });

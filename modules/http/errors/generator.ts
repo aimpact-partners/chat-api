@@ -2,7 +2,9 @@ import { HTTPErrorManager } from './manager';
 
 export /*bundle*/ enum ErrorCodes {
 	internalError = 500,
-	invalidParameters = 10500
+	invalidParameters = 10500,
+	userNotValid,
+	invalidToken
 }
 
 export /*bundle*/ class ErrorGenerator {
@@ -12,5 +14,13 @@ export /*bundle*/ class ErrorGenerator {
 
 	static invalidParameters(parameters: string[]) {
 		return new HTTPErrorManager(ErrorCodes.invalidParameters, `Invalid parameters: ${JSON.stringify(parameters)}`);
+	}
+
+	static invalidToken() {
+		return new HTTPErrorManager(ErrorCodes.invalidToken, `Invalid token`);
+	}
+
+	static userNotValid() {
+		return new HTTPErrorManager(ErrorCodes.userNotValid, `User not valid`);
 	}
 }

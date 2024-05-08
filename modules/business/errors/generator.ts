@@ -55,10 +55,7 @@ export /*bundle*/ class ErrorGenerator {
 	}
 
 	static invalidParameters(parameters: string[]) {
-		return new BusinessErrorManager(
-			ErrorCodes.invalidParameters,
-			`Invalid parameters: ${JSON.stringify(parameters)}`
-		);
+		return new BusinessErrorManager(ErrorCodes.invalidParameters, `Invalid parameters: ${parameters.join(', ')}`);
 	}
 
 	static projectNotFound(id: string) {

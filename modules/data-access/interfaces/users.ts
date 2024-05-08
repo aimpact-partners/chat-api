@@ -1,4 +1,4 @@
-export /*bundle*/ interface IUsersBaseData {
+export /*bundle*/ interface IUserBase {
 	uid: string;
 	id: string;
 	name: string;
@@ -7,7 +7,8 @@ export /*bundle*/ interface IUsersBaseData {
 	photoURL: string;
 	phoneNumber: number;
 }
-export /*bundle*/ interface IUsersData extends IUsersBaseData {
+
+export /*bundle*/ interface IUserData extends IUserBase {
 	firebaseToken: string;
 	token: string;
 	custom: string;

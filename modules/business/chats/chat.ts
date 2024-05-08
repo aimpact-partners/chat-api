@@ -1,4 +1,4 @@
-import type { IChatData, IUsersBaseData, ILastIterationsData } from '@aimpact/chat-api/data/interfaces';
+import type { IChatData, IUserBase, ILastIterationsData, IChatDataSpecs } from '@aimpact/chat-api/data/interfaces';
 import type { IMessageSpecs } from './message';
 import type { firestore } from 'firebase-admin';
 import type { Transaction } from 'firebase-admin/firestore';
@@ -12,19 +12,6 @@ import { User } from '@aimpact/chat-api/business/user';
 import { chats, projects } from '@aimpact/chat-api/data/model';
 import { ErrorGenerator } from '@aimpact/chat-api/business/errors';
 import { BusinessResponse } from '@aimpact/chat-api/business/response';
-
-export /*bundle*/ interface IChatParameters {
-	id: string;
-	name: string;
-	metadata: {};
-	parent?: string;
-	children?: string;
-	language: {
-		default: string;
-	};
-	uid: string;
-	projectId: string;
-}
 
 export /*bundle*/ class Chat {
 	private collection: firestore.CollectionReference;
@@ -70,7 +57,7 @@ export /*bundle*/ class Chat {
 		}
 	}
 
-	static async save(data: IChatParameters) {
+	static async save(data: IChatDataSpecs) {
 		try {
 			const id = data.id ?? uuid();
 
@@ -126,7 +113,7 @@ export /*bundle*/ class Chat {
 	 * @param message
 	 * @returns
 	 */
-	static async saveMessage(ChatId: string, params: IMessageSpecs, user: IUsersBaseData) {
+	static async saveMessage(ChatId: string, params: IMessageSpecs, user: IUserBase) {
 		return Message.publish(ChatId, params, user);
 	}
 
