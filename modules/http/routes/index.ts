@@ -1,5 +1,5 @@
 import type { Request, Response as IResponse, Application } from 'express';
-import { KBRoutes } from './kb';
+// import { KBRoutes } from './kb';
 import { ChatsRoutes } from './chats';
 import { UsersRoutes } from './users';
 import { UploadRoutes } from './upload';
@@ -11,7 +11,7 @@ export /*bundle*/ class Routes {
 		try {
 			app.get('/', (req: Request, res: IResponse) => res.send('AImpact Chat API http server'));
 
-			KBRoutes.setup(app);
+			// KBRoutes.setup(app);
 			UsersRoutes.setup(app);
 			ChatsRoutes.setup(app);
 			UploadRoutes.setup(app);
