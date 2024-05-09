@@ -128,6 +128,7 @@ export /*bundle*/ class User implements IUser {
 		const login = async (transaction: Transaction) => {
 			const decodedToken = await admin.auth().verifyIdToken(user.firebaseToken);
 			const customToken = jwt.sign({ uid: decodedToken.uid }, process.env.SECRET_KEY);
+			user.token = customToken;
 
 			const response = await users.data({ id: user.id, transaction });
 			if (response.error) return { error: response.error };
