@@ -137,7 +137,8 @@ export /*bundle*/ class User implements IUser {
 			if (response.data.exists) {
 				const data = { ...user, lastLogin: dayjs().unix() };
 				await users.merge({ data, transaction });
-				return { data: Object.assign({}, response.data.data, data) };
+
+				return { data: Object.assign({}, response.data.data, { lastLogin: dayjs().unix() }) };
 			}
 
 			// If the user doesn't exist in the database, create a new document for them
