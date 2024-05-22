@@ -2,7 +2,7 @@ import { BusinessErrorManager } from './manager';
 import { ErrorManager } from '@beyond-js/response/main';
 
 export /*bundle*/ enum ErrorCodes {
-	internalError = 1,
+	internalError = 500,
 	documentNotFound = 404,
 	documentNotSaved = 800,
 	documentAlreadyExist,
@@ -15,12 +15,19 @@ export /*bundle*/ enum ErrorCodes {
 	promptDependenciesError,
 	promptOptionsError,
 	promptIsOptions,
-	userAlreadyExists
+	userAlreadyExists,
+	roleNotSupported,
+	unauthorizedUserForChat,
+	chatNotValid,
+	chatWithoutLanguages,
+	chatWithoutDefaultLanguage,
+	chatWithoutAssociatedProject,
+	chatNotHasProjectUrlSet
 }
 
 export /*bundle*/ class ErrorGenerator {
-	static internalError(exc?: Error) {
-		return new BusinessErrorManager(ErrorCodes.internalError, 'Internal server error', exc);
+	static internalError(log?: string, message?: string, exc?: Error) {
+		return new BusinessErrorManager(ErrorCodes.internalError, `Internal server error [${log}]: ${message}`, exc);
 	}
 
 	static documentNotFound(collectionName: string, documentId: string, exc?: Error) {
@@ -48,10 +55,7 @@ export /*bundle*/ class ErrorGenerator {
 	}
 
 	static invalidParameters(parameters: string[]) {
-		return new BusinessErrorManager(
-			ErrorCodes.invalidParameters,
-			`Invalid parameters: ${JSON.stringify(parameters)}`
-		);
+		return new BusinessErrorManager(ErrorCodes.invalidParameters, `Invalid parameters: ${parameters.join(', ')}`);
 	}
 
 	static projectNotFound(id: string) {
@@ -100,6 +104,43 @@ export /*bundle*/ class ErrorGenerator {
 			ErrorCodes.userAlreadyExists,
 			`The user "${id}" is already registered in the application`,
 			exc
+		);
+	}
+
+	static roleNotSupported(role: string, exc?: Error) {
+		return new BusinessErrorManager(ErrorCodes.roleNotSupported, `Role not "${role}" supported`, exc);
+	}
+
+	static unauthorizedUserForChat(exc?: Error) {
+		return new BusinessErrorManager(
+			ErrorCodes.unauthorizedUserForChat,
+			`Unauthorized user to send messages in chat`,
+			exc
+		);
+	}
+
+	static chatNotValid(id: string) {
+		return new BusinessErrorManager(ErrorCodes.chatNotValid, `chatId "${id}" not valid`);
+	}
+	static chatWithoutLanguages(id: string) {
+		return new BusinessErrorManager(ErrorCodes.chatWithoutLanguages, `Chat "${id}" has no established language`);
+	}
+	static chatWithoutDefaultLanguage(id: string) {
+		return new BusinessErrorManager(
+			ErrorCodes.chatWithoutDefaultLanguage,
+			`Chat "${id}" has no established default language`
+		);
+	}
+	static chatWithoutAssociatedProject(id: string) {
+		return new BusinessErrorManager(
+			ErrorCodes.chatWithoutAssociatedProject,
+			`Chat "${id}" does not have an established project`
+		);
+	}
+	static chatNotHasProjectUrlSet(id: string) {
+		return new BusinessErrorManager(
+			ErrorCodes.chatNotHasProjectUrlSet,
+			`Chat ${id} does not have a project url set`
 		);
 	}
 }

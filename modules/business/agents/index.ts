@@ -1,4 +1,6 @@
 import { Chat } from '@aimpact/chat-api/business/chats';
+import { ErrorGenerator, BusinessErrorManager } from '@aimpact/chat-api/business/errors';
+
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -7,11 +9,12 @@ const { AGENT_API_URL, AGENT_API_TOKEN } = process.env;
 interface IMetadata {
 	answer: string;
 	synthesis: string;
+	error: { code: number; text: string };
 }
 
 interface ISendMessageResponse {
 	status: boolean;
-	error?: string;
+	error?: { code: number; text: string };
 	iterator?: AsyncIterable<{ chunk?: string; metadata?: IMetadata }>;
 }
 
@@ -20,33 +23,23 @@ export /*bundle*/ class Agents {
 		let chat: any;
 		try {
 			const response = await Chat.get(chatId);
-			if (response.error) {
-				return { status: false, error: 'Chat not valid' };
-			}
+			if (response.error) return { status: false, error: response.error };
+
 			chat = response.data;
 		} catch (exc) {
 			console.error(exc);
-			return { status: false, error: 'Error fetching chat data from store' };
+			return { status: false, error: { code: exc, text: exc.message } };
 		}
 
-		if (!chat) {
-			return { status: false, error: `chatId "${chatId}" not valid` };
-		}
-		if (!chat.language) {
-			return { status: false, error: `Chat "${chatId}" has no established language` };
-		}
+		if (!chat) return { status: false, error: ErrorGenerator.chatNotValid(chatId) };
+		if (!chat.language) return { status: false, error: ErrorGenerator.chatWithoutLanguages(chatId) };
+
 		const language = chat.language.default;
-		if (!language) {
-			return { status: false, error: `Chat "${chatId}" has no established default language` };
-		}
-		if (!chat.project) {
-			return { status: false, error: `Chat "${chatId}" does not have an established project` };
-		}
+		if (!language) return { status: false, error: ErrorGenerator.chatWithoutDefaultLanguage(chatId) };
+		if (!chat.project) return { status: false, error: ErrorGenerator.chatWithoutDefaultLanguage(chatId) };
 
 		const url = chat.project.agent?.url ?? AGENT_API_URL;
-		if (!url) {
-			return { status: false, error: `Chat ${chatId} does not have a project url set` };
-		}
+		if (!url) return { status: false, error: ErrorGenerator.chatNotHasProjectUrlSet(chatId) };
 
 		const { user, synthesis, messages: msgs } = chat;
 		const messages = { last: msgs && msgs.lastTwo ? msgs.lastTwo : [], count: msgs && msgs.count ? msgs.count : 0 };
@@ -75,19 +68,22 @@ export /*bundle*/ class Agents {
 			response = await fetch(url, { method, headers, body });
 		} catch (exc) {
 			console.error(exc);
-			return { status: false, error: `Failed to post message: "${exc.message}"` };
+			return {
+				status: false,
+				error: ErrorGenerator.internalError('BAG100', `Failed to post message`, exc.message)
+			};
 		}
 
 		// Check if response is ok
 		if (!response.ok) {
 			const { status, statusText } = response;
 
-			let error: string;
+			let error: BusinessErrorManager;
 			if (status === 400) {
 				const json = await response.json();
-				error = `Failed to post message (${status}): "${json.error}"`;
+				error = ErrorGenerator.internalError('BAG101', `Failed to post message (${status}): "${json.error}"`);
 			} else {
-				error = `Failed to post message (${status}): "${statusText}"`;
+				error = ErrorGenerator.internalError('BAG101', `Failed to post message (${status}): "${statusText}"`);
 			}
 			return { status: false, error };
 		}

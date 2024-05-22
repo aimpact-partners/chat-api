@@ -1,30 +1,17 @@
-import type { IChatData, IMessageData } from '@aimpact/chat-api/data/interfaces';
+import type { IChatData, IUserBase, ILastIterationsData, IChatDataSpecs } from '@aimpact/chat-api/data/interfaces';
+import type { IMessageSpecs } from './message';
 import type { firestore } from 'firebase-admin';
+import type { Transaction } from 'firebase-admin/firestore';
 import { v4 as uuid } from 'uuid';
 import { db } from '@beyond-js/firestore-collection/db';
 import { Message } from './message';
-import { Messages } from './messages';
 import { Timestamp } from '@aimpact/chat-api/utils/timestamp';
 import { BatchDeleter } from './firestore/delete';
 import { FirestoreService } from './firestore/service';
-
 import { User } from '@aimpact/chat-api/business/user';
 import { chats, projects } from '@aimpact/chat-api/data/model';
 import { ErrorGenerator } from '@aimpact/chat-api/business/errors';
 import { BusinessResponse } from '@aimpact/chat-api/business/response';
-
-export /*bundle*/ interface IChatParameters {
-	id: string;
-	name: string;
-	metadata: {};
-	parent?: string;
-	children?: string;
-	language: {
-		default: string;
-	};
-	uid: string;
-	projectId: string;
-}
 
 export /*bundle*/ class Chat {
 	private collection: firestore.CollectionReference;
@@ -38,57 +25,44 @@ export /*bundle*/ class Chat {
 		this.firestoreService = new FirestoreService(this.table);
 	}
 
-	static async get(id: string, uid?: string, messages: boolean = false): Promise<BusinessResponse<IChatData>> {
-		if (!id) {
-			return new BusinessResponse({ error: ErrorGenerator.invalidParameters(['id']) });
-		}
+	static async get(id: string, uid?: string, showMessages: boolean = false): Promise<BusinessResponse<IChatData>> {
+		if (!id) return new BusinessResponse({ error: ErrorGenerator.invalidParameters(['id']) });
 
 		try {
 			const response = await chats.data({ id });
-			if (response.error) {
-				return new BusinessResponse({ error: response.error });
-			}
-			if (!response.data.exists) {
-				return new BusinessResponse({ error: response.data.error });
-			}
+			if (response.error) return new BusinessResponse({ error: response.error });
+			if (!response.data.exists) return new BusinessResponse({ error: response.data.error });
 
-			const ChatData: IChatData = response.data.data;
-			// if (ChatData.user.id !== uid) {
-			// 	return { error: 'The user does not have access permissions on this Chat' };
-			// }
+			const { data } = response.data;
+			if (!showMessages) return new BusinessResponse({ data });
 
-			if (messages) {
-				const messagesSnapshot = await db.collection('Chats').doc(id).collection('messages').get();
-				ChatData.messages = messagesSnapshot.docs.map(doc => {
-					const data = doc.data();
-					return {
-						id: data.id,
-						content: data.content,
-						answer: data.answer,
-						chatId: data.chatId,
-						chat: data.chat,
-						role: data.role,
-						timestamp: Timestamp.format(data.timestamp)
-					};
-				});
-				ChatData.messages.sort((a, b) => a.timestamp - b.timestamp);
-			}
+			const collection = await chats.doc({ id }).collection('messages').get();
+			const messages = collection.docs.map(doc => {
+				const data = doc.data();
+				return {
+					id: data.id,
+					content: data.content,
+					chatId: data.chatId,
+					chat: data.chat,
+					role: data.role,
+					timestamp: Timestamp.format(data.timestamp)
+				};
+			});
+			messages.sort((a, b) => a.timestamp - b.timestamp);
 
-			return new BusinessResponse({ data: ChatData });
+			return new BusinessResponse({ data: Object.assign({}, data, { messages }) });
 		} catch (exc) {
 			console.error(exc);
 			return new BusinessResponse({ error: ErrorGenerator.internalError(exc) });
 		}
 	}
 
-	static async save(data: IChatParameters) {
+	static async save(data: IChatDataSpecs) {
 		try {
 			const id = data.id ?? uuid();
 
 			const response = await chats.data({ id });
-			if (response.error) {
-				return new BusinessResponse({ error: response.error });
-			}
+			if (response.error) return new BusinessResponse({ error: response.error });
 
 			const specs = <IChatData>{ id: id };
 			data.name && (specs.name = data.name);
@@ -104,12 +78,9 @@ export /*bundle*/ class Chat {
 
 			if (data.projectId) {
 				const response = await projects.data({ id: data.projectId });
-				if (response.error) {
-					return new BusinessResponse({ error: response.error });
-				}
-				if (!response.data.exists) {
-					return new BusinessResponse({ error: response.data.error });
-				}
+				if (response.error) return new BusinessResponse({ error: response.error });
+				if (!response.data.exists) return new BusinessResponse({ error: response.data.error });
+
 				const project = response.data.data;
 				specs.project = {
 					id: project.id,
@@ -127,9 +98,7 @@ export /*bundle*/ class Chat {
 
 			await chats.merge({ id, data: specs });
 			const chatResponse = await chats.data({ id });
-			if (chatResponse.error) {
-				return new BusinessResponse({ error: response.error });
-			}
+			if (chatResponse.error) return new BusinessResponse({ error: response.error });
 
 			return new BusinessResponse({ data: chatResponse.data.data });
 		} catch (exc) {
@@ -144,8 +113,32 @@ export /*bundle*/ class Chat {
 	 * @param message
 	 * @returns
 	 */
-	static async saveMessage(ChatId: string, params: IMessageData) {
-		return Message.publish(ChatId, params);
+	static async saveMessage(ChatId: string, params: IMessageSpecs, user: IUserBase) {
+		return Message.publish(ChatId, params, user);
+	}
+
+	/**
+	 * saves the chat summary according to the last interaction made
+	 * assuming an interaction is the message/response pair
+	 * taking message(role:user)/response(role:system)
+	 * @param id
+	 * @param synthesis
+	 */
+	static async saveSynthesis(id: string, synthesis: string) {
+		return await db.runTransaction(async (transaction: Transaction) => {
+			try {
+				const response = await chats.data({ id, transaction });
+				if (response.error) return new BusinessResponse({ error: response.error });
+				if (!response.data.exists) return new BusinessResponse({ error: response.data.error });
+
+				const { error } = await chats.merge({ id, data: { synthesis }, transaction });
+				if (error) return new BusinessResponse({ error });
+
+				return new BusinessResponse({ data: synthesis });
+			} catch (exc) {
+				return new BusinessResponse({ error: ErrorGenerator.internalError(exc) });
+			}
+		});
 	}
 
 	/**
@@ -156,23 +149,42 @@ export /*bundle*/ class Chat {
 	 * @param limit
 	 */
 	static async setLastInteractions(id: string, limit: number = 2) {
-		if (!id) {
-			throw new Error('id is required');
-		}
+		if (!id) return new BusinessResponse({ error: ErrorGenerator.invalidParameters(['id']) });
 
-		const collection = db.collection('Chats');
-		const ChatDoc = await collection.doc(id).get();
-		if (!ChatDoc.exists) {
-			throw new Error('ChatId not valid');
-		}
+		return await db.runTransaction(async (transaction: Transaction) => {
+			try {
+				const chat = await chats.data({ id, transaction });
+				if (chat.error) return new BusinessResponse({ error: chat.error });
+				if (!chat.data.exists) return new BusinessResponse({ error: chat.data.error });
 
-		const messages = await Messages.getByLimit(id, limit);
-		const lastTwo = messages.map(({ role, content, answer }) => ({
-			role,
-			content: role === 'assistant' ? answer : content
-		}));
+				const collection = await chats
+					.doc({ id })
+					.collection('messages')
+					.orderBy('timestamp', 'desc')
+					.limit(limit)
+					.get();
 
-		await collection.doc(id).set({ messages: { lastTwo } }, { merge: true });
+				const messages = collection.docs.map(doc => doc.data());
+				const lastTwo = messages.map(({ role, content, answer, synthesis }) => {
+					const data: ILastIterationsData = {
+						role,
+						content: role === 'assistant' ? answer : content
+					};
+					synthesis && (data.synthesis = synthesis);
+					return data;
+				});
+
+				const count = chat.data.data?.messages?.count ?? 0;
+				const data = { messages: { count, lastTwo } };
+
+				const response = await chats.merge({ id, data, transaction });
+				if (response.error) return new BusinessResponse({ error: response.error });
+
+				return new BusinessResponse({ data });
+			} catch (exc) {
+				return new BusinessResponse({ error: ErrorGenerator.internalError(exc) });
+			}
+		});
 	}
 
 	/**
@@ -180,9 +192,7 @@ export /*bundle*/ class Chat {
 	 * @TODO validar funcionamiento
 	 */
 	async saveAll(items: IChatData[]) {
-		if (!items.length) {
-			throw new Error('items are required');
-		}
+		if (!items.length) throw new Error('items are required');
 
 		const batch = db.batch();
 		const collection = this.collection;
@@ -201,9 +211,7 @@ export /*bundle*/ class Chat {
 
 	async delete(id: string) {
 		try {
-			if (!id) {
-				return { status: false, error: 'id is required' };
-			}
+			if (!id) return { status: false, error: 'id is required' };
 
 			const docRef = this.firestoreService.getDocumentRef(id);
 			const subcollectionRef = docRef.collection('messages');

@@ -16,11 +16,10 @@ RUN npm install
 COPY . .
 
 # Install beyond
-RUN npm i -g beyond@1.2.0
+RUN npm i -g beyond@1.2.1
 
 # Build the project
-RUN beyond build --pkg=@aimpact/chat-api --distribution=http-production --logs
-
+RUN beyond build --pkg=@aimpact/chat-api --distribution=http-beta --logs
 
 # ------------------------------
 # ------ Production Stage ------
@@ -34,7 +33,7 @@ WORKDIR /app
 COPY --from=build-stage /app/node_modules ./node_modules
 
 # Copy only the built files from the previous stage
-COPY --from=build-stage /app/.beyond/builds/http-production/code/. .
+COPY --from=build-stage /app/.beyond/builds/http-beta/code/. .
 
 # Your start command here
 CMD [ "node", "index.js" ]

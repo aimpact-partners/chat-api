@@ -5,9 +5,7 @@ import { BusinessResponse } from '@aimpact/chat-api/business/response';
 export /*bundle*/ class Chats {
 	static async byUser(id: string) {
 		try {
-			if (!id) {
-				return ErrorGenerator.invalidParameters(['id']);
-			}
+			if (!id) return new BusinessResponse({ error: ErrorGenerator.invalidParameters(['id']) });
 
 			const docs = await db.collection('Chats').where('user.id', '==', id).get();
 			const items = [];
@@ -15,7 +13,6 @@ export /*bundle*/ class Chats {
 
 			return new BusinessResponse({ data: { items } });
 		} catch (exc) {
-			console.error(exc);
 			return new BusinessResponse({ error: ErrorGenerator.internalError(exc) });
 		}
 	}
