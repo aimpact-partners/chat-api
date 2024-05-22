@@ -58,12 +58,7 @@ export /*bundle*/ class Chat {
 			// }
 
 			if (messages) {
-				const messagesSnapshot = await db
-					.collection('Chats')
-					.doc(id)
-					.collection('messages')
-					.orderBy('timestamp')
-					.get();
+				const messagesSnapshot = await db.collection('Chats').doc(id).collection('messages').get();
 				ChatData.messages = messagesSnapshot.docs.map(doc => {
 					const data = doc.data();
 					return {

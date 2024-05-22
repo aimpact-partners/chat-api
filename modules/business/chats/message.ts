@@ -32,7 +32,7 @@ export class Message {
 			const id = params.id ? params.id : uuid();
 			delete params.id;
 
-			const timestamp = Timestamp.set(params.timestamp);
+			const timestamp = Timestamp.set();
 			const specs = { id, chatId, ...params, chat: { id: chatId }, timestamp };
 			await chat.collection('messages').doc(id).set(specs);
 

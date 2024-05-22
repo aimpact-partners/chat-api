@@ -1,7 +1,7 @@
 import * as admin from 'firebase-admin';
 
 export /*bundle*/ class Timestamp {
-	static set(value: string | number | undefined) {
+	static set(value?: string | number) {
 		if (!value) return admin.firestore.FieldValue.serverTimestamp();
 
 		return typeof value === 'number' ? value : parseInt(value);
