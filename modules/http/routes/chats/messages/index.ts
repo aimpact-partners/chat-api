@@ -3,7 +3,7 @@ import type { IAuthenticatedRequest } from '@aimpact/chat-api/middleware';
 import type { IChatData, RoleType } from '@aimpact/chat-api/data/interfaces';
 import { Chat } from '@aimpact/chat-api/business/chats';
 import { Agents } from '@aimpact/chat-api/business/agents';
-import { UserMiddlewareHandler } from '@aimpact/chat-api/middleware';
+import { UserMiddlewareHandler as middleware } from '@aimpact/chat-api/middleware';
 import { ErrorGenerator } from '@aimpact/chat-api/http/errors';
 import { processAudio } from './audio';
 
@@ -28,8 +28,8 @@ export class ChatMessagesRoutes {
 		// 	});
 		// });
 
-		app.post('/chats/:id/messages', UserMiddlewareHandler.validate, ChatMessagesRoutes.sendMessage);
-		app.post('/conversations/:id/messages', UserMiddlewareHandler.validate, ChatMessagesRoutes.sendMessage);
+		app.post('/chats/:id/messages', middleware.validate, ChatMessagesRoutes.sendMessage);
+		app.post('/conversations/:id/messages', middleware.validate, ChatMessagesRoutes.sendMessage);
 	}
 
 	static async sendMessage(req: IAuthenticatedRequest, res: Response) {
@@ -99,13 +99,13 @@ export class ChatMessagesRoutes {
 		res.setHeader('Transfer-Encoding', 'chunked');
 
 		const { user } = req;
-		const { id, content, timestamp, systemId } = data;
+		const { id, content, systemId } = data;
 
 		let answer = '';
 		let metadata: { answer: string; synthesis: string; error?: IError };
 		try {
 			// Store the user message as soon as it arrives
-			const userMessage = { id, content, role: <RoleType>'user', timestamp };
+			const userMessage = { id, content, role: <RoleType>'user' };
 			let response = await Chat.saveMessage(chatId, userMessage, user);
 			if (response.error) return done({ status: false, error: response.error });
 

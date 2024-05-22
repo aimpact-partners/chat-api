@@ -36,7 +36,7 @@ export /*bundle*/ class Chat {
 			const { data } = response.data;
 			if (!showMessages) return new BusinessResponse({ data });
 
-			const collection = await chats.doc({ id }).collection('messages').orderBy('timestamp').get();
+			const collection = await chats.doc({ id }).collection('messages').get();
 			const messages = collection.docs.map(doc => {
 				const data = doc.data();
 				return {
