@@ -1,18 +1,14 @@
-import type { IUserData } from '@aimpact/chat-api/data/interfaces';
+import type { IUserData } from '@aimpact/agents-api/data/interfaces';
 import type { Request, Response as IResponse, Application } from 'express';
-import type { IUser } from '@aimpact/chat-api/business/user';
+import type { IUser } from '@aimpact/agents-api/business/user';
 import type { JwtPayload } from 'jsonwebtoken';
 import * as jwt from 'jsonwebtoken';
-import { User } from '@aimpact/chat-api/business/user';
+import { User } from '@aimpact/agents-api/business/user';
 import { Response } from '@beyond-js/response/main';
-import { ErrorGenerator } from '@aimpact/chat-api/http/errors';
+import { ErrorGenerator } from '@aimpact/agents-api/http/errors';
 
 export class UsersRoutes {
 	static setup(app: Application) {
-		// app.use((err, req: Request, res: IResponse, next) => {
-		// 	res.status(err.status || 500).json({ message: err.message, errors: err.errors });
-		// });
-
 		app.post('/auth/login', UsersRoutes.login);
 		app.post('/auth/register', UsersRoutes.register);
 		app.post('/integrations/tokens/verify', UsersRoutes.verify);
@@ -56,12 +52,12 @@ export class UsersRoutes {
 		try {
 			const specs = <IUserData>{
 				id: req.body.id,
-				displayName: req.body.displayName,
+				displayName: req.body.name,
 				email: req.body.email,
 				firebaseToken: req.body.firebaseToken,
 				token: req.body.token,
-				photoURL: req.body.photoURL,
-				phoneNumber: req.body.phoneNumber
+				photoURL: req.body.photoURL ?? '',
+				phoneNumber: req.body.phoneNumber ?? null
 			};
 
 			const user = new User(specs.id);

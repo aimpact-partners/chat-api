@@ -1,5 +1,5 @@
 import { db } from '@beyond-js/firestore-collection/db';
-import { Timestamp } from '@aimpact/chat-api/utils/timestamp';
+import { Timestamp } from '@aimpact/agents-api/utils/timestamp';
 
 export class Messages {
 	static async getByLimit(chatId: string, limit: number) {

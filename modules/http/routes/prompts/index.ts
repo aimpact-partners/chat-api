@@ -1,8 +1,8 @@
-import { PromptsTemplate, PromptTemplateProcessor } from '@aimpact/chat-api/business/prompts';
+import { PromptsTemplate, PromptTemplateProcessor } from '@aimpact/agents-api/business/prompts';
 import { join } from 'path';
 import * as dotenv from 'dotenv';
 import * as OpenApiValidator from 'express-openapi-validator';
-import { UserMiddlewareHandler } from '@aimpact/chat-api/middleware';
+import { UserMiddlewareHandler } from '@aimpact/agents-api/http/middleware';
 import { Response as HttpResponse } from '@beyond-js/response/main';
 import { ErrorGenerator } from '@beyond-js/firestore-collection/errors';
 import { PromptsCategoriesRoutes } from './categories';
@@ -12,14 +12,6 @@ dotenv.config();
 
 export class PromptsRoutes {
 	static setup(app: Application) {
-		// app.use(
-		// 	OpenApiValidator.middleware({
-		// 		apiSpec: join(`${process.cwd()}/docs/prompts/api.yaml`),
-		// 		validateRequests: true
-		// 		// validateResponses: true
-		// 	})
-		// );
-
 		PromptsCategoriesRoutes.setup(app);
 
 		app.get('/prompts/templates/project/:projectId', this.list);

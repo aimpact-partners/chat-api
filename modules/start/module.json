@@ -1,8 +1,0 @@
-{
-	"name": "initialize",
-	"bundle": "start",
-	"platforms": "backend",
-	"ts": {
-		"files": "*"
-	}
-}

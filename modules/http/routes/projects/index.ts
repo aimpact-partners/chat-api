@@ -3,9 +3,9 @@ import * as dotenv from 'dotenv';
 import { join } from 'path';
 import { Response as HttpResponse } from '@beyond-js/response/main';
 import { ErrorGenerator } from '@beyond-js/firestore-collection/errors';
-import { UserMiddlewareHandler } from '@aimpact/chat-api/middleware';
-import { PromptCategories } from '@aimpact/chat-api/business/prompts';
-import { Projects } from '@aimpact/chat-api/business/projects';
+import { UserMiddlewareHandler } from '@aimpact/agents-api/http/middleware';
+import { PromptCategories } from '@aimpact/agents-api/business/prompts';
+import { Projects } from '@aimpact/agents-api/business/projects';
 import type { Request, Response, Application } from 'express';
 
 dotenv.config();
@@ -60,14 +60,9 @@ export class ProjectsRoutes {
 			const { id, name, description, agent } = req.body;
 			const response = await Projects.save({ id, name, description, agent });
 
-			if (response.error) {
-				res.json(new HttpResponse(response));
-				return;
-			}
-			if (!response.data.exists) {
-				res.json(new HttpResponse({ error: response.data.error }));
-				return;
-			}
+			if (response.error) return res.json(new HttpResponse(response));
+			if (!response.data.exists) return res.json(new HttpResponse({ error: response.data.error }));
+
 			res.json(new HttpResponse({ data: response.data.data }));
 		} catch (exc) {
 			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));

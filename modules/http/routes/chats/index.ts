@@ -1,26 +1,16 @@
 import type { Request, Response as IResponse, Application } from 'express';
-import type { IAuthenticatedRequest } from '@aimpact/chat-api/middleware';
-import type { IChatDataSpecs } from '@aimpact/chat-api/data/interfaces';
+import type { IAuthenticatedRequest } from '@aimpact/agents-api/http/middleware';
+import type { IChatDataSpecs } from '@aimpact/agents-api/data/interfaces';
 import { db } from '@beyond-js/firestore-collection/db';
-import { Chat, Chats } from '@aimpact/chat-api/business/chats';
-import { UserMiddlewareHandler } from '@aimpact/chat-api/middleware';
+import { Response } from '@beyond-js/response/main';
+import { Chat, Chats } from '@aimpact/agents-api/business/chats';
+import { UserMiddlewareHandler } from '@aimpact/agents-api/http/middleware';
+import { ErrorGenerator } from '@beyond-js/firestore-collection/errors';
 import { ChatMessagesRoutes } from './messages';
 import { IChat } from './interfaces';
-import { Response } from '@beyond-js/response/main';
-import { ErrorGenerator } from '@beyond-js/firestore-collection/errors';
-import * as OpenApiValidator from 'express-openapi-validator';
 
 export class ChatsRoutes {
 	static setup(app: Application) {
-		// TODO actualizar respuesta de endpoint POST/chats
-		// app.use(
-		// 	OpenApiValidator.middleware({
-		// 		apiSpec: `${process.cwd()}/docs/chats/api.yaml`,
-		// 		validateRequests: true, // (default)
-		// 		validateResponses: true, // false by default
-		// 	})
-		// );
-
 		ChatMessagesRoutes.setup(app);
 
 		app.post('/chats/bulk', ChatsRoutes.bulk);

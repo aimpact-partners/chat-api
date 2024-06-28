@@ -1,17 +1,17 @@
-import type { IChatData, IUserBase, ILastIterationsData, IChatDataSpecs } from '@aimpact/chat-api/data/interfaces';
+import type { IChatData, IUserBase, ILastIterationsData, IChatDataSpecs } from '@aimpact/agents-api/data/interfaces';
 import type { IMessageSpecs } from './message';
 import type { firestore } from 'firebase-admin';
 import type { Transaction } from 'firebase-admin/firestore';
 import { v4 as uuid } from 'uuid';
 import { db } from '@beyond-js/firestore-collection/db';
 import { Message } from './message';
-import { Timestamp } from '@aimpact/chat-api/utils/timestamp';
+import { Timestamp } from '@aimpact/agents-api/utils/timestamp';
 import { BatchDeleter } from './firestore/delete';
 import { FirestoreService } from './firestore/service';
-import { User } from '@aimpact/chat-api/business/user';
-import { chats, projects } from '@aimpact/chat-api/data/model';
-import { ErrorGenerator } from '@aimpact/chat-api/business/errors';
-import { BusinessResponse } from '@aimpact/chat-api/business/response';
+import { User } from '@aimpact/agents-api/business/user';
+import { chats, projects } from '@aimpact/agents-api/data/model';
+import { ErrorGenerator } from '@aimpact/agents-api/business/errors';
+import { BusinessResponse } from '@aimpact/agents-api/business/response';
 
 export /*bundle*/ class Chat {
 	private collection: firestore.CollectionReference;

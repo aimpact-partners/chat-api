@@ -1,4 +1,4 @@
-# How to run the `chat-api` package
+# How to run the `@aimpact/agents-api` package
 
 ## Copy Environment File
 

@@ -9,4 +9,4 @@ WORKDIR /workspaces/chat-api
 ENV LANG="C.UTF-8"
 
 # Install beyond
-RUN npm i -g beyond@1.2.0-beta.4 @beyond-js/scaffolding
+RUN npm i -g beyond@1.2.3 @beyond-js/scaffolding

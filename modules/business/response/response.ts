@@ -1,4 +1,4 @@
-import { BusinessErrorManager } from '@aimpact/chat-api/business/errors';
+import { BusinessErrorManager } from '@aimpact/agents-api/business/errors';
 import { Response, ErrorManager } from '@beyond-js/response/main';
 
 export /*bundle*/ class BusinessResponse<DATA> extends Response<DATA, BusinessErrorManager> {

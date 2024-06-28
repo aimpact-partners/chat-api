@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import * as admin from 'firebase-admin';
-import type { IUser } from '@aimpact/chat-api/business/user';
+import type { IUser } from '@aimpact/agents-api/business/user';
 
 export interface /*bundle*/ IAuthenticatedRequest extends Request {
 	user?: IUser;

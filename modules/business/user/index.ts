@@ -1,12 +1,12 @@
-import type { IUserData, IUserBase } from '@aimpact/chat-api/data/interfaces';
+import type { IUserData, IUserBase } from '@aimpact/agents-api/data/interfaces';
 import type { Transaction } from 'firebase-admin/firestore';
 import * as admin from 'firebase-admin';
 import * as jwt from 'jsonwebtoken';
 import * as dayjs from 'dayjs';
-import { users } from '@aimpact/chat-api/data/model';
+import { users } from '@aimpact/agents-api/data/model';
 import { db } from '@beyond-js/firestore-collection/db';
-import { ErrorGenerator } from '@aimpact/chat-api/business/errors';
-import { BusinessResponse } from '@aimpact/chat-api/business/response';
+import { ErrorGenerator } from '@aimpact/agents-api/business/errors';
+import { BusinessResponse } from '@aimpact/agents-api/business/response';
 
 export /*bundle*/ interface IUser extends IUserBase {}
 
@@ -88,12 +88,16 @@ export /*bundle*/ class User implements IUser {
 	}
 
 	async register(user: IUserData) {
-		return await db.runTransaction(async (transaction: Transaction) => {
-			try {
+		try {
+			return await db.runTransaction(async (transaction: Transaction) => {
+				const decodedToken = await admin.auth().verifyIdToken(user.firebaseToken);
+				const customToken = jwt.sign({ uid: decodedToken.uid }, process.env.SECRET_KEY);
+				user.token = customToken;
+
 				const response = await users.data({ id: user.id, transaction });
-				if (response.error) return new BusinessResponse({ error: response.error });
+				if (response.error) throw new BusinessResponse({ error: response.error });
 				if (response.data.exists)
-					return new BusinessResponse({ error: ErrorGenerator.userAlreadyExists(user.id) });
+					throw new BusinessResponse({ error: ErrorGenerator.userAlreadyExists(user.id) });
 
 				const data: IUserData = {
 					id: user.id,
@@ -102,21 +106,21 @@ export /*bundle*/ class User implements IUser {
 					displayName: user.displayName,
 					email: user.email,
 					firebaseToken: user.firebaseToken,
-					token: user.token,
-					custom: user.token,
+					token: customToken,
+					custom: customToken,
 					photoURL: user.photoURL,
 					phoneNumber: user.phoneNumber,
 					createdOn: dayjs().unix(),
 					lastLogin: dayjs().unix()
 				};
 				const { error } = await users.set({ data, transaction });
-				if (error) return new BusinessResponse({ error });
+				if (error) throw new BusinessResponse({ error });
 
 				return new BusinessResponse({ data });
-			} catch (exc) {
-				return new BusinessResponse({ error: ErrorGenerator.internalError(exc) });
-			}
-		});
+			});
+		} catch (exc) {
+			return new BusinessResponse({ error: ErrorGenerator.internalError(exc) });
+		}
 	}
 
 	async login(user: IUserData): Promise<BusinessResponse<IUserData>> {

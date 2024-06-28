@@ -1,6 +1,5 @@
-import { Chat } from '@aimpact/chat-api/business/chats';
-import { ErrorGenerator, BusinessErrorManager } from '@aimpact/chat-api/business/errors';
-
+import { Chat } from '@aimpact/agents-api/business/chats';
+import { ErrorGenerator, BusinessErrorManager } from '@aimpact/agents-api/business/errors';
 import * as dotenv from 'dotenv';
 
 dotenv.config();

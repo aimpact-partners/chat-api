@@ -1,6 +1,6 @@
 import type { Readable } from 'stream';
-import type { IChatData } from '@aimpact/chat-api/data/interfaces';
-import type { IAuthenticatedRequest } from '@aimpact/chat-api/middleware';
+import type { IChatData } from '@aimpact/agents-api/data/interfaces';
+import type { IAuthenticatedRequest } from '@aimpact/agents-api/http/middleware';
 import { join } from 'path';
 import * as stream from 'stream';
 import * as Busboy from 'busboy';
@@ -8,8 +8,8 @@ import { FilestoreFile } from '../../utils/bucket';
 import { getExtension } from '../../utils/get-extension';
 import { generateCustomName } from '../../utils/generate-name';
 import { PendingPromise } from '@beyond-js/kernel/core';
-import { OpenAIBackend } from '@aimpact/chat-api/backend-openai';
-import { ErrorGenerator } from '@aimpact/chat-api/http/errors';
+import { OpenAIBackend } from '@aimpact/agents-api/backend-openai';
+import { ErrorGenerator } from '@aimpact/agents-api/http/errors';
 import * as dotenv from 'dotenv';
 
 dotenv.config();

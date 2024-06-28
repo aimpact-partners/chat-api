@@ -1,10 +1,10 @@
 import type { Response, Application } from 'express';
-import type { IAuthenticatedRequest } from '@aimpact/chat-api/middleware';
-import type { IChatData, RoleType } from '@aimpact/chat-api/data/interfaces';
-import { Chat } from '@aimpact/chat-api/business/chats';
-import { Agents } from '@aimpact/chat-api/business/agents';
-import { UserMiddlewareHandler } from '@aimpact/chat-api/middleware';
-import { ErrorGenerator } from '@aimpact/chat-api/http/errors';
+import type { IAuthenticatedRequest } from '@aimpact/agents-api/http/middleware';
+import type { IChatData, RoleType } from '@aimpact/agents-api/data/interfaces';
+import { Chat } from '@aimpact/agents-api/business/chats';
+import { Agents } from '@aimpact/agents-api/business/agents';
+import { UserMiddlewareHandler } from '@aimpact/agents-api/http/middleware';
+import { ErrorGenerator } from '@aimpact/agents-api/http/errors';
 import { processAudio } from './audio';
 
 interface IMessageSpecs {
@@ -21,13 +21,6 @@ interface IError {
 
 export class ChatMessagesRoutes {
 	static setup(app: Application) {
-		// app.use((err, req: Request, res: Response, next) => {
-		// 	res.status(err.status || 500).json({
-		// 		message: err.message,
-		// 		errors: err.errors
-		// 	});
-		// });
-
 		app.post('/chats/:id/messages', UserMiddlewareHandler.validate, ChatMessagesRoutes.sendMessage);
 		app.post('/conversations/:id/messages', UserMiddlewareHandler.validate, ChatMessagesRoutes.sendMessage);
 	}

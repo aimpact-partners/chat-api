@@ -1,5 +1,5 @@
 import { Collection, SubCollection } from '@beyond-js/firestore-collection/collection';
-import type { IChatData, IMessageData } from '@aimpact/chat-api/data/interfaces';
+import type { IChatData, IMessageData } from '@aimpact/agents-api/data/interfaces';
 
 class Chats extends Collection<IChatData> {
 	#messages: SubCollection<IMessageData>;

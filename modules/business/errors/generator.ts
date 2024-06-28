@@ -1,29 +1,6 @@
-import { BusinessErrorManager } from './manager';
 import { ErrorManager } from '@beyond-js/response/main';
-
-export /*bundle*/ enum ErrorCodes {
-	internalError = 500,
-	documentNotFound = 404,
-	documentNotSaved = 800,
-	documentAlreadyExist,
-	invalidParameters,
-	projectNotFound,
-	languageNotSupport,
-	promptLiteralsNotFound,
-	promptDependenciesNotFound,
-	promptOptionsNotFound,
-	promptDependenciesError,
-	promptOptionsError,
-	promptIsOptions,
-	userAlreadyExists,
-	roleNotSupported,
-	unauthorizedUserForChat,
-	chatNotValid,
-	chatWithoutLanguages,
-	chatWithoutDefaultLanguage,
-	chatWithoutAssociatedProject,
-	chatNotHasProjectUrlSet
-}
+import { BusinessErrorManager } from './manager';
+import { ErrorCodes } from './codes';
 
 export /*bundle*/ class ErrorGenerator {
 	static internalError(log?: string, message?: string, exc?: Error) {
