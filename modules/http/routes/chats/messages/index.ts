@@ -5,7 +5,8 @@ import { Chat } from '@aimpact/agents-api/business/chats';
 import { Agents } from '@aimpact/agents-api/business/agents';
 import { UserMiddlewareHandler } from '@aimpact/agents-api/http/middleware';
 import { ErrorGenerator } from '@aimpact/agents-api/http/errors';
-import { processAudio } from './audio';
+import { transcribe } from '../../audios/transcribe';
+import { audio } from './audio';
 
 interface IMessageSpecs {
 	id: string;
@@ -22,6 +23,11 @@ interface IError {
 export class ChatMessagesRoutes {
 	static setup(app: Application) {
 		app.post('/chats/:id/messages', UserMiddlewareHandler.validate, ChatMessagesRoutes.sendMessage);
+		app.post('/chats/:id/messages/audio', UserMiddlewareHandler.validate, audio);
+
+		/**
+		 * @deprecated
+		 */
 		app.post('/conversations/:id/messages', UserMiddlewareHandler.validate, ChatMessagesRoutes.sendMessage);
 	}
 
@@ -59,10 +65,10 @@ export class ChatMessagesRoutes {
 			if (textRequest) return { data: req.body };
 
 			try {
-				const { transcription, fields, error } = await processAudio(req, chat);
+				const { transcription, fields, error } = await transcribe(req, chat);
 				if (error) return { error };
-
 				if (transcription.error) return { error: transcription.error };
+
 				return {
 					data: {
 						id: fields.id,
@@ -71,16 +77,13 @@ export class ChatMessagesRoutes {
 						timestamp: fields.timestamp
 					}
 				};
-			} catch (e) {
-				console.error(e);
-				return { error: e.message };
+			} catch (exc) {
+				return { error: exc.message };
 			}
 		};
 		const { data, error } = await processRequest(req);
-		if (error) {
-			console.error(error);
-			return res.json({ status: false, error });
-		}
+
+		if (error) return res.json({ status: false, error });
 
 		const done = (specs: { status: boolean; error?: IError }) => {
 			const { status, error } = specs;

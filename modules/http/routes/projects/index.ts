@@ -1,25 +1,13 @@
-import * as OpenApiValidator from 'express-openapi-validator';
-import * as dotenv from 'dotenv';
-import { join } from 'path';
-import { Response as HttpResponse } from '@beyond-js/response/main';
-import { ErrorGenerator } from '@beyond-js/firestore-collection/errors';
-import { UserMiddlewareHandler } from '@aimpact/agents-api/http/middleware';
-import { PromptCategories } from '@aimpact/agents-api/business/prompts';
+import type { Application, Request, Response as IResponse } from 'express';
 import { Projects } from '@aimpact/agents-api/business/projects';
-import type { Request, Response, Application } from 'express';
+import { ErrorGenerator } from '@beyond-js/firestore-collection/errors';
+import { Response } from '@beyond-js/response/main';
+import * as dotenv from 'dotenv';
 
 dotenv.config();
 
 export class ProjectsRoutes {
 	static setup(app: Application) {
-		// app.use(
-		// 	OpenApiValidator.middleware({
-		// 		apiSpec: join(`${process.cwd()}/docs/projects/api.yaml`),
-		// 		validateRequests: true
-		// 		// validateResponses: true
-		// 	})
-		// );
-
 		app.get('/projects/', this.list);
 		app.get('/projects/:id', this.get);
 		app.post('/projects/', this.publish);
@@ -27,63 +15,58 @@ export class ProjectsRoutes {
 		app.delete('/projects/:id', this.delete);
 	}
 
-	static async list(req: Request, res: Response) {
+	static async list(req: Request, res: IResponse) {
 		try {
 			const response = await Projects.list();
-			res.json(new HttpResponse(response));
+			res.json(new Response(response));
 		} catch (exc) {
-			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
+			res.json(new Response({ error: ErrorGenerator.internalError(exc) }));
 		}
 	}
 
-	static async get(req: Request, res: Response): Promise<void> {
+	static async get(req: Request, res: IResponse) {
 		try {
 			const { id } = req.params;
 			const response = await Projects.data(id);
 
-			if (response.error) {
-				res.json(new HttpResponse(response));
-				return;
-			}
-			if (!response.data.exists) {
-				res.json(new HttpResponse({ error: response.data.error }));
-				return;
-			}
-			res.json(new HttpResponse({ data: response.data.data }));
+			if (response.error) return res.json(new Response(response));
+			if (!response.data.exists) return res.json(new Response({ error: response.data.error }));
+
+			res.json(new Response({ data: response.data.data }));
 		} catch (exc) {
-			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
+			res.json(new Response({ error: ErrorGenerator.internalError(exc) }));
 		}
 	}
 
-	static async publish(req: Request, res: Response) {
+	static async publish(req: Request, res: IResponse) {
 		try {
 			const { id, name, description, agent } = req.body;
 			const response = await Projects.save({ id, name, description, agent });
 
-			if (response.error) return res.json(new HttpResponse(response));
-			if (!response.data.exists) return res.json(new HttpResponse({ error: response.data.error }));
+			if (response.error) return res.json(new Response(response));
+			if (!response.data.exists) return res.json(new Response({ error: response.data.error }));
 
-			res.json(new HttpResponse({ data: response.data.data }));
+			res.json(new Response({ data: response.data.data }));
 		} catch (exc) {
-			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
+			res.json(new Response({ error: ErrorGenerator.internalError(exc) }));
 		}
 	}
 
-	static async update(req: Request, res: Response) {
+	static async update(req: Request, res: IResponse) {
 		try {
 			let response;
-			res.json(new HttpResponse(response));
+			res.json(new Response(response));
 		} catch (exc) {
-			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
+			res.json(new Response({ error: ErrorGenerator.internalError(exc) }));
 		}
 	}
 
-	static async delete(req: Request, res: Response) {
+	static async delete(req: Request, res: IResponse) {
 		try {
 			let response;
-			res.json(new HttpResponse(response));
+			res.json(new Response(response));
 		} catch (exc) {
-			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
+			res.json(new Response({ error: ErrorGenerator.internalError(exc) }));
 		}
 	}
 }

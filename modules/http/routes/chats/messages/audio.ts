@@ -1,95 +1,120 @@
-import type { Readable } from 'stream';
-import type { IChatData } from '@aimpact/agents-api/data/interfaces';
 import type { IAuthenticatedRequest } from '@aimpact/agents-api/http/middleware';
-import { join } from 'path';
-import * as stream from 'stream';
-import * as Busboy from 'busboy';
-import { FilestoreFile } from '../../utils/bucket';
-import { getExtension } from '../../utils/get-extension';
-import { generateCustomName } from '../../utils/generate-name';
-import { PendingPromise } from '@beyond-js/kernel/core';
-import { OpenAIBackend } from '@aimpact/agents-api/backend-openai';
+import type { IChatData, RoleType } from '@aimpact/agents-api/data/interfaces';
+import type { Response } from 'express';
+import { Agents } from '@aimpact/agents-api/business/agents';
+import { Chat } from '@aimpact/agents-api/business/chats';
 import { ErrorGenerator } from '@aimpact/agents-api/http/errors';
-import * as dotenv from 'dotenv';
+import { transcribe } from '../../audios/transcribe';
 
-dotenv.config();
-const oaiBackend = new OpenAIBackend();
-
-interface IAudioSpecs {
-	transcription?: { status: boolean; data?: { text: string }; error?: string };
-	fields?: { id: string; systemId: string; timestamp: number };
-	file?: { name: string; dest: string; mimeType: string };
-	error?: string;
+interface IData {
+	id: string;
+	content: string;
+	systemId: string;
+	timestamp: number;
+}
+interface IError {
+	code: number;
+	text: string;
 }
 
-interface IFileSpecs {
-	project?: string;
-	type?: string;
-	container?: string;
-	userId?: string;
-	knowledgeBoxId?: string;
-}
+export const audio = async (req: IAuthenticatedRequest, res: Response) => {
+	const chatId = req.params.id;
+	if (!chatId) return res.status(400).json({ status: false, error: 'Parameter chatId is required' });
 
-function processTranscription(req: IAuthenticatedRequest, chat: IChatData): Promise<IAudioSpecs> {
-	const { user } = req;
-
-	const promise = new PendingPromise();
-	const bb = Busboy({ headers: req.headers });
-	const transcription = new PendingPromise();
-
-	// const files = [];
-	const files: { file: any; info: { filename: string; mimeType: string } }[] = [];
-	const fields: Record<string, IFileSpecs> = {};
-
-	bb.on('field', (name: string, val: any) => (fields[name] = val));
-
-	bb.on('file', (name: string, file: Readable, info: { filename: string; mimeType: string }) => {
-		let size = 0;
-		file.on('data', data => (size += data.length));
-		const pass = new stream.PassThrough();
-		file.pipe(pass);
-		files.push({ file: pass, info });
-		oaiBackend.transcriptionStream(file, 'es').then(response => transcription.resolve(response));
-	});
-	bb.on('finish', async () => {
-		if (!files.length) {
-			promise.resolve({ error: ErrorGenerator.invalidParameters(['file']) });
-			return;
-		}
-
-		const [item] = files;
-		const { file, info } = item;
-		const { filename, mimeType } = info;
-
-		const name = `${generateCustomName(filename)}${getExtension(mimeType)}`;
-		let dest = join(chat.project.identifier ?? 'undefined-project', user.uid, 'audio', name);
-		dest = dest.replace(/\\/g, '/');
-
-		const fileManager = new FilestoreFile();
-		const bucketFile = fileManager.getFile(dest);
-		const write = bucketFile.createWriteStream();
-		file.pipe(write);
-
-		const response = await transcription;
-		promise.resolve({ transcription: response, fields, file: { name, dest, mimeType } });
-	});
-
-	req.pipe(bb);
-
-	return promise;
-}
-
-export const processAudio = async function (req: IAuthenticatedRequest, chat: IChatData): Promise<IAudioSpecs> {
+	let chat: IChatData;
 	try {
-		const { transcription, fields, file } = await processTranscription(req, chat);
+		const response = await Chat.get(chatId, 'false');
+		if (response.error) return res.status(400).json({ status: false, error: response.error });
+		chat = response.data;
+	} catch (e) {
+		console.error(e);
+		res.json({ status: false, error: e.message });
+	}
 
-		if (!transcription.status) {
-			return { error: `Error transcribing audio: ${transcription.error}` };
+	let data: IData;
+	try {
+		const { transcription, fields, error } = await transcribe(req, chat);
+		if (error) return { error };
+		if (transcription.error) return { error: transcription.error };
+
+		data = {
+			id: fields.id,
+			content: transcription.data?.text,
+			systemId: fields.systemId,
+			timestamp: fields.timestamp
+		};
+	} catch (exc) {
+		return res.json({ status: false, error: exc.message });
+	}
+
+	const done = (specs: { status: boolean; error?: IError }) => {
+		const { status, error } = specs;
+		res.write('ÿ');
+		res.write(JSON.stringify({ status, error }));
+		res.end();
+	};
+	res.setHeader('Content-Type', 'text/plain');
+	res.setHeader('Transfer-Encoding', 'chunked');
+
+	const { user } = req;
+	const { id, content, timestamp, systemId } = data;
+
+	let answer = '';
+	let metadata: { answer: string; synthesis: string; error?: IError };
+	try {
+		// Store the user message as soon as it arrives
+		const userMessage = { id, content, role: <RoleType>'user', timestamp };
+		let response = await Chat.saveMessage(chatId, userMessage, user);
+		if (response.error) return done({ status: false, error: response.error });
+
+		const audioRequest = req.headers['content-type'] !== 'application/json';
+		if (audioRequest) {
+			const action = { type: 'transcription', data: { transcription: content } };
+			res.write('😸' + JSON.stringify(action) + '🖋️');
 		}
 
-		return { transcription, fields, file };
-	} catch (error) {
-		console.error(error);
-		return { error: error.message };
+		const { iterator, error } = await Agents.sendMessage(chatId, content);
+		if (error) return done({ status: false, error });
+
+		for await (const part of iterator) {
+			const { chunk } = part;
+			answer += chunk ? chunk : '';
+			chunk && res.write(chunk);
+
+			if (part.metadata) {
+				metadata = part.metadata;
+				break;
+			}
+		}
+	} catch (exc) {
+		console.error(exc);
+		return done({ status: false, error: ErrorGenerator.internalError('HRC100') });
 	}
+
+	if (metadata.error) return done({ status: false, error: metadata.error });
+
+	try {
+		// set assistant message on firestore
+		const agentMessage = {
+			id: systemId,
+			content: answer,
+			answer: metadata.answer,
+			role: <RoleType>'assistant',
+			synthesis: metadata?.synthesis
+		};
+		const response = await Chat.saveMessage(chatId, agentMessage, user);
+		if (response.error) return done({ status: false, error: response.error });
+
+		// update synthesis on chat
+		const { error } = await Chat.saveSynthesis(chatId, metadata?.synthesis);
+		if (error) return done({ status: false, error });
+
+		// set last interaction on chat
+		const iterationsResponse = await Chat.setLastInteractions(chatId, 4);
+		if (iterationsResponse.error) return done({ status: false, error: iterationsResponse.error });
+	} catch (exc) {
+		return done({ status: false, error: ErrorGenerator.internalError('HRC101') });
+	}
+
+	done({ status: true });
 };
