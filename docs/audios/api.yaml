@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-    title: AgentsAPI - Audios
+    title: Agents-API Audios
     version: 1.0.0
 paths:
     /audios/transcribe:
