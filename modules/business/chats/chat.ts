@@ -66,10 +66,11 @@ export /*bundle*/ class Chat {
 
 			const specs = <IChatData>{ id: id };
 			data.name && (specs.name = data.name);
-			data.metadata && (specs.metadata = data.metadata);
 			data.parent && (specs.parent = data.parent);
 			data.children && (specs.children = data.children);
 			data.language && (specs.language = data.language);
+
+			specs.metadata = data.metadata ? data.metadata : {};
 
 			if (!response.data.exists) {
 				// if the parent is not received, we set it to root by default
