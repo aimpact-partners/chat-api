@@ -1,8 +1,9 @@
 import type { IAuthenticatedRequest } from '@aimpact/agents-api/http/middleware';
 import type { IChatData, RoleType } from '@aimpact/agents-api/data/interfaces';
-import type { Response } from 'express';
+import type { Response as IResponse } from 'express';
 import { Agents } from '@aimpact/agents-api/business/agents';
 import { Chat } from '@aimpact/agents-api/business/chats';
+import { Response } from '@beyond-js/response/main';
 import { ErrorGenerator } from '@aimpact/agents-api/http/errors';
 import { transcribe } from '../../audios/transcribe';
 
@@ -17,7 +18,10 @@ interface IError {
 	text: string;
 }
 
-export const audio = async (req: IAuthenticatedRequest, res: Response) => {
+export const audio = async (req: IAuthenticatedRequest, res: IResponse) => {
+	const { test } = req.query;
+	if (!!test) return res.json(new Response({ error: ErrorGenerator.testingError() }));
+
 	const chatId = req.params.id;
 	if (!chatId) return res.status(400).json({ status: false, error: 'Parameter chatId is required' });
 

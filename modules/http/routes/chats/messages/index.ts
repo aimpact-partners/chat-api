@@ -1,10 +1,11 @@
-import type { Response, Application } from 'express';
+import type { Response as IResponse, Application } from 'express';
 import type { IAuthenticatedRequest } from '@aimpact/agents-api/http/middleware';
 import type { IChatData, RoleType } from '@aimpact/agents-api/data/interfaces';
 import { Chat } from '@aimpact/agents-api/business/chats';
 import { Agents } from '@aimpact/agents-api/business/agents';
 import { UserMiddlewareHandler } from '@aimpact/agents-api/http/middleware';
 import { ErrorGenerator } from '@aimpact/agents-api/http/errors';
+import { Response } from '@beyond-js/response/main';
 import { transcribe } from '../../audios/transcribe';
 import { audio } from './audio';
 
@@ -31,7 +32,13 @@ export class ChatMessagesRoutes {
 		app.post('/conversations/:id/messages', UserMiddlewareHandler.validate, ChatMessagesRoutes.sendMessage);
 	}
 
-	static async sendMessage(req: IAuthenticatedRequest, res: Response) {
+	static async sendMessage(req: IAuthenticatedRequest, res: IResponse) {
+		const { test } = req.query;
+		if (!!test) {
+			return res.json(new Response({ error: ErrorGenerator.testingError() }));
+			// return res.status(400).json(new Response({ error: ErrorGenerator.testingError() }));
+		}
+
 		const chatId = req.params.id;
 		if (!chatId) return res.status(400).json({ status: false, error: 'Parameter chatId is required' });
 
