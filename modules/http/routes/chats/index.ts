@@ -1,43 +1,34 @@
 import type { Request, Response as IResponse, Application } from 'express';
-import type { IAuthenticatedRequest } from '@aimpact/chat-api/middleware';
-import type { IChatDataSpecs } from '@aimpact/chat-api/data/interfaces';
+import type { IAuthenticatedRequest } from '@aimpact/agents-api/http/middleware';
+import type { IChatDataSpecs } from '@aimpact/agents-api/data/interfaces';
 import { db } from '@beyond-js/firestore-collection/db';
-import { Chat, Chats } from '@aimpact/chat-api/business/chats';
-import { UserMiddlewareHandler } from '@aimpact/chat-api/middleware';
+import { Response } from '@beyond-js/response/main';
+import { Chat, Chats } from '@aimpact/agents-api/business/chats';
+import { UserMiddlewareHandler as middleware } from '@aimpact/agents-api/http/middleware';
+import { ErrorGenerator } from '@beyond-js/firestore-collection/errors';
 import { ChatMessagesRoutes } from './messages';
 import { IChat } from './interfaces';
-import { Response } from '@beyond-js/response/main';
-import { ErrorGenerator } from '@beyond-js/firestore-collection/errors';
-import * as OpenApiValidator from 'express-openapi-validator';
 
 export class ChatsRoutes {
 	static setup(app: Application) {
-		// TODO actualizar respuesta de endpoint POST/chats
-		// app.use(
-		// 	OpenApiValidator.middleware({
-		// 		apiSpec: `${process.cwd()}/docs/chats/api.yaml`,
-		// 		validateRequests: true, // (default)
-		// 		validateResponses: true, // false by default
-		// 	})
-		// );
-
 		ChatMessagesRoutes.setup(app);
+
+		app.post('/chats', ChatsRoutes.save);
+		// app.post('/chats', middleware.validate, ChatsRoutes.save);
+
+		app.get('/chats', middleware.validate, ChatsRoutes.list);
+		app.get('/chats/:id', middleware.validate, ChatsRoutes.get);
+		app.delete('/chats', middleware.validate, ChatsRoutes.deleteAll);
+		app.delete('/chats/:id', middleware.validate, ChatsRoutes.delete);
 
 		app.post('/chats/bulk', ChatsRoutes.bulk);
 		app.put('/chats/:id', ChatsRoutes.update);
-		app.delete('/chats/:id', ChatsRoutes.delete);
-
-		app.get('/chats', UserMiddlewareHandler.validate, ChatsRoutes.list);
-		app.get('/chats/:id', UserMiddlewareHandler.validate, ChatsRoutes.get);
-
-		app.post('/chats', ChatsRoutes.save);
-		// app.post('/chats', UserMiddlewareHandler.validate, ChatsRoutes.save);
 
 		/**
 		 * @deprecated
 		 */
-		app.post('/conversations', UserMiddlewareHandler.validate, ChatsRoutes.save);
-		app.get('/conversations/:id', UserMiddlewareHandler.validate, ChatsRoutes.get);
+		app.post('/conversations', middleware.validate, ChatsRoutes.save);
+		app.get('/conversations/:id', middleware.validate, ChatsRoutes.get);
 	}
 
 	static async list(req: IAuthenticatedRequest, res: IResponse) {
@@ -116,20 +107,28 @@ export class ChatsRoutes {
 		}
 	}
 
-	static async delete(req: Request, res: IResponse) {
+	static async delete(req: IAuthenticatedRequest, res: IResponse) {
 		try {
 			const { id } = req.params;
-			const { userId } = req.query;
-			if (!id && !userId) return res.status(400).json({ error: 'id or userId is required' });
+			if (!id) return res.status(400).json({ error: 'id or userId is required' });
 
 			const model = new Chat();
-			if (userId) {
-				const items: string[] = await model.deleteAll('userId', userId);
-				return res.json(new Response({ data: { deleted: items } }));
-			}
 			await model.delete(id);
 
 			res.json(new Response({ data: { deleted: [id] } }));
+		} catch (exc) {
+			res.json(new Response({ error: ErrorGenerator.internalError(exc) }));
+		}
+	}
+
+	static async deleteAll(req: IAuthenticatedRequest, res: IResponse) {
+		try {
+			const { uid } = req.user;
+
+			const model = new Chat();
+			const items: string[] = await model.deleteAll('user.id', uid);
+
+			res.json(new Response({ data: { deleted: items } }));
 		} catch (exc) {
 			res.json(new Response({ error: ErrorGenerator.internalError(exc) }));
 		}

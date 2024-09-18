@@ -1,6 +1,6 @@
 import { db } from '@beyond-js/firestore-collection/db';
-import { ErrorGenerator } from '@aimpact/chat-api/business/errors';
-import { BusinessResponse } from '@aimpact/chat-api/business/response';
+import { ErrorGenerator } from '@aimpact/agents-api/business/errors';
+import { BusinessResponse } from '@aimpact/agents-api/business/response';
 
 export /*bundle*/ class Chats {
 	static async byUser(id: string) {

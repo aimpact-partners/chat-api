@@ -1,10 +1,10 @@
 import { Collection } from '@beyond-js/firestore-collection/collection';
-import type { IPromptCategoryBaseData } from '@aimpact/chat-api/data/interfaces';
+import type { IPromptCategoryBase } from '@aimpact/agents-api/data/interfaces';
 
-class PromptCategories extends Collection<IPromptCategoryBaseData> {
+class PromptCategories extends Collection<IPromptCategoryBase> {
 	constructor() {
 		super('PromptCategories');
 	}
 }
 
-export /*bundle*/ const promptsCategories: Collection<IPromptCategoryBaseData> = new PromptCategories();
+export /*bundle*/ const promptsCategories: Collection<IPromptCategoryBase> = new PromptCategories();

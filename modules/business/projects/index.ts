@@ -1,10 +1,10 @@
-import type { IProjectData } from '@aimpact/chat-api/data/interfaces';
+import type { IProjectData } from '@aimpact/agents-api/data/interfaces';
 import { v4 as uuid } from 'uuid';
 import { FirestoreErrorManager } from '@beyond-js/firestore-collection/errors';
-import { ErrorGenerator } from '@aimpact/chat-api/business/errors';
+import { ErrorGenerator } from '@aimpact/agents-api/business/errors';
 import { Response } from '@beyond-js/response/main';
 import { db } from '@beyond-js/firestore-collection/db';
-import { projects } from '@aimpact/chat-api/data/model';
+import { projects } from '@aimpact/agents-api/data/model';
 
 export /*bundle*/ class Projects {
 	static async data(id?: string) {
@@ -56,10 +56,10 @@ export /*bundle*/ class Projects {
 			const projectsRef = db.collection('Projects');
 			const snapshot = await projectsRef.get();
 
-			const entries = [];
-			snapshot.forEach(doc => entries.push(doc.data()));
+			const items = [];
+			snapshot.forEach(doc => items.push(doc.data()));
 
-			return { data: { entries } };
+			return { data: { items } };
 		} catch (exc) {
 			const error = ErrorGenerator.internalError(exc);
 			return new Response({ error });

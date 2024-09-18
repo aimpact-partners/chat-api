@@ -15,7 +15,7 @@ interface IBaseData {
 	};
 }
 
-export /*bundle*/ interface IPromptTemplateBaseData extends IBaseData {
+export /*bundle*/ interface IPromptTemplateBase extends IBaseData {
 	projectId: string;
 	language: { default: string; languages: string[] };
 	value?: string;

@@ -1,0 +1,45 @@
+{
+	"distributions": [
+		{
+			"name": "http",
+			"environment": "local",
+			"platform": "node",
+			"ports": {
+				"bundles": 6583,
+				"http": 6584,
+				"inspect": 6585
+			}
+		},
+		{
+			"name": "http-development",
+			"environment": "development",
+			"platform": "node"
+		},
+		{
+			"name": "http-testing",
+			"environment": "testing",
+			"platform": "node"
+		},
+		{
+			"name": "http-beta",
+			"environment": "quality",
+			"platform": "node"
+		},
+		{
+			"name": "http-production",
+			"environment": "production",
+			"platform": "node"
+		},
+		{
+			"name": "node-tsc",
+			"environment": "local",
+			"platform": "node",
+			"ts": {
+				"compiler": "tsc"
+			},
+			"ports": {
+				"bundles": 6501
+			}
+		}
+	]
+}

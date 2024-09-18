@@ -1,7 +1,7 @@
-import type { IPromptData } from '@aimpact/chat-api/data/interfaces';
+import type { IPromptData } from '@aimpact/agents-api/data/interfaces';
 import { FirestoreErrorManager } from '@beyond-js/firestore-collection/errors';
-import { ErrorGenerator } from '@aimpact/chat-api/business/errors';
-import { prompts } from '@aimpact/chat-api/data/model';
+import { ErrorGenerator } from '@aimpact/agents-api/business/errors';
+import { prompts } from '@aimpact/agents-api/data/model';
 
 export interface IPromptGenerationParams {
 	category: string;

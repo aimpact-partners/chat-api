@@ -1,11 +1,13 @@
-import type { Response, Application } from 'express';
-import type { IAuthenticatedRequest } from '@aimpact/chat-api/middleware';
-import type { IChatData, RoleType } from '@aimpact/chat-api/data/interfaces';
-import { Chat } from '@aimpact/chat-api/business/chats';
-import { Agents } from '@aimpact/chat-api/business/agents';
-import { UserMiddlewareHandler as middleware } from '@aimpact/chat-api/middleware';
-import { ErrorGenerator } from '@aimpact/chat-api/http/errors';
-import { processAudio } from './audio';
+import type { Response as IResponse, Application } from 'express';
+import type { IAuthenticatedRequest } from '@aimpact/agents-api/http/middleware';
+import type { IChatData, RoleType } from '@aimpact/agents-api/data/interfaces';
+import { Chat } from '@aimpact/agents-api/business/chats';
+import { Agents } from '@aimpact/agents-api/business/agents';
+import { UserMiddlewareHandler } from '@aimpact/agents-api/http/middleware';
+import { ErrorGenerator } from '@aimpact/agents-api/http/errors';
+import { Response } from '@beyond-js/response/main';
+import { transcribe } from '../../audios/transcribe';
+import { audio } from './audio';
 
 interface IMessageSpecs {
 	id: string;
@@ -21,18 +23,22 @@ interface IError {
 
 export class ChatMessagesRoutes {
 	static setup(app: Application) {
-		// app.use((err, req: Request, res: Response, next) => {
-		// 	res.status(err.status || 500).json({
-		// 		message: err.message,
-		// 		errors: err.errors
-		// 	});
-		// });
+		app.post('/chats/:id/messages', UserMiddlewareHandler.validate, ChatMessagesRoutes.sendMessage);
+		app.post('/chats/:id/messages/audio', UserMiddlewareHandler.validate, audio);
 
-		app.post('/chats/:id/messages', middleware.validate, ChatMessagesRoutes.sendMessage);
-		app.post('/conversations/:id/messages', middleware.validate, ChatMessagesRoutes.sendMessage);
+		/**
+		 * @deprecated
+		 */
+		app.post('/conversations/:id/messages', UserMiddlewareHandler.validate, ChatMessagesRoutes.sendMessage);
 	}
 
-	static async sendMessage(req: IAuthenticatedRequest, res: Response) {
+	static async sendMessage(req: IAuthenticatedRequest, res: IResponse) {
+		const { test } = req.query;
+		if (!!test) {
+			return res.json(new Response({ error: ErrorGenerator.testingError() }));
+			// return res.status(400).json(new Response({ error: ErrorGenerator.testingError() }));
+		}
+
 		const chatId = req.params.id;
 		if (!chatId) return res.status(400).json({ status: false, error: 'Parameter chatId is required' });
 
@@ -66,10 +72,10 @@ export class ChatMessagesRoutes {
 			if (textRequest) return { data: req.body };
 
 			try {
-				const { transcription, fields, error } = await processAudio(req, chat);
+				const { transcription, fields, error } = await transcribe(req, chat);
 				if (error) return { error };
-
 				if (transcription.error) return { error: transcription.error };
+
 				return {
 					data: {
 						id: fields.id,
@@ -78,16 +84,13 @@ export class ChatMessagesRoutes {
 						timestamp: fields.timestamp
 					}
 				};
-			} catch (e) {
-				console.error(e);
-				return { error: e.message };
+			} catch (exc) {
+				return { error: exc.message };
 			}
 		};
 		const { data, error } = await processRequest(req);
-		if (error) {
-			console.error(error);
-			return res.json({ status: false, error });
-		}
+
+		if (error) return res.json({ status: false, error });
 
 		const done = (specs: { status: boolean; error?: IError }) => {
 			const { status, error } = specs;

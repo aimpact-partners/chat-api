@@ -1,11 +1,11 @@
-import type { IUserBase } from '@aimpact/chat-api/data/interfaces';
+import type { IUserBase } from '@aimpact/agents-api/data/interfaces';
 import type { Transaction } from 'firebase-admin/firestore';
-import { chats } from '@aimpact/chat-api/data/model';
+import { chats } from '@aimpact/agents-api/data/model';
 import { v4 as uuid } from 'uuid';
 import { db } from '@beyond-js/firestore-collection/db';
-import { Timestamp } from '@aimpact/chat-api/utils/timestamp';
-import { BusinessResponse } from '@aimpact/chat-api/business/response';
-import { ErrorGenerator } from '@aimpact/chat-api/business/errors';
+import { Timestamp } from '@aimpact/agents-api/utils/timestamp';
+import { BusinessResponse } from '@aimpact/agents-api/business/response';
+import { ErrorGenerator } from '@aimpact/agents-api/business/errors';
 
 const MESSAGE_ROLE = ['system', 'user', 'assistant', 'function'];
 

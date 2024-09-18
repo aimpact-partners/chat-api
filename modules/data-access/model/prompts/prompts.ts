@@ -1,4 +1,4 @@
-import type { IPromptTemplateData } from '@aimpact/chat-api/data/interfaces';
+import type { IPromptTemplateData } from '@aimpact/agents-api/data/interfaces';
 import { Collection } from '@beyond-js/firestore-collection/collection';
 import { Languages } from './languages';
 

@@ -1,7 +1,7 @@
 import type { Response, Application } from 'express';
-import type { IAuthenticatedRequest } from '@aimpact/chat-api/middleware';
-// import { UserMiddlewareHandler as middleware } from '@aimpact/chat-api/middleware';
-// import { storage } from '@aimpact/chat-api/storage';
+import type { IAuthenticatedRequest } from '@aimpact/agents-api/http/middleware';
+// import { UserMiddlewareHandler as middleware } from '@aimpact/agents-api/http/middleware';
+// import { storage } from '@aimpact/agents-api/storage';
 // import { multerUpload } from '../utils/multer';
 
 export class UploadRoutes {

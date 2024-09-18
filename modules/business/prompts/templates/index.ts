@@ -1,17 +1,17 @@
 import type {
-	IPromptTemplateBaseData,
+	IPromptTemplateBase,
 	IPromptTemplateData,
 	IPromptTemplateLanguageData
-} from '@aimpact/chat-api/data/interfaces';
+} from '@aimpact/agents-api/data/interfaces';
 import { v4 as uuid } from 'uuid';
 import { FirestoreErrorManager } from '@beyond-js/firestore-collection/errors';
 import { db } from '@beyond-js/firestore-collection/db';
 import { Response } from '@beyond-js/response/main';
-import { BusinessResponse } from '@aimpact/chat-api/business/response';
-import { prompts } from '@aimpact/chat-api/data/model';
-import { ErrorGenerator } from '@aimpact/chat-api/business/errors';
-import { Projects } from '@aimpact/chat-api/business/projects';
-import { OpenAIBackend } from '@aimpact/chat-api/backend-openai';
+import { BusinessResponse } from '@aimpact/agents-api/business/response';
+import { prompts } from '@aimpact/agents-api/data/model';
+import { ErrorGenerator } from '@aimpact/agents-api/business/errors';
+import { Projects } from '@aimpact/agents-api/business/projects';
+import { OpenAIBackend } from '@aimpact/agents-api/backend-openai';
 
 export /*bundle*/ class PromptsTemplate {
 	static async data(id: string, language?: string, option?: string) {
@@ -148,7 +148,7 @@ export /*bundle*/ class PromptsTemplate {
 		}
 	}
 
-	static async save(params: IPromptTemplateBaseData) {
+	static async save(params: IPromptTemplateBase) {
 		try {
 			if (!params.projectId) {
 				const error = ErrorGenerator.invalidParameters(['projectId']);

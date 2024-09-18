@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-    title: Chat-API
+    title: Agents-API
     version: 1.0.0
     description: API endpoint for prompts in the Chat-API platform.
     contact:

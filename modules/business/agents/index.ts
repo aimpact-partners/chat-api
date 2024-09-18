@@ -1,6 +1,5 @@
-import { Chat } from '@aimpact/chat-api/business/chats';
-import { ErrorGenerator, BusinessErrorManager } from '@aimpact/chat-api/business/errors';
-
+import { Chat } from '@aimpact/agents-api/business/chats';
+import { ErrorGenerator, BusinessErrorManager } from '@aimpact/agents-api/business/errors';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -81,7 +80,8 @@ export /*bundle*/ class Agents {
 			let error: BusinessErrorManager;
 			if (status === 400) {
 				const json = await response.json();
-				error = ErrorGenerator.internalError('BAG101', `Failed to post message (${status}): "${json.error}"`);
+				const errors = json.errors.map(e => `${e.path} ${e.message}`);
+				error = ErrorGenerator.invalidParameters(errors);
 			} else {
 				error = ErrorGenerator.internalError('BAG101', `Failed to post message (${status}): "${statusText}"`);
 			}
