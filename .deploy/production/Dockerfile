@@ -19,7 +19,7 @@ COPY . .
 RUN npm i -g beyond@1.2.1
 
 # Build the project
-RUN beyond build --pkg=@aimpact/chat-api --distribution=http-production --logs
+RUN beyond build --pkg=@aimpact/agents-api --distribution=http-production --logs
 
 
 # ------------------------------
