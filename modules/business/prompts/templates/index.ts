@@ -149,12 +149,9 @@ export /*bundle*/ class PromptsTemplate {
 	}
 
 	static async save(params: IPromptTemplateBase) {
-		try {
-			if (!params.projectId) {
-				const error = ErrorGenerator.invalidParameters(['projectId']);
-				return new Response({ error });
-			}
+		if (!params.projectId) return new Response({ error: ErrorGenerator.invalidParameters(['projectId']) });
 
+		try {
 			const dataProject = await Projects.data(params.projectId);
 			if (dataProject.error) return dataProject;
 			if (!dataProject.data.exists) {
@@ -174,8 +171,9 @@ export /*bundle*/ class PromptsTemplate {
 			const project = dataProject.data.data;
 			const name = params.name.toLowerCase();
 			const uid = uuid();
+			const id = params.id ?? uid;
 			const identifier = name.replace(/\s+/g, '-');
-			const id = params.id ? params.id : uid;
+
 			const toSave: IPromptTemplateData = {
 				project: { id: project.id, name: project.name, identifier: project.identifier },
 				id,
@@ -183,15 +181,18 @@ export /*bundle*/ class PromptsTemplate {
 				identifier: `${project.identifier}.${identifier}`,
 				language: params.language,
 				format: params.format,
-				is: params.is,
-				value: params.value
+				is: params.is
 			};
+			params.value && (toSave.value = params.value);
+
 			params.description && (toSave.description = params.description);
 			params.literals && (toSave.literals = params.literals);
 
 			const specs = { data: toSave };
 			const response = await prompts.set(specs);
-			if (response.error) return new FirestoreErrorManager(response.error.code, response.error.text);
+			if (response.error) return new BusinessResponse({ error: response.error });
+
+			if (!params.value) return new BusinessResponse({ data: toSave });
 
 			const data: IPromptTemplateLanguageData = {
 				id: `${project.identifier}.${name}.${params.language.default}`,
@@ -204,20 +205,19 @@ export /*bundle*/ class PromptsTemplate {
 			const parents = { Prompts: id };
 			await prompts.languages.set({ id: params.language.default, parents, data });
 
-			/**
-			 * Options
-			 */
-			if (params.options) {
-				// const promises = [];
-				// params.options.map(item => {
-				// 	const parents = { Prompts: id, Languages: params.language };
-				// 	const option = { id: item.id, value: item.value, prompt: name };
-				// 	promises.push(prompts.languages.options.set({ parents, data: option }));
-				// 	return option;
-				// });
-				// await Promise.all(promises);
-			}
+			// Options
+			// if (params.options) {
+			// const promises = [];
+			// params.options.map(item => {
+			// 	const parents = { Prompts: id, Languages: params.language };
+			// 	const option = { id: item.id, value: item.value, prompt: name };
+			// 	promises.push(prompts.languages.options.set({ parents, data: option }));
+			// 	return option;
+			// });
+			// await Promise.all(promises);
+			// }
 
+			console.log('id', id, await PromptsTemplate.data(id));
 			return await PromptsTemplate.data(id);
 		} catch (exc) {
 			console.error(exc);
