@@ -3,6 +3,7 @@ import { v4 as uuid } from 'uuid';
 import { FirestoreErrorManager } from '@beyond-js/firestore-collection/errors';
 import { ErrorGenerator } from '@aimpact/agents-api/business/errors';
 import { Response } from '@beyond-js/response/main';
+import { BusinessResponse } from '@aimpact/agents-api/business/response';
 import { db } from '@beyond-js/firestore-collection/db';
 import { projects } from '@aimpact/agents-api/data/model';
 
@@ -12,17 +13,24 @@ export /*bundle*/ class Projects {
 	}
 
 	static async save(params: IProjectData) {
+		if (!params.name) {
+			return new BusinessResponse({ error: ErrorGenerator.invalidParameters(['name']) });
+		}
+
 		try {
 			const id = params.id ?? uuid();
-			const { name, description, agent } = params;
+			const { name } = params;
+			const description = params.description ?? '';
+			const agent = params.agent ?? { url: '' };
 
-			const data = await Projects.data(id);
-			if (data.error) return data;
-			if (data.data.exists) return Projects.update(params);
+			const project = await Projects.data(id);
+			if (project.error) return project;
+			if (project.data.exists) return Projects.update(params);
 
 			const identifier = name.toLowerCase().replace(/\s+/g, '-');
-			const specs = { data: { id, name, description, identifier, agent } };
-			const response = await projects.set(specs);
+			const data = { id, name, identifier, description, agent };
+
+			const response = await projects.set({ data });
 			if (response.error) return new FirestoreErrorManager(response.error.code, response.error.text);
 
 			return Projects.data(id);
