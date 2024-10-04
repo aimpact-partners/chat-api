@@ -4,6 +4,7 @@ export /*bundle*/ interface ILastIterationsData {
 	role: string;
 	content: string;
 	synthesis?: string;
+	metadata?: any;
 }
 
 export /*bundle*/ interface IChatBase {

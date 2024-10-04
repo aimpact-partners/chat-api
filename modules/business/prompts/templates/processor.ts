@@ -78,9 +78,10 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 
 		if (!params.literals) return;
 
-		const obj: Record<string, string> = {};
-		Object.keys(params.literals).forEach((key: string) => (obj[key.toUpperCase()] = params.literals[key]));
-		this.#literals = obj;
+		// We uppercase the literal identifiers to handle them
+		const literals: Record<string, string> = {};
+		Object.keys(params.literals).forEach((key: string) => (literals[key.toUpperCase()] = params.literals[key]));
+		this.#literals = literals;
 	}
 
 	async #load(): Promise<void> {
@@ -98,8 +99,7 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 				this.#error = ErrorGenerator.documentNotFound('Prompts', this.#id);
 				return;
 			}
-			const data = response.data.data;
-			this.#data = data;
+			this.#data = response.data.data;
 		})();
 
 		if (!this.valid) return;
@@ -117,10 +117,8 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 
 			const records: { id: string; parents?: Record<string, string> }[] = [];
 			this.#data.literals.dependencies.forEach((dependency: string) => {
-				records.push({
-					id: this.#data.language,
-					parents: { Prompts: [this.#data.project.identifier, dependency].join('.') }
-				});
+				const identifier = [this.#data.project.identifier, dependency.toLowerCase()].join('.');
+				records.push({ id: this.#data.language, parents: { Prompts: identifier } });
 			});
 
 			const response = await prompts.languages.dataset({ records });
@@ -171,10 +169,7 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 
 	async process() {
 		await this.#load();
-
-		if (!this.valid) {
-			return this.#error;
-		}
+		if (!this.valid) return this.#error;
 
 		// Check that all required pure literals has been received
 		(() => {
@@ -191,7 +186,7 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 
 		// Check that all required dependencies literals has been received
 		(() => {
-			const received = this.#data.literals?.dependencies; // The key/value literals received to be applied to the prompt
+			const received = this.#data.literals.dependencies.map(d => d.toLowerCase()); // The key/value literals received to be applied to the prompt
 			const expected = this.#data.dependencies; // The literals as specified in the database
 			if (!expected) return;
 
@@ -224,16 +219,16 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 			let value = this.#value;
 			const replacement = (received: Record<string, string>, literal = false): void => {
 				Object.entries(received).forEach(([name, val]) => {
-					if (literal) {
-						let screaming = `{${name}}`.replace(/{([a-z])([A-Z])}/g, '$1_$2');
-						// Replace the Pure literal
-						const regex = new RegExp(screaming, 'g');
+					// Replace the dependencies and options literals
+					if (!literal) {
+						const regex = new RegExp(`{${name}}`, 'gi');
 						value = value.replace(regex, val);
-
 						return;
 					}
-					// Replace the Dependencies and options literal
-					const regex = new RegExp(`{${name}}`, 'g');
+
+					// Replace the Pure literal
+					let screaming = `{${name}}`.replace(/{([a-z])([A-Z])}/g, '$1_$2');
+					const regex = new RegExp(screaming, 'g');
 					value = value.replace(regex, val);
 				});
 			};
@@ -244,10 +239,11 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 			// Process the options
 			this.#data.options?.forEach(option => replacement(option));
 
-			// Replace the literals
+			// Replace the pure literals
 			this.literals && replacement(this.literals, true);
 
 			// console.log('/-----------------------------------');
+			// console.log(this.#name);
 			// console.log(value);
 			// console.log('----------------------------------- /');
 			return value;

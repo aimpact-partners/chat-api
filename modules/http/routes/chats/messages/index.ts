@@ -105,7 +105,7 @@ export class ChatMessagesRoutes {
 		const { id, content, timestamp, systemId } = data;
 
 		let answer = '';
-		let metadata: { answer: string; synthesis: string; error?: IError };
+		let metadata: { answer: string; summary: string; progress: string; error?: IError };
 		try {
 			// Store the user message as soon as it arrives
 			const userMessage = { id, content, role: <RoleType>'user', timestamp };
@@ -140,18 +140,24 @@ export class ChatMessagesRoutes {
 
 		try {
 			// set assistant message on firestore
+			let progress = '';
+			if (metadata?.progress) {
+				progress = JSON.parse(metadata?.progress);
+			}
+
 			const agentMessage = {
 				id: systemId,
 				content: answer,
 				answer: metadata.answer,
 				role: <RoleType>'assistant',
-				synthesis: metadata?.synthesis
+				synthesis: metadata?.summary,
+				metadata: { progress }
 			};
 			const response = await Chat.saveMessage(chatId, agentMessage, user);
 			if (response.error) return done({ status: false, error: response.error });
 
-			// update synthesis on chat
-			const { error } = await Chat.saveSynthesis(chatId, metadata?.synthesis);
+			// update summary on chat
+			const { error } = await Chat.saveSynthesis(chatId, metadata?.summary);
 			if (error) return done({ status: false, error });
 
 			// set last interaction on chat
