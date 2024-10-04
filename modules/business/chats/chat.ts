@@ -166,12 +166,16 @@ export /*bundle*/ class Chat {
 					.get();
 
 				const messages = collection.docs.map(doc => doc.data());
-				const lastTwo = messages.map(({ role, content, answer, synthesis }) => {
+				const lastTwo = messages.map(message => {
+					const { role, content, answer, synthesis, metadata } = message;
 					const data: ILastIterationsData = {
 						role,
 						content: role === 'assistant' ? answer : content
 					};
+
 					synthesis && (data.synthesis = synthesis);
+					metadata && (data.metadata = metadata);
+
 					return data;
 				});
 

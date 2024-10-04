@@ -8,6 +8,7 @@ const { AGENT_API_URL, AGENT_API_TOKEN } = process.env;
 interface IMetadata {
 	answer: string;
 	synthesis: string;
+	progress: string;
 	error: { code: number; text: string };
 }
 

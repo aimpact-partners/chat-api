@@ -16,6 +16,7 @@ export interface IMessageSpecs {
 	answer?: string;
 	synthesis?: string;
 	timestamp?: number;
+	metadata?: any;
 }
 
 export class Message {
