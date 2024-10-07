@@ -186,7 +186,7 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 
 		// Check that all required dependencies literals has been received
 		(() => {
-			const received = this.#data.literals.dependencies.map(d => d.toLowerCase()); // The key/value literals received to be applied to the prompt
+			const received = this.#data.literals?.dependencies.map(d => d.toLowerCase()); // The key/value literals received to be applied to the prompt
 			const expected = this.#data.dependencies; // The literals as specified in the database
 			if (!expected) return;
 
