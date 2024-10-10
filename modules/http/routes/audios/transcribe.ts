@@ -66,10 +66,11 @@ function processAudio(req: IAuthenticatedRequest, chat?: IChatData): Promise<IAu
 			let dest = join(identifier, user.uid, 'audio', name);
 			dest = dest.replace(/\\/g, '/');
 
-			const fileManager = new FilestoreFile();
-			const bucketFile = fileManager.getFile(dest);
-			const write = bucketFile.createWriteStream();
-			file.pipe(write);
+			// TODO validar guardado
+			// const fileManager = new FilestoreFile();
+			// const bucketFile = fileManager.getFile(dest);
+			// const write = bucketFile.createWriteStream();
+			// file.pipe(write);
 			fileSpecs = { name, dest, mimeType };
 		}
 

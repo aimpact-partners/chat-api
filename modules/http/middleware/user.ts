@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import * as admin from 'firebase-admin';
 import type { IUser } from '@aimpact/agents-api/business/user';
 
@@ -7,7 +7,7 @@ export interface /*bundle*/ IAuthenticatedRequest extends Request {
 }
 
 export /*bundle*/ class UserMiddlewareHandler {
-	static async validate(req: IAuthenticatedRequest, res: Response, next) {
+	static async validate(req: IAuthenticatedRequest, res: Response, next: NextFunction) {
 		const authHeader = req.headers['authorization'];
 		const accessToken = authHeader && authHeader.split(' ')[1];
 		if (!accessToken) return res.status(401).json({ error: 'Access token not provided' });
