@@ -47,7 +47,6 @@ export /*bundle*/ class Agent {
 		if (!url) return { status: false, error: ErrorGenerator.chatNotHasProjectUrlSet(chatId) };
 
 		const { user, synthesis, messages: msgs } = chat;
-		const messages = { last: msgs && msgs.lastTwo ? msgs.lastTwo : [], count: msgs && msgs.count ? msgs.count : 0 };
 
 		// Store the user message as soon as it arrives
 		try {
@@ -62,6 +61,9 @@ export /*bundle*/ class Agent {
 				error: ErrorGenerator.internalError('BAG102', `Failed to store message`, exc.message)
 			};
 		}
+
+		const messages = { last: msgs && msgs.lastTwo ? msgs.lastTwo : [], count: msgs && msgs.count ? msgs.count : 0 };
+		++messages.count; // add the recent message
 
 		// Fetch the agent
 		let response: any;
