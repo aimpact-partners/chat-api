@@ -1,3 +1,9 @@
+export interface IProjectSpecification {
+	id: string;
+	name: string;
+	identifier: string;
+}
+
 export /*bundle*/ interface IProjectBase {
 	id: string;
 	name: string;

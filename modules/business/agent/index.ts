@@ -1,8 +1,8 @@
 import { Chat } from '@aimpact/agents-api/business/chats';
-import { ErrorGenerator, BusinessErrorManager } from '@aimpact/agents-api/business/errors';
+import { BusinessErrorManager, ErrorGenerator } from '@aimpact/agents-api/business/errors';
+import type { RoleType } from '@aimpact/agents-api/data/interfaces';
 import * as dotenv from 'dotenv';
 import { v4 as uuid } from 'uuid';
-import type { RoleType } from '@aimpact/agents-api/data/interfaces';
 
 dotenv.config();
 const { AGENT_API_URL, AGENT_API_TOKEN } = process.env;

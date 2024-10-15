@@ -1,17 +1,20 @@
+import { OpenAIBackend } from '@aimpact/agents-api/backend-openai';
+import { ErrorGenerator } from '@aimpact/agents-api/business/errors';
+import { Projects } from '@aimpact/agents-api/business/projects';
+import { BusinessResponse } from '@aimpact/agents-api/business/response';
 import type {
+	IPromptLanguage,
+	IPromptLiterals,
 	IPromptTemplateBase,
 	IPromptTemplateData,
 	IPromptTemplateLanguageData
 } from '@aimpact/agents-api/data/interfaces';
-import { v4 as uuid } from 'uuid';
-import { FirestoreErrorManager } from '@beyond-js/firestore-collection/errors';
-import { db } from '@beyond-js/firestore-collection/db';
-import { Response } from '@beyond-js/response/main';
-import { BusinessResponse } from '@aimpact/agents-api/business/response';
 import { prompts } from '@aimpact/agents-api/data/model';
-import { ErrorGenerator } from '@aimpact/agents-api/business/errors';
-import { Projects } from '@aimpact/agents-api/business/projects';
-import { OpenAIBackend } from '@aimpact/agents-api/backend-openai';
+import { db } from '@beyond-js/firestore-collection/db';
+import { FirestoreErrorManager } from '@beyond-js/firestore-collection/errors';
+import { Response } from '@beyond-js/response/main';
+import OpenAI from 'openai';
+import { v4 as uuid } from 'uuid';
 
 export /*bundle*/ class PromptsTemplate {
 	static async data(id: string, language?: string, option?: string) {
@@ -47,7 +50,7 @@ export /*bundle*/ class PromptsTemplate {
 			const subCollection = await prompts.languages.options.data({ id: option, parents });
 
 			const value = Object.assign({}, promptData, { ...{ language: languageDoc.data.data } });
-			value.language.option = subCollection.data.data;
+			// value.option = subCollection.data.data;
 
 			return new BusinessResponse({ data: value });
 		} catch (exc) {
@@ -94,9 +97,9 @@ export /*bundle*/ class PromptsTemplate {
 		}
 	}
 
-	static async process(content: string, model: string, temperature: string) {
+	static async process(content: string, model: string, temperature: number) {
 		try {
-			const messages = [{ role: 'user', content }];
+			const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [{ role: 'user', content }];
 			const openai = new OpenAIBackend();
 			const response = await openai.chatCompletions(messages, model, temperature);
 
@@ -131,14 +134,32 @@ export /*bundle*/ class PromptsTemplate {
 	}
 
 	static async update(params: any) {
-		try {
-			const { id, name, description } = params;
+		if (!params.id) return new Response({ error: ErrorGenerator.invalidParameters(['id']) });
 
-			const dataResponse = await PromptsTemplate.data(id);
+		try {
+			const dataResponse = await PromptsTemplate.data(params.id);
 			if (dataResponse.error) return dataResponse;
 
-			const specs = { data: { id, name, description } };
-			const response = await prompts.merge(specs);
+			const { id, name, description, language, format, is, literals } = params;
+
+			const specs: {
+				id: string;
+				name?: string;
+				description?: string;
+				format?: 'json' | 'text';
+				is?: 'prompt' | 'function' | 'dependency';
+				literals?: IPromptLiterals;
+				language?: IPromptLanguage;
+			} = { id: id };
+
+			name && (specs.name = name);
+			description && (specs.description = description);
+			language && (specs.language = language);
+			format && (specs.format = format);
+			is && (specs.is = is);
+			literals && (specs.literals = literals);
+
+			const response = await prompts.merge({ data: specs });
 			if (response.error) return new FirestoreErrorManager(response.error.code, response.error.text);
 
 			return PromptsTemplate.data(id);
@@ -161,7 +182,7 @@ export /*bundle*/ class PromptsTemplate {
 
 			const errors = [];
 			if (!params.name) errors.push('name');
-			if (!params.language || !params.language.default) errors.push('language');
+			if (!params.language || !params.language.supported || !params.language.default) errors.push('language');
 			if (params.format !== 'text' && params.format !== 'json') errors.push('format');
 			if (params.is !== 'prompt' && params.is !== 'function' && params.is !== 'dependency') {
 				errors.push('is');
@@ -192,7 +213,9 @@ export /*bundle*/ class PromptsTemplate {
 			const response = await prompts.set(specs);
 			if (response.error) return new BusinessResponse({ error: response.error });
 
-			if (!params.value) return new BusinessResponse({ data: toSave });
+			if (!params.value) {
+				return new BusinessResponse({ data: toSave });
+			}
 
 			const data: IPromptTemplateLanguageData = {
 				id: `${project.identifier}.${name}.${params.language.default}`,
@@ -205,19 +228,6 @@ export /*bundle*/ class PromptsTemplate {
 			const parents = { Prompts: id };
 			await prompts.languages.set({ id: params.language.default, parents, data });
 
-			// Options
-			// if (params.options) {
-			// const promises = [];
-			// params.options.map(item => {
-			// 	const parents = { Prompts: id, Languages: params.language };
-			// 	const option = { id: item.id, value: item.value, prompt: name };
-			// 	promises.push(prompts.languages.options.set({ parents, data: option }));
-			// 	return option;
-			// });
-			// await Promise.all(promises);
-			// }
-
-			console.log('id', id, await PromptsTemplate.data(id));
 			return await PromptsTemplate.data(id);
 		} catch (exc) {
 			console.error(exc);
@@ -237,9 +247,9 @@ export /*bundle*/ class PromptsTemplate {
 		try {
 			const response = await prompts.data({ id });
 			if (response.error) return new BusinessResponse({ error: response.error });
-			if (!response.data.exists)
+			if (!response.data.exists) {
 				return new BusinessResponse({ error: ErrorGenerator.documentNotFound('Prompts', id) });
-
+			}
 			const prompt = response.data.data;
 
 			const data: IPromptTemplateLanguageData = {
@@ -254,9 +264,10 @@ export /*bundle*/ class PromptsTemplate {
 			const { error } = await prompts.languages.set({ id: language, parents, data });
 			if (error) return new BusinessResponse({ error: error });
 
-			if (!prompt.language.languages.includes(language)) {
+			if (!prompt.language.updated.includes(language)) {
 				const updatedLanguages = prompt.language;
-				updatedLanguages.languages.push(language);
+				!prompt.language.languages.includes(language) && updatedLanguages.languages.push(language);
+				updatedLanguages.updated.push(language);
 				await prompts.merge({ id, data: { language: updatedLanguages } });
 			}
 

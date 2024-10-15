@@ -1,4 +1,4 @@
-import { IUserBase } from '../users';
+import type { IUserBase } from '../users';
 
 export /*bundle*/ interface ILastIterationsData {
 	role: string;

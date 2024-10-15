@@ -1,42 +1,47 @@
-import { IPromptCategoryData } from './category';
-import { IPromptOptionData } from './language';
+import type { IPromptCategoryData } from './category';
+import type { IPromptOptionData } from './language';
+import type { IProjectSpecification } from '../projects';
+
+export /*bundle*/ interface IPromptLanguage {
+	default: string;
+	languages?: string[];
+	supported: string[];
+	updated: string[];
+}
+
+export /*bundle*/ interface IPromptLiterals {
+	pure?: string[];
+	dependencies?: string[];
+	metadata?: string[];
+}
 
 interface IBaseData {
 	id: string;
 	name: string;
 	description?: string;
-	language: { default: string; languages: string[] };
 	format: 'json' | 'text';
 	is: 'prompt' | 'function' | 'dependency';
-	literals?: {
-		pure?: string[];
-		dependencies?: string[];
-		metadata?: string[];
-	};
+	literals?: IPromptLiterals;
+	language: IPromptLanguage;
 }
 
 export /*bundle*/ interface IPromptTemplateBase extends IBaseData {
 	projectId: string;
-	language: { default: string; languages: string[] };
 	value?: string;
 	options?: IPromptOptionData[];
 }
 
 export /*bundle*/ interface IPromptTemplateData extends IBaseData {
 	identifier: string;
-	project: { id: string; name: string; identifier: string };
+	project: IProjectSpecification;
 	categories?: IPromptCategoryData[];
 	value?: string;
 }
 
 export /*bundle*/ interface IPromptTemplateLanguageData {
 	id: string;
-	project: { id: string; name: string; identifier: string };
+	project: IProjectSpecification;
 	language: string;
 	value?: string;
-	literals?: {
-		pure?: string[];
-		dependencies?: string[];
-		metadata?: string[];
-	};
+	literals?: IPromptLiterals;
 }

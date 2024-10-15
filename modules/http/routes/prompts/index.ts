@@ -83,8 +83,10 @@ export class PromptsRoutes {
 
 	static async update(req: Request, res: Response) {
 		try {
-			let response;
-			res.json(new HttpResponse(response));
+			const specs = req.body;
+			const { data, error } = await PromptsTemplate.update(specs);
+
+			res.json(new HttpResponse({ data, error }));
 		} catch (exc) {
 			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
 		}
@@ -109,10 +111,9 @@ export class PromptsRoutes {
 	static async publish(req: Request, res: Response) {
 		try {
 			const specs = req.body;
-			const response = await PromptsTemplate.save(specs);
-			if (response.error) return res.json(new HttpResponse(response));
+			const { data, error } = await PromptsTemplate.save(specs);
 
-			res.json(new HttpResponse({ data: response.data }));
+			res.json(new HttpResponse({ data, error }));
 		} catch (exc) {
 			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
 		}

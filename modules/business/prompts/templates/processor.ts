@@ -186,11 +186,11 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 
 		// Check that all required dependencies literals has been received
 		(() => {
-			const received = this.#data.literals?.dependencies?.map(d => d.toLowerCase()); // The key/value literals received to be applied to the prompt
+			const received = this.#data.literals?.dependencies?.map((d: string) => d.toLowerCase()); // The key/value literals received to be applied to the prompt
 			const expected = this.#data.dependencies; // The literals as specified in the database
 			if (!expected) return;
 
-			const notfound = expected.filter(literal => !received.includes(Object.keys(literal)[0]));
+			const notfound = expected.filter((literal: string) => !received.includes(Object.keys(literal)[0]));
 			if (notfound.length) {
 				this.#error = ErrorGenerator.promptDependenciesNotFound();
 				return;
@@ -207,7 +207,7 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 				return !received.hasOwnProperty(Object.keys(option)[0]);
 			});
 			if (notfound.length) {
-				this.#error = ErrorGenerator.promptOptionsNotFound(notfound);
+				this.#error = ErrorGenerator.promptOptionsNotFound();
 				return;
 			}
 		})();
