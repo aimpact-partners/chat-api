@@ -62,7 +62,12 @@ export /*bundle*/ class Agent {
 			};
 		}
 
-		const messages = { last: msgs && msgs.lastTwo ? msgs.lastTwo : [], count: msgs && msgs.count ? msgs.count : 0 };
+		const messages = {
+			last: msgs && msgs.lastTwo ? msgs.lastTwo : [],
+			count: msgs && msgs.count ? msgs.count : 0,
+			user: msgs && msgs.user ? msgs.user : 0
+		};
+		++messages.user; // add the user recent message
 		++messages.count; // add the recent message
 
 		// Fetch the agent
@@ -141,7 +146,9 @@ export /*bundle*/ class Agent {
 				metadata.parsed = JSON.parse(metadata.value);
 				const { answer, summary } = metadata?.parsed;
 
-				// set assistant message on firestore
+				const promises = [];
+
+				// set assistant message
 				let progress = metadata?.parsed?.progress ? JSON.parse(metadata?.parsed?.progress) : {};
 				const agentMessage = {
 					id: params.systemId ?? undefined,
@@ -151,16 +158,25 @@ export /*bundle*/ class Agent {
 					synthesis: summary,
 					metadata: { progress }
 				};
-				const response = await Chat.saveMessage(chatId, agentMessage, user);
-				if (response.error) return { status: false, error: response.error };
+
+				// store response
+				promises.push(Chat.saveMessage(chatId, agentMessage, user));
 
 				// update summary on chat
-				const { error } = await Chat.saveSynthesis(chatId, summary);
-				if (error) return { status: false, error };
+				promises.push(Chat.saveSynthesis(chatId, summary));
 
 				// set last interaction on chat
-				const iterationsResponse = await Chat.setLastInteractions(chatId, 4);
-				if (iterationsResponse.error) return { status: false, error: iterationsResponse.error };
+				promises.push(Chat.setLastInteractions(chatId, 4));
+
+				let error: any;
+				const responses = await Promise.all(promises);
+				responses.forEach(response => {
+					if (response.error) {
+						error = response.error;
+						return;
+					}
+				});
+				if (error) return { status: false, error };
 			} catch (exc) {
 				console.error(exc);
 				return { status: false, error: ErrorGenerator.internalError('HRC101') };

@@ -49,7 +49,6 @@ export const audio = async (req: IAuthenticatedRequest, res: IResponse) => {
 	const { user } = req;
 	const { content } = data;
 
-	let answer = '';
 	let metadata: IMetadata;
 	try {
 		const action = { type: 'transcription', data: { transcription: content } };
@@ -60,7 +59,6 @@ export const audio = async (req: IAuthenticatedRequest, res: IResponse) => {
 
 		for await (const part of iterator) {
 			const { chunk } = part;
-			answer += chunk ? chunk : '';
 			chunk && res.write(chunk);
 			if (part.metadata) {
 				metadata = part.metadata;
@@ -69,7 +67,7 @@ export const audio = async (req: IAuthenticatedRequest, res: IResponse) => {
 		}
 	} catch (exc) {
 		console.error(exc);
-		return done({ status: false, error: ErrorGenerator.internalError('HRC100') });
+		return done({ status: false, error: ErrorGenerator.internalError('HRC101') });
 	}
 
 	if (metadata.error) return done({ status: false, error: metadata.error });

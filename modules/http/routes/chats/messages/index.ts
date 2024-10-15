@@ -54,8 +54,6 @@ export class ChatMessagesRoutes {
 		res.setHeader('Transfer-Encoding', 'chunked');
 
 		const { user } = req;
-		let answer = '';
-
 		let metadata: IMetadata;
 		try {
 			const { iterator, error } = await Agent.sendMessage(chatId, req.body, user.uid);
@@ -63,7 +61,6 @@ export class ChatMessagesRoutes {
 
 			for await (const part of iterator) {
 				const { chunk } = part;
-				answer += chunk ? chunk : '';
 				chunk && res.write(chunk);
 				if (part.metadata) {
 					metadata = part.metadata;
