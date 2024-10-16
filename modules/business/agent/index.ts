@@ -25,21 +25,21 @@ export /*bundle*/ class Agent {
 		let chat, error;
 		({ chat, error } = await (async () => {
 			const response = await Chat.get(chatId);
-			if (response.error) return { status: false, error: response.error };
+			if (response.error) return { error: response.error };
 			chat = response.data;
 
 			// Chat validations
-			if (!chat) return { status: false, error: ErrorGenerator.chatNotValid(chatId) };
+			if (!chat) return { error: ErrorGenerator.chatNotValid(chatId) };
 
 			const id = chat.user.uid ?? chat.user.id;
-			if (id !== uid) return { status: false, error: ErrorGenerator.unauthorizedUserForChat() };
+			if (id !== uid) return { error: ErrorGenerator.unauthorizedUserForChat() };
 
-			if (!chat.language) return { status: false, error: ErrorGenerator.chatWithoutLanguages(chatId) };
+			if (!chat.language) return { error: ErrorGenerator.chatWithoutLanguages(chatId) };
 			const language = chat.language.default;
-			if (!language) return { status: false, error: ErrorGenerator.chatWithoutDefaultLanguage(chatId) };
-			if (!chat.project) return { status: false, error: ErrorGenerator.chatWithoutDefaultLanguage(chatId) };
+			if (!language) return { error: ErrorGenerator.chatWithoutDefaultLanguage(chatId) };
+			if (!chat.project) return { error: ErrorGenerator.chatWithoutDefaultLanguage(chatId) };
 
-			return { chat, error: response.error ?? void 0 };
+			return { chat };
 		})());
 		if (error) return { status: false, error };
 
@@ -55,7 +55,7 @@ export /*bundle*/ class Agent {
 			const response = await Chat.saveMessage(chatId, userMessage, user);
 			if (response.error) return { status: false, error: response.error };
 		} catch (exc) {
-			console.error(exc);
+			console.error(`BAG102:`, exc);
 			return {
 				status: false,
 				error: ErrorGenerator.internalError('BAG102', `Failed to store message`, exc.message)
@@ -89,7 +89,7 @@ export /*bundle*/ class Agent {
 			});
 			response = await fetch(url, { method, headers, body });
 		} catch (exc) {
-			console.error(exc);
+			console.error(`BAG100`, exc);
 			return {
 				status: false,
 				error: ErrorGenerator.internalError('BAG100', `Failed to post message`, exc.message)
@@ -178,7 +178,7 @@ export /*bundle*/ class Agent {
 				});
 				if (error) return { status: false, error };
 			} catch (exc) {
-				console.error(exc);
+				console.error(`HRC101`, exc);
 				return { status: false, error: ErrorGenerator.internalError('HRC101') };
 			}
 
