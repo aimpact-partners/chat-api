@@ -1,8 +1,6 @@
 import * as express from 'express';
 import { Connections } from './connections';
 import { Routes, hmr } from '@aimpact/agents-api/http/routes';
-import * as dotenv from 'dotenv';
-dotenv.config();
 
 export class Server {
 	#app;
