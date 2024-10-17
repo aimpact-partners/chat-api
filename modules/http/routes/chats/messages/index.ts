@@ -72,7 +72,7 @@ export class ChatMessagesRoutes {
 			return done({ status: false, error: ErrorGenerator.internalError('HRC100') });
 		}
 
-		if (metadata.error) return done({ status: false, error: metadata.error });
+		if (metadata?.error) return done({ status: false, error: metadata.error });
 
 		done({ status: true });
 	}
