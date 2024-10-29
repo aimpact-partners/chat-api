@@ -4,8 +4,7 @@ import type { IProjectSpecification } from '../projects';
 
 export /*bundle*/ interface IPromptLanguage {
 	default: string;
-	languages?: string[];
-	supported: string[];
+	languages: string[];
 	updated: string[];
 }
 

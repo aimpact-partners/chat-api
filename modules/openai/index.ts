@@ -6,8 +6,7 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-export /*bundle*/
-class OpenAIBackend {
+export /*bundle*/ class OpenAIBackend {
 	#openai = new OpenAI({ apiKey: process.env.OPEN_AI_KEY });
 
 	async completions(prompt: string, text: string) {

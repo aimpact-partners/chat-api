@@ -16,8 +16,10 @@ import { Response } from '@beyond-js/response/main';
 import OpenAI from 'openai';
 import { v4 as uuid } from 'uuid';
 
+type PromptTemplateResponse = Promise<BusinessResponse<IPromptTemplateData & { value?: string }>>;
+
 export /*bundle*/ class PromptsTemplate {
-	static async data(id: string, language?: string, option?: string) {
+	static async data(id: string, language?: string): PromptTemplateResponse {
 		try {
 			const prompt = await prompts.data({ id });
 			if (prompt.error) return new BusinessResponse({ error: prompt.error });
@@ -36,23 +38,18 @@ export /*bundle*/ class PromptsTemplate {
 
 			const languageDoc = await prompts.languages.data({ id: language, parents: { Prompts: id } });
 			if (languageDoc.error) return new BusinessResponse({ error: languageDoc.error });
-			if (!languageDoc.data.exists) {
-				const error = ErrorGenerator.documentNotFound('Prompts', `${id}.${language}`);
-				return new BusinessResponse({ error });
-			}
+			if (!languageDoc.data.exists) return new BusinessResponse({ data: promptData });
 
-			if (!option) {
-				const value = Object.assign({}, promptData, { value: languageDoc.data.data.value });
-				return new BusinessResponse({ data: value });
-			}
-
-			const parents = { Prompts: id, Languages: language };
-			const subCollection = await prompts.languages.options.data({ id: option, parents });
-
-			const value = Object.assign({}, promptData, { ...{ language: languageDoc.data.data } });
-			// value.option = subCollection.data.data;
-
+			const value = Object.assign({}, promptData, { value: languageDoc.data.data.value });
 			return new BusinessResponse({ data: value });
+
+			// if (!option) {
+			// const parents = { Prompts: id, Languages: language };
+			// const subCollection = await prompts.languages.options.data({ id: option, parents });
+			// const value = Object.assign({}, promptData, { ...{ language: languageDoc.data.data } });
+			// value.option = subCollection.data.data;
+			// return new BusinessResponse({ data: value });
+			// }
 		} catch (exc) {
 			console.error(exc);
 			return new BusinessResponse({ error: ErrorGenerator.internalError(exc) });
@@ -133,7 +130,7 @@ export /*bundle*/ class PromptsTemplate {
 		}
 	}
 
-	static async update(params: any) {
+	static async update(params: any): PromptTemplateResponse {
 		if (!params.id) return new Response({ error: ErrorGenerator.invalidParameters(['id']) });
 
 		try {
@@ -160,7 +157,7 @@ export /*bundle*/ class PromptsTemplate {
 			literals && (specs.literals = literals);
 
 			const response = await prompts.merge({ data: specs });
-			if (response.error) return new FirestoreErrorManager(response.error.code, response.error.text);
+			if (response.error) return new BusinessResponse({ error: response.error });
 
 			return PromptsTemplate.data(id);
 		} catch (exc) {
@@ -182,7 +179,7 @@ export /*bundle*/ class PromptsTemplate {
 
 			const errors = [];
 			if (!params.name) errors.push('name');
-			if (!params.language || !params.language.supported || !params.language.default) errors.push('language');
+			if (!params.language || !params.language.languages || !params.language.default) errors.push('language');
 			if (params.format !== 'text' && params.format !== 'json') errors.push('format');
 			if (params.is !== 'prompt' && params.is !== 'function' && params.is !== 'dependency') {
 				errors.push('is');
@@ -191,9 +188,9 @@ export /*bundle*/ class PromptsTemplate {
 
 			const project = dataProject.data.data;
 			const name = params.name.toLowerCase();
-			const uid = uuid();
-			const id = params.id ?? uid;
 			const identifier = name.replace(/\s+/g, '-');
+			const id = params.id ?? `${project.identifier}.${identifier}`;
+			// const id = params.id ?? uuid();
 
 			const toSave: IPromptTemplateData = {
 				project: { id: project.id, name: project.name, identifier: project.identifier },
@@ -229,49 +226,6 @@ export /*bundle*/ class PromptsTemplate {
 			await prompts.languages.set({ id: params.language.default, parents, data });
 
 			return await PromptsTemplate.data(id);
-		} catch (exc) {
-			console.error(exc);
-			return new BusinessResponse({ error: ErrorGenerator.internalError(exc) });
-		}
-	}
-
-	static async translate(id: string, params: { language: string; text: string }) {
-		const { language, text } = params;
-
-		const errors = [];
-		!id && errors.push('id');
-		!text && errors.push('text');
-		!language && errors.push('language');
-		if (errors.length) return new BusinessResponse({ error: ErrorGenerator.invalidParameters(errors) });
-
-		try {
-			const response = await prompts.data({ id });
-			if (response.error) return new BusinessResponse({ error: response.error });
-			if (!response.data.exists) {
-				return new BusinessResponse({ error: ErrorGenerator.documentNotFound('Prompts', id) });
-			}
-			const prompt = response.data.data;
-
-			const data: IPromptTemplateLanguageData = {
-				id: `${prompt.identifier}.${language}`,
-				language,
-				value: text,
-				literals: prompt.literals ?? {},
-				project: prompt.project
-			};
-			// SET value on language subcollection
-			const parents = { Prompts: id };
-			const { error } = await prompts.languages.set({ id: language, parents, data });
-			if (error) return new BusinessResponse({ error: error });
-
-			if (!prompt.language.updated.includes(language)) {
-				const updatedLanguages = prompt.language;
-				!prompt.language.languages.includes(language) && updatedLanguages.languages.push(language);
-				updatedLanguages.updated.push(language);
-				await prompts.merge({ id, data: { language: updatedLanguages } });
-			}
-
-			return new BusinessResponse({ data });
 		} catch (exc) {
 			console.error(exc);
 			return new BusinessResponse({ error: ErrorGenerator.internalError(exc) });

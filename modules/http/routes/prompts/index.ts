@@ -1,12 +1,13 @@
-import { PromptsTemplate, PromptTemplateProcessor } from '@aimpact/agents-api/business/prompts';
-import { join } from 'path';
-import * as dotenv from 'dotenv';
-import * as OpenApiValidator from 'express-openapi-validator';
-import { UserMiddlewareHandler } from '@aimpact/agents-api/http/middleware';
-import { Response as HttpResponse } from '@beyond-js/response/main';
+import {
+	PromptsTemplate,
+	PromptTemplateLanguages,
+	PromptTemplateProcessor
+} from '@aimpact/agents-api/business/prompts';
 import { ErrorGenerator } from '@beyond-js/firestore-collection/errors';
+import { Response as HttpResponse } from '@beyond-js/response/main';
+import * as dotenv from 'dotenv';
+import type { Application, Request, Response } from 'express';
 import { PromptsCategoriesRoutes } from './categories';
-import type { Request, Response, Application } from 'express';
 
 dotenv.config();
 
@@ -23,6 +24,8 @@ export class PromptsRoutes {
 		app.delete('/prompts/templates/:id', this.delete);
 
 		app.post('/prompts/templates/:id/translate', this.translate);
+
+		app.post('/prompts/templates/:id/languages/update', this.updateLanguage);
 
 		app.post('/prompts/templates/:id/process', this.process);
 		app.post('/prompts/templates/:id/process-literal', this.processLiteral);
@@ -124,7 +127,19 @@ export class PromptsRoutes {
 			const { id } = req.params;
 			const { language, text } = req.body;
 
-			const response = await PromptsTemplate.translate(id, { language, text });
+			const response = await PromptTemplateLanguages.set(id, { language, text });
+			res.json(new HttpResponse(response));
+		} catch (exc) {
+			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
+		}
+	}
+
+	static async updateLanguage(req: Request, res: Response) {
+		try {
+			const { id } = req.params;
+			const { language } = req.body;
+
+			const response = await PromptTemplateLanguages.update(id, language);
 			res.json(new HttpResponse(response));
 		} catch (exc) {
 			res.json(new HttpResponse({ error: ErrorGenerator.internalError(exc) }));
