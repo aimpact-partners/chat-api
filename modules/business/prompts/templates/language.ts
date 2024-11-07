@@ -67,7 +67,7 @@ export /*bundle*/ class PromptTemplateLanguages {
 			supported.forEach((lang: string) => {
 				const promptExecutor = new PromptTemplateExecutor({
 					category: 'helper',
-					name: 'dev-project.translate',
+					name: 'ailearn.prompts-translate',
 					language: lang,
 					model: 'gpt-4o-mini',
 					temperature: 1,
