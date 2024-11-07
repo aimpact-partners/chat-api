@@ -73,7 +73,7 @@ export /*bundle*/ class OpenAIBackend {
 
 	async transcriptionStream(
 		stream: NodeJS.ReadableStream,
-		lang: string = 'en'
+		lang: string
 	): Promise<{ status: boolean; data?: any; error?: string; code?: number }> {
 		let form: FormData = new FormData();
 		form.append('file', stream, 'audio.webm');
