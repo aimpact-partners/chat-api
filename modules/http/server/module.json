@@ -1,7 +1,7 @@
 {
 	"name": "http/server",
 	"bundle": "start",
-	"platforms": "node",
+	"platforms": ["node"],
 	"ts": {
 		"files": "*"
 	}

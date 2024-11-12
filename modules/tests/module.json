@@ -1,0 +1,11 @@
+{
+	"name": "test",
+	"bundle": "widget",
+	"route": "/test",
+	"is": "page",
+	"scss": "*",
+	"ts": "*",
+	"element": {
+		"name": "agents-api-test"
+	}
+}

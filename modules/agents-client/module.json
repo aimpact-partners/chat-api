@@ -1,7 +1,7 @@
 {
 	"name": "agents-client/endpoint",
 	"bundle": "start",
-	"platforms": ["*"],
+	"platforms": ["node"],
 	"ts": {
 		"files": "*"
 	}
