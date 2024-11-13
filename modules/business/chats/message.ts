@@ -16,6 +16,7 @@ export interface IMessageSpecs {
 	answer?: string;
 	synthesis?: string;
 	timestamp?: number;
+	metadata?: any;
 }
 
 export class Message {
@@ -47,7 +48,13 @@ export class Message {
 				if (messages.error) return { error: messages.error };
 
 				const count = (chat.messages?.count || 0) + 1;
-				const merge = await chats.merge({ id: chatId, data: { messages: { count } }, transaction });
+				const userCount = params.role == 'user' ? (chat.messages?.user || 0) + 1 : chat.messages?.user;
+
+				const merge = await chats.merge({
+					id: chatId,
+					data: { messages: { count, user: userCount } },
+					transaction
+				});
 				if (merge.error) return { error: merge.error };
 
 				return { id };

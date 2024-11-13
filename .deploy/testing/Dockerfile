@@ -16,7 +16,7 @@ RUN npm install
 COPY . .
 
 # Install beyond
-RUN npm i -g beyond@1.2.1
+RUN npm i -g beyond@1.2.3
 
 # Build the project
 RUN beyond build --pkg=@aimpact/agents-api --distribution=http-testing --logs

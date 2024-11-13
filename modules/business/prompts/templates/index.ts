@@ -1,20 +1,25 @@
+import { OpenAIBackend } from '@aimpact/agents-api/backend-openai';
+import { ErrorGenerator } from '@aimpact/agents-api/business/errors';
+import { Projects } from '@aimpact/agents-api/business/projects';
+import { BusinessResponse } from '@aimpact/agents-api/business/response';
 import type {
+	IPromptLanguage,
+	IPromptLiterals,
 	IPromptTemplateBase,
 	IPromptTemplateData,
 	IPromptTemplateLanguageData
 } from '@aimpact/agents-api/data/interfaces';
-import { v4 as uuid } from 'uuid';
-import { FirestoreErrorManager } from '@beyond-js/firestore-collection/errors';
-import { db } from '@beyond-js/firestore-collection/db';
-import { Response } from '@beyond-js/response/main';
-import { BusinessResponse } from '@aimpact/agents-api/business/response';
 import { prompts } from '@aimpact/agents-api/data/model';
-import { ErrorGenerator } from '@aimpact/agents-api/business/errors';
-import { Projects } from '@aimpact/agents-api/business/projects';
-import { OpenAIBackend } from '@aimpact/agents-api/backend-openai';
+import { db } from '@beyond-js/firestore-collection/db';
+import { FirestoreErrorManager } from '@beyond-js/firestore-collection/errors';
+import { Response } from '@beyond-js/response/main';
+import OpenAI from 'openai';
+import { v4 as uuid } from 'uuid';
+
+type PromptTemplateResponse = Promise<BusinessResponse<IPromptTemplateData & { value?: string }>>;
 
 export /*bundle*/ class PromptsTemplate {
-	static async data(id: string, language?: string, option?: string) {
+	static async data(id: string, language?: string): PromptTemplateResponse {
 		try {
 			const prompt = await prompts.data({ id });
 			if (prompt.error) return new BusinessResponse({ error: prompt.error });
@@ -33,23 +38,18 @@ export /*bundle*/ class PromptsTemplate {
 
 			const languageDoc = await prompts.languages.data({ id: language, parents: { Prompts: id } });
 			if (languageDoc.error) return new BusinessResponse({ error: languageDoc.error });
-			if (!languageDoc.data.exists) {
-				const error = ErrorGenerator.documentNotFound('Prompts', `${id}.${language}`);
-				return new BusinessResponse({ error });
-			}
+			if (!languageDoc.data.exists) return new BusinessResponse({ data: promptData });
 
-			if (!option) {
-				const value = Object.assign({}, promptData, { value: languageDoc.data.data.value });
-				return new BusinessResponse({ data: value });
-			}
-
-			const parents = { Prompts: id, Languages: language };
-			const subCollection = await prompts.languages.options.data({ id: option, parents });
-
-			const value = Object.assign({}, promptData, { ...{ language: languageDoc.data.data } });
-			value.language.option = subCollection.data.data;
-
+			const value = Object.assign({}, promptData, { value: languageDoc.data.data.value });
 			return new BusinessResponse({ data: value });
+
+			// if (!option) {
+			// const parents = { Prompts: id, Languages: language };
+			// const subCollection = await prompts.languages.options.data({ id: option, parents });
+			// const value = Object.assign({}, promptData, { ...{ language: languageDoc.data.data } });
+			// value.option = subCollection.data.data;
+			// return new BusinessResponse({ data: value });
+			// }
 		} catch (exc) {
 			console.error(exc);
 			return new BusinessResponse({ error: ErrorGenerator.internalError(exc) });
@@ -94,9 +94,9 @@ export /*bundle*/ class PromptsTemplate {
 		}
 	}
 
-	static async process(content: string, model: string, temperature: string) {
+	static async process(content: string, model: string, temperature: number) {
 		try {
-			const messages = [{ role: 'user', content }];
+			const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [{ role: 'user', content }];
 			const openai = new OpenAIBackend();
 			const response = await openai.chatCompletions(messages, model, temperature);
 
@@ -130,16 +130,34 @@ export /*bundle*/ class PromptsTemplate {
 		}
 	}
 
-	static async update(params: any) {
-		try {
-			const { id, name, description } = params;
+	static async update(params: any): PromptTemplateResponse {
+		if (!params.id) return new Response({ error: ErrorGenerator.invalidParameters(['id']) });
 
-			const dataResponse = await PromptsTemplate.data(id);
+		try {
+			const dataResponse = await PromptsTemplate.data(params.id);
 			if (dataResponse.error) return dataResponse;
 
-			const specs = { data: { id, name, description } };
-			const response = await prompts.merge(specs);
-			if (response.error) return new FirestoreErrorManager(response.error.code, response.error.text);
+			const { id, name, description, language, format, is, literals } = params;
+
+			const specs: {
+				id: string;
+				name?: string;
+				description?: string;
+				format?: 'json' | 'text';
+				is?: 'prompt' | 'function' | 'dependency';
+				literals?: IPromptLiterals;
+				language?: IPromptLanguage;
+			} = { id: id };
+
+			name && (specs.name = name);
+			description && (specs.description = description);
+			language && (specs.language = language);
+			format && (specs.format = format);
+			is && (specs.is = is);
+			literals && (specs.literals = literals);
+
+			const response = await prompts.merge({ data: specs });
+			if (response.error) return new BusinessResponse({ error: response.error });
 
 			return PromptsTemplate.data(id);
 		} catch (exc) {
@@ -149,12 +167,9 @@ export /*bundle*/ class PromptsTemplate {
 	}
 
 	static async save(params: IPromptTemplateBase) {
-		try {
-			if (!params.projectId) {
-				const error = ErrorGenerator.invalidParameters(['projectId']);
-				return new Response({ error });
-			}
+		if (!params.projectId) return new Response({ error: ErrorGenerator.invalidParameters(['projectId']) });
 
+		try {
 			const dataProject = await Projects.data(params.projectId);
 			if (dataProject.error) return dataProject;
 			if (!dataProject.data.exists) {
@@ -164,7 +179,7 @@ export /*bundle*/ class PromptsTemplate {
 
 			const errors = [];
 			if (!params.name) errors.push('name');
-			if (!params.language || !params.language.default) errors.push('language');
+			if (!params.language || !params.language.languages || !params.language.default) errors.push('language');
 			if (params.format !== 'text' && params.format !== 'json') errors.push('format');
 			if (params.is !== 'prompt' && params.is !== 'function' && params.is !== 'dependency') {
 				errors.push('is');
@@ -173,9 +188,10 @@ export /*bundle*/ class PromptsTemplate {
 
 			const project = dataProject.data.data;
 			const name = params.name.toLowerCase();
-			const uid = uuid();
 			const identifier = name.replace(/\s+/g, '-');
-			const id = params.id ? params.id : uid;
+			const id = params.id ?? `${project.identifier}.${identifier}`;
+			// const id = params.id ?? uuid();
+
 			const toSave: IPromptTemplateData = {
 				project: { id: project.id, name: project.name, identifier: project.identifier },
 				id,
@@ -183,15 +199,20 @@ export /*bundle*/ class PromptsTemplate {
 				identifier: `${project.identifier}.${identifier}`,
 				language: params.language,
 				format: params.format,
-				is: params.is,
-				value: params.value
+				is: params.is
 			};
+			params.value && (toSave.value = params.value);
+
 			params.description && (toSave.description = params.description);
 			params.literals && (toSave.literals = params.literals);
 
 			const specs = { data: toSave };
 			const response = await prompts.set(specs);
-			if (response.error) return new FirestoreErrorManager(response.error.code, response.error.text);
+			if (response.error) return new BusinessResponse({ error: response.error });
+
+			if (!params.value) {
+				return new BusinessResponse({ data: toSave });
+			}
 
 			const data: IPromptTemplateLanguageData = {
 				id: `${project.identifier}.${name}.${params.language.default}`,
@@ -204,63 +225,7 @@ export /*bundle*/ class PromptsTemplate {
 			const parents = { Prompts: id };
 			await prompts.languages.set({ id: params.language.default, parents, data });
 
-			/**
-			 * Options
-			 */
-			if (params.options) {
-				// const promises = [];
-				// params.options.map(item => {
-				// 	const parents = { Prompts: id, Languages: params.language };
-				// 	const option = { id: item.id, value: item.value, prompt: name };
-				// 	promises.push(prompts.languages.options.set({ parents, data: option }));
-				// 	return option;
-				// });
-				// await Promise.all(promises);
-			}
-
 			return await PromptsTemplate.data(id);
-		} catch (exc) {
-			console.error(exc);
-			return new BusinessResponse({ error: ErrorGenerator.internalError(exc) });
-		}
-	}
-
-	static async translate(id: string, params: { language: string; text: string }) {
-		const { language, text } = params;
-
-		const errors = [];
-		!id && errors.push('id');
-		!text && errors.push('text');
-		!language && errors.push('language');
-		if (errors.length) return new BusinessResponse({ error: ErrorGenerator.invalidParameters(errors) });
-
-		try {
-			const response = await prompts.data({ id });
-			if (response.error) return new BusinessResponse({ error: response.error });
-			if (!response.data.exists)
-				return new BusinessResponse({ error: ErrorGenerator.documentNotFound('Prompts', id) });
-
-			const prompt = response.data.data;
-
-			const data: IPromptTemplateLanguageData = {
-				id: `${prompt.identifier}.${language}`,
-				language,
-				value: text,
-				literals: prompt.literals ?? {},
-				project: prompt.project
-			};
-			// SET value on language subcollection
-			const parents = { Prompts: id };
-			const { error } = await prompts.languages.set({ id: language, parents, data });
-			if (error) return new BusinessResponse({ error: error });
-
-			if (!prompt.language.languages.includes(language)) {
-				const updatedLanguages = prompt.language;
-				updatedLanguages.languages.push(language);
-				await prompts.merge({ id, data: { language: updatedLanguages } });
-			}
-
-			return new BusinessResponse({ data });
 		} catch (exc) {
 			console.error(exc);
 			return new BusinessResponse({ error: ErrorGenerator.internalError(exc) });

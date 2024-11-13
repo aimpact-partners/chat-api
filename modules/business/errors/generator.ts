@@ -6,7 +6,6 @@ export /*bundle*/ class ErrorGenerator {
 	static internalError(log?: string, message?: string, exc?: Error) {
 		return new BusinessErrorManager(ErrorCodes.internalError, `Internal server error [${log}]: ${message}`, exc);
 	}
-
 	static documentNotFound(collectionName: string, documentId: string, exc?: Error) {
 		return new BusinessErrorManager(
 			ErrorCodes.documentNotFound,
@@ -14,7 +13,6 @@ export /*bundle*/ class ErrorGenerator {
 			exc
 		);
 	}
-
 	static documentNotSaved(collectionName: string, documentId: string, exc?: Error) {
 		return new BusinessErrorManager(
 			ErrorCodes.documentNotSaved,
@@ -22,7 +20,6 @@ export /*bundle*/ class ErrorGenerator {
 			exc
 		);
 	}
-
 	static documentAlreadyExist(collectionName: string, documentId: string, exc?: Error) {
 		return new BusinessErrorManager(
 			ErrorCodes.documentAlreadyExist,
@@ -30,15 +27,12 @@ export /*bundle*/ class ErrorGenerator {
 			exc
 		);
 	}
-
 	static invalidParameters(parameters: string[]) {
 		return new BusinessErrorManager(ErrorCodes.invalidParameters, `Invalid parameters: ${parameters.join(', ')}`);
 	}
-
 	static projectNotFound(id: string) {
 		return new BusinessErrorManager(ErrorCodes.projectNotFound, `Project "${id}" not found`);
 	}
-
 	static languageNotSupport(collectionName: string, parameter: string, exc?: Error) {
 		return new BusinessErrorManager(
 			ErrorCodes.languageNotSupport,
@@ -46,36 +40,33 @@ export /*bundle*/ class ErrorGenerator {
 			exc
 		);
 	}
-
 	static promptOptionsError(error: ErrorManager) {
 		return new BusinessErrorManager(ErrorCodes.promptOptionsError, error.text);
 	}
-
-	static promptDependenciesError(error: ErrorManager) {
-		return new BusinessErrorManager(ErrorCodes.promptDependenciesError, error.text);
+	static promptDependenciesError(dependency: string, error: ErrorManager) {
+		return new BusinessErrorManager(
+			ErrorCodes.promptDependenciesError,
+			`${error.text} on dependency: ${dependency}`
+		);
 	}
-
 	static promptLiteralsNotFound(items: string[]) {
 		return new BusinessErrorManager(
 			ErrorCodes.promptLiteralsNotFound,
 			`Error/s found in at least one literals pure of the requested prompt, literals: ${items.join(', ')}`
 		);
 	}
-
 	static promptDependenciesNotFound() {
 		return new BusinessErrorManager(
 			ErrorCodes.promptDependenciesNotFound,
 			`Error/s found in at least one dependency of the requested prompt`
 		);
 	}
-
 	static promptOptionsNotFound() {
 		return new BusinessErrorManager(
 			ErrorCodes.promptOptionsNotFound,
 			`Error/s found in at least one dependency of the requested prompt`
 		);
 	}
-
 	static userAlreadyExists(id: string, exc?: Error) {
 		return new BusinessErrorManager(
 			ErrorCodes.userAlreadyExists,
@@ -83,11 +74,9 @@ export /*bundle*/ class ErrorGenerator {
 			exc
 		);
 	}
-
 	static roleNotSupported(role: string, exc?: Error) {
 		return new BusinessErrorManager(ErrorCodes.roleNotSupported, `Role not "${role}" supported`, exc);
 	}
-
 	static unauthorizedUserForChat(exc?: Error) {
 		return new BusinessErrorManager(
 			ErrorCodes.unauthorizedUserForChat,
@@ -95,7 +84,6 @@ export /*bundle*/ class ErrorGenerator {
 			exc
 		);
 	}
-
 	static chatNotValid(id: string) {
 		return new BusinessErrorManager(ErrorCodes.chatNotValid, `chatId "${id}" not valid`);
 	}
@@ -119,5 +107,11 @@ export /*bundle*/ class ErrorGenerator {
 			ErrorCodes.chatNotHasProjectUrlSet,
 			`Chat ${id} does not have a project url set`
 		);
+	}
+	static notLanguagesToUpdate(id: string) {
+		return new BusinessErrorManager(ErrorCodes.notLanguagesToUpdate, `Prompt ${id} does not have languages to set`);
+	}
+	static promptIsOptions(id: string) {
+		return new BusinessErrorManager(ErrorCodes.promptIsOptions, `The prompt ${id} cannot be an options prompt`);
 	}
 }

@@ -6,8 +6,7 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-export /*bundle*/
-class OpenAIBackend {
+export /*bundle*/ class OpenAIBackend {
 	#openai = new OpenAI({ apiKey: process.env.OPEN_AI_KEY });
 
 	async completions(prompt: string, text: string) {
@@ -74,7 +73,7 @@ class OpenAIBackend {
 
 	async transcriptionStream(
 		stream: NodeJS.ReadableStream,
-		lang: string = 'en'
+		lang: string
 	): Promise<{ status: boolean; data?: any; error?: string; code?: number }> {
 		let form: FormData = new FormData();
 		form.append('file', stream, 'audio.webm');

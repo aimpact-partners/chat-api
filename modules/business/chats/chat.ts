@@ -66,10 +66,11 @@ export /*bundle*/ class Chat {
 
 			const specs = <IChatData>{ id: id };
 			data.name && (specs.name = data.name);
-			data.metadata && (specs.metadata = data.metadata);
 			data.parent && (specs.parent = data.parent);
 			data.children && (specs.children = data.children);
 			data.language && (specs.language = data.language);
+
+			specs.metadata = data.metadata ? data.metadata : {};
 
 			if (!response.data.exists) {
 				// if the parent is not received, we set it to root by default
@@ -165,12 +166,16 @@ export /*bundle*/ class Chat {
 					.get();
 
 				const messages = collection.docs.map(doc => doc.data());
-				const lastTwo = messages.map(({ role, content, answer, synthesis }) => {
+				const lastTwo = messages.map(message => {
+					const { role, content, answer, synthesis, metadata } = message;
 					const data: ILastIterationsData = {
 						role,
 						content: role === 'assistant' ? answer : content
 					};
+
 					synthesis && (data.synthesis = synthesis);
+					metadata && (data.metadata = metadata);
+
 					return data;
 				});
 

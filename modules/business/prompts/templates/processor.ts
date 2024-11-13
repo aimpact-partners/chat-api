@@ -1,4 +1,4 @@
-import type { IPromptData } from '@aimpact/agents-api/data/interfaces';
+import type { IPromptLanguageData } from '@aimpact/agents-api/data/interfaces';
 import { FirestoreErrorManager } from '@beyond-js/firestore-collection/errors';
 import { ErrorGenerator } from '@aimpact/agents-api/business/errors';
 import { prompts } from '@aimpact/agents-api/data/model';
@@ -42,7 +42,7 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 		return this.#literals;
 	}
 
-	#data: IPromptData;
+	#data: IPromptLanguageData;
 	get data() {
 		return this.#data;
 	}
@@ -52,7 +52,7 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 		return this.#value;
 	}
 
-	#dependencies: IPromptData[];
+	#dependencies: Record<string, string>[];
 	get dependencies() {
 		return this.#dependencies;
 	}
@@ -78,9 +78,10 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 
 		if (!params.literals) return;
 
-		const obj: Record<string, string> = {};
-		Object.keys(params.literals).forEach((key: string) => (obj[key.toUpperCase()] = params.literals[key]));
-		this.#literals = obj;
+		// We uppercase the literal identifiers to handle them
+		const literals: Record<string, string> = {};
+		Object.keys(params.literals).forEach((key: string) => (literals[key.toUpperCase()] = params.literals[key]));
+		this.#literals = literals;
 	}
 
 	async #load(): Promise<void> {
@@ -98,8 +99,7 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 				this.#error = ErrorGenerator.documentNotFound('Prompts', this.#id);
 				return;
 			}
-			const data = response.data.data;
-			this.#data = data;
+			this.#data = response.data.data;
 		})();
 
 		if (!this.valid) return;
@@ -117,31 +117,30 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 
 			const records: { id: string; parents?: Record<string, string> }[] = [];
 			this.#data.literals.dependencies.forEach((dependency: string) => {
-				records.push({
-					id: this.#data.language,
-					parents: { Prompts: [this.#data.project.identifier, dependency].join('.') }
-				});
+				const identifier = [this.#data.project.identifier, dependency.toLowerCase()].join('.');
+				records.push({ id: this.#data.language, parents: { Prompts: identifier } });
 			});
 
 			const response = await prompts.languages.dataset({ records });
-			const dependencies: IPromptData[] = (this.#dependencies = []);
+			const dependencies: IPromptLanguageData[] = (this.#dependencies = []);
 
 			// Process the dependencies and check for possible errors
 			for (const { error, data } of response) {
 				if (error || !data.exists) {
-					return (this.#error = ErrorGenerator.promptDependenciesError(error ?? data.error));
+					const parentId = data.doc.parent.parent?.id;
+					return (this.#error = ErrorGenerator.promptDependenciesError(parentId, error ?? data.error));
 				}
 				dependencies.push(data.data);
 			}
 
 			records.length = 0;
-			this.#data.dependencies = [];
+			this.#dependencies = [];
 			dependencies.forEach(dependency => {
 				const [projectId, promptId, languageId] = dependency.id.split('.');
 				if (dependency.value) {
 					const specs: Record<string, string> = {};
 					specs[promptId] = dependency.value;
-					this.#data.dependencies.push(specs);
+					this.#dependencies.push(specs);
 					return;
 				}
 
@@ -156,25 +155,22 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 				});
 			});
 
-			const responseOptions = await prompts.languages.options.dataset({ records });
-			this.#data.options = [];
-			responseOptions.forEach(option => {
-				if (option.error) return (this.#error = ErrorGenerator.promptOptionsError(option.error));
-				if (option.data.error) return (this.#error = ErrorGenerator.promptOptionsError(option.data.error));
+			// const responseOptions = await prompts.languages.options.dataset({ records });
+			// this.#data.options = [];
+			// responseOptions.forEach(option => {
+			// 	if (option.error) return (this.#error = ErrorGenerator.promptOptionsError(option.error));
+			// 	if (option.data.error) return (this.#error = ErrorGenerator.promptOptionsError(option.data.error));
 
-				const specs: Record<string, string> = {};
-				specs[option.data.data.prompt] = option.data.data.value; //@ftovar8 agregar en el publish el prompt en el option
-				this.#data.options.push(specs);
-			});
+			// 	const specs: Record<string, string> = {};
+			// 	specs[option.data.data.prompt] = option.data.data.value; //@ftovar8 agregar en del publish el prompt en el option
+			// 	this.#data.options.push(specs);
+			// });
 		})();
 	}
 
 	async process() {
 		await this.#load();
-
-		if (!this.valid) {
-			return this.#error;
-		}
+		if (!this.valid) return this.#error;
 
 		// Check that all required pure literals has been received
 		(() => {
@@ -191,8 +187,8 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 
 		// Check that all required dependencies literals has been received
 		(() => {
-			const received = this.#data.literals?.dependencies; // The key/value literals received to be applied to the prompt
-			const expected = this.#data.dependencies; // The literals as specified in the database
+			const received = this.#data.literals?.dependencies?.map((d: string) => d.toLowerCase()); // The key/value literals received to be applied to the prompt
+			const expected = this.#dependencies; // The literals as specified in the database
 			if (!expected) return;
 
 			const notfound = expected.filter(literal => !received.includes(Object.keys(literal)[0]));
@@ -203,19 +199,19 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 		})();
 
 		// Check that all required options has been received
-		(() => {
-			const received = this.options; // The key/value options received to be applied to the prompt
-			const expected = this.#data.options; // The options as specified in the database
-			if (!expected) return;
+		// (() => {
+		// 	const received = this.options; // The key/value options received to be applied to the prompt
+		// 	const expected = this.#data.options; // The options as specified in the database
+		// 	if (!expected) return;
 
-			const notfound = expected.filter(option => {
-				return !received.hasOwnProperty(Object.keys(option)[0]);
-			});
-			if (notfound.length) {
-				this.#error = ErrorGenerator.promptOptionsNotFound(notfound);
-				return;
-			}
-		})();
+		// 	const notfound = expected.filter(option => {
+		// 		return !received.hasOwnProperty(Object.keys(option)[0]);
+		// 	});
+		// 	if (notfound.length) {
+		// 		this.#error = ErrorGenerator.promptOptionsNotFound();
+		// 		return;
+		// 	}
+		// })();
 
 		if (!this.valid) return this.#error;
 
@@ -224,30 +220,31 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 			let value = this.#value;
 			const replacement = (received: Record<string, string>, literal = false): void => {
 				Object.entries(received).forEach(([name, val]) => {
-					if (literal) {
-						let screaming = `{${name}}`.replace(/{([a-z])([A-Z])}/g, '$1_$2');
-						// Replace the Pure literal
-						const regex = new RegExp(screaming, 'g');
+					// Replace the dependencies and options literals
+					if (!literal) {
+						const regex = new RegExp(`{${name}}`, 'gi');
 						value = value.replace(regex, val);
-
 						return;
 					}
-					// Replace the Dependencies and options literal
-					const regex = new RegExp(`{${name}}`, 'g');
+
+					// Replace the Pure literal
+					let screaming = `{${name}}`.replace(/{([a-z])([A-Z])}/g, '$1_$2');
+					const regex = new RegExp(screaming, 'g');
 					value = value.replace(regex, val);
 				});
 			};
 
 			// Process the dependencies that are not options (ex: HEADER)
-			this.#data.dependencies?.forEach(dependency => replacement(dependency));
+			this.#dependencies?.forEach(dependency => replacement(dependency));
 
 			// Process the options
-			this.#data.options?.forEach(option => replacement(option));
+			// this.#data.options?.forEach(option => replacement(option));
 
-			// Replace the literals
+			// Replace the pure literals
 			this.literals && replacement(this.literals, true);
 
 			// console.log('/-----------------------------------');
+			// console.log(this.#name);
 			// console.log(value);
 			// console.log('----------------------------------- /');
 			return value;

@@ -1,9 +1,10 @@
-import { IUserBase } from '../users';
+import type { IUserBase } from '../users';
 
 export /*bundle*/ interface ILastIterationsData {
 	role: string;
 	content: string;
 	synthesis?: string;
+	metadata?: any;
 }
 
 export /*bundle*/ interface IChatBase {
@@ -16,6 +17,7 @@ export /*bundle*/ interface IChatBase {
 	user: IUserBase;
 	messages?: {
 		count: number;
+		user: number;
 		lastTwo?: ILastIterationsData[];
 	};
 }
