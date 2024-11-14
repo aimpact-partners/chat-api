@@ -1,74 +1,13 @@
-import { Chat } from '@aimpact/agents-api/business/chats';
 import { BusinessErrorManager, ErrorGenerator } from '@aimpact/agents-api/business/errors';
 import type { RoleType } from '@aimpact/agents-api/data/interfaces';
-import * as dotenv from 'dotenv';
 import { v4 as uuid } from 'uuid';
 
-dotenv.config();
 const { AGENT_API_URL, AGENT_API_TOKEN } = process.env;
-
-interface IMetadata {
-	answer: string;
-	summary?: string;
-	progress?: string;
-	error?: { code: number; text: string };
-}
-
-interface ISendMessageResponse {
-	status: boolean;
-	error?: { code: number; text: string };
-	iterator?: AsyncIterable<{ chunk?: string; metadata?: IMetadata }>;
-}
 
 export /*bundle*/ class Agent {
 	static async sendMessage(chatId: string, params, uid: string): Promise<ISendMessageResponse> {
-		let chat, error;
-		({ chat, error } = await (async () => {
-			const response = await Chat.get(chatId);
-			if (response.error) return { error: response.error };
-			chat = response.data;
-
-			// Chat validations
-			if (!chat) return { error: ErrorGenerator.chatNotValid(chatId) };
-
-			const id = chat.user.uid ?? chat.user.id;
-			if (id !== uid) return { error: ErrorGenerator.unauthorizedUserForChat() };
-
-			if (!chat.language) return { error: ErrorGenerator.chatWithoutLanguages(chatId) };
-			const language = chat.language.default;
-			if (!language) return { error: ErrorGenerator.chatWithoutDefaultLanguage(chatId) };
-			if (!chat.project) return { error: ErrorGenerator.chatWithoutDefaultLanguage(chatId) };
-
-			return { chat };
-		})());
-		if (error) return { status: false, error };
-
-		const url = chat.project.agent?.url ?? AGENT_API_URL;
-		if (!url) return { status: false, error: ErrorGenerator.chatNotHasProjectUrlSet(chatId) };
-
-		const { user, synthesis, messages: msgs } = chat;
-
-		// Store the user message as soon as it arrives
-		try {
-			const { id, content } = params;
-			const userMessage = { id: id ?? uuid(), content, role: <RoleType>'user' };
-			const response = await Chat.saveMessage(chatId, userMessage, user);
-			if (response.error) return { status: false, error: response.error };
-		} catch (exc) {
-			console.error(`BAG102:`, exc);
-			return {
-				status: false,
-				error: ErrorGenerator.internalError('BAG102', `Failed to store message`, exc.message)
-			};
-		}
-
-		const messages = {
-			last: msgs && msgs.lastTwo ? msgs.lastTwo : [],
-			count: msgs && msgs.count ? msgs.count : 0,
-			user: msgs && msgs.user ? msgs.user : 0
-		};
-		++messages.user; // add the user recent message
-		++messages.count; // add the recent message
+		// const url = chat.project.agent?.url ?? AGENT_API_URL;
+		// if (!url) return { status: false, error: ErrorGenerator.chatNotHasProjectUrlSet(chatId) };
 
 		// Fetch the agent
 		let response: any;

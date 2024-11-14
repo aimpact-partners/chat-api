@@ -1,5 +1,5 @@
 {
-	"name": "business/agent",
+	"name": "business/agent-henry",
 	"platforms": ["node", "backend"],
 	"ts": {
 		"files": ["*"]
