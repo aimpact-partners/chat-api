@@ -114,4 +114,13 @@ export /*bundle*/ class ErrorGenerator {
 	static promptIsOptions(id: string) {
 		return new BusinessErrorManager(ErrorCodes.promptIsOptions, `The prompt ${id} cannot be an options prompt`);
 	}
+	static llmGenerationError(exc?: Error) {
+		return new BusinessErrorManager(ErrorCodes.llmGenerationError, 'Error on LLM generation response', exc);
+	}
+	static functionExecutionError(tool: { name: string }) {
+		return new BusinessErrorManager(
+			ErrorCodes.functionExecutionError,
+			`The response processing was canceled because the "${tool.name}" tool did not complete.`
+		);
+	}
 }

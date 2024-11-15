@@ -7,6 +7,7 @@ import { UserMiddlewareHandler } from '@aimpact/agents-api/http/middleware';
 import { Response } from '@beyond-js/response/main';
 import type { Application, Response as IResponse } from 'express';
 import { audio } from './audio';
+import { v2 } from './v2';
 
 export interface IMetadata {
 	answer: string;
@@ -23,13 +24,14 @@ export class ChatMessagesRoutes {
 	static setup(app: Application) {
 		app.post('/chats/:id/messages', UserMiddlewareHandler.validate, ChatMessagesRoutes.sendMessage);
 		app.post('/chats/:id/messages/audio', UserMiddlewareHandler.validate, audio);
+
+		app.post('/chats/:id/messages/v2', UserMiddlewareHandler.validate, v2);
 	}
 
 	static async sendMessage(req: IAuthenticatedRequest, res: IResponse) {
 		const { test } = req.query;
 		if (!!test) {
-			return res.json(new Response({ error: ErrorGenerator.testingError() }));
-			// return res.status(400).json(new Response({ error: ErrorGenerator.testingError() }));
+			return res.status(400).json(new Response({ error: ErrorGenerator.testingError() }));
 		}
 
 		const chatId = req.params.id;

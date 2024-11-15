@@ -7,8 +7,8 @@ export interface IPromptGenerationParams {
 	category: string;
 	name: string;
 	language: string;
-	options: Record<string, string>;
-	literals: Record<string, string>;
+	options?: Record<string, string>;
+	literals?: Record<string, string>;
 }
 
 export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationParams {
