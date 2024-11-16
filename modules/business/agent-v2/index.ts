@@ -38,7 +38,12 @@ export /*bundle*/ class Agent {
 		if (error) return { error: new BusinessResponse({ error }) };
 
 		const specs: IPromptExecutionParams = prepare(chat, user);
-		specs.messages = chat.messages;
+		specs.messages = chat.messages ?? [];
+
+		// add the user's message
+		const { content } = params;
+		specs.messages.push({ role: 'user', content });
+
 		specs.model = 'gpt-4o-mini';
 		specs.temperature = 1;
 
