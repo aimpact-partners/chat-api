@@ -17,17 +17,37 @@ interface IHMR {
 }
 
 export /*bundle*/ class Server {
-	private _app: Express;
-	private _io: socketio.Server;
-	private _server: http.Server;
-	private _connections: Connections;
-	private _port: number | string;
-	private _Routes: IRoutes;
-	private _hmr: IHMR;
-	private _specs: string;
+	#server: http.Server;
+	get server() {
+		return this.#server;
+	}
+
+	#app: Express;
+	get app() {
+		return this.#app;
+	}
+
+	#io: socketio.Server;
+	get io() {
+		return this.#io;
+	}
+
+	#connections: Connections;
+	get connections() {
+		return this.#connections;
+	}
+
+	#port: number | string;
+	get port() {
+		return this.#port;
+	}
+
+	#Routes: IRoutes;
+	#hmr: IHMR;
+	#specs: string;
 
 	constructor(port: number | string) {
-		this._port = port;
+		this.#port = port;
 	}
 
 	_begin() {}
@@ -35,13 +55,13 @@ export /*bundle*/ class Server {
 	start(module: string) {
 		bimport(module)
 			.then(({ Routes, specs, hmr }: { Routes: IRoutes; specs: () => Promise<string>; hmr: IHMR }) => {
-				this._Routes = Routes;
-				this._hmr = hmr;
+				this.#Routes = Routes;
+				this.#hmr = hmr;
 
 				return specs();
 			})
 			.then(specs => {
-				this._specs = specs;
+				this.#specs = specs;
 				this._setup();
 			})
 			.catch((exc: Error) => console.error(`Error importing module "${module}": ${exc.message}`));
@@ -49,29 +69,29 @@ export /*bundle*/ class Server {
 
 	_setup() {
 		try {
-			this._app = express();
-			const server = http.createServer(this._app);
-			this._io = new socketio.Server(server);
-			this._app.use(express.json());
+			this.#app = express();
+			const server = http.createServer(this.#app);
+			this.#io = new socketio.Server(server);
+			this.#app.use(express.json());
 			this._setHeader();
 
 			// Call static method `setup`, to set up the HTTP endpoint routes
-			this._Routes.setup(this._app);
+			this.#Routes.setup(this.#app);
 
 			// Setup middleware for OpenAPI specs validation
-			this._specs && this._app.use(middleware({ apiSpec: this._specs }));
+			this.#specs && this.#app.use(middleware({ apiSpec: this.#specs }));
 
 			// Setup custom error handler
-			this._setErrorHandler(this._app);
+			this._setErrorHandler(this.#app);
 
 			//subscription to listen routes module changes.
-			this._hmr.on('change', this.onChange);
+			this.#hmr.on('change', this.onChange);
 
-			this._server = server.listen(this._port, () => {
-				console.log(`HTTP API Server port:  "${this._port}"`);
+			this.#server = server.listen(this.#port, () => {
+				console.log(`HTTP API Server port:  "${this.#port}"`);
 			});
 
-			this._connections = new Connections(this._server);
+			this.#connections = new Connections(this.#server);
 
 			this._begin();
 		} catch (exc) {
@@ -87,7 +107,7 @@ export /*bundle*/ class Server {
 	}
 
 	_setHeader() {
-		this._app.use((req: Request, res: Response, next: NextFunction) => {
+		this.#app.use((req: Request, res: Response, next: NextFunction) => {
 			res.header('Access-Control-Allow-Origin', '*');
 			res.header(
 				'Access-Control-Allow-Headers',
@@ -106,9 +126,9 @@ export /*bundle*/ class Server {
 	}
 
 	onChange = () => {
-		this._connections.destroy();
-		this._server.close(() => {
-			this._hmr.off('change', this.onChange);
+		this.#connections.destroy();
+		this.#server.close(() => {
+			this.#hmr.off('change', this.onChange);
 			this._setup();
 		});
 	};

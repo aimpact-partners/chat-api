@@ -1,11 +1,10 @@
 {
 	"compilerOptions": {
 		"module": "es2020",
-		"target": "ES2021",
+		"target": "es2018",
 		"noImplicitAny": true,
-		"moduleResolution": "node",
-		"forceConsistentCasingInFileNames": true,
-		"allowSyntheticDefaultImports": true,
-		"jsx": "react"
+		"moduleResolution": "Node",
+		"lib": [],
+		"types": []
 	}
 }
