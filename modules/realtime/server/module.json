@@ -1,0 +1,5 @@
+{
+	"name": "realtime/server",
+	"bundle": "ts",
+	"files": "*"
+}
