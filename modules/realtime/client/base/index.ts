@@ -1,4 +1,4 @@
-import type { IVoiceAudioDetection, AgentStatusType } from '@aimpact/agents-api/realtime/agent';
+import type { IVoiceAudioDetection, AgentStatusType } from '@aimpact/agents-api/realtime/agents/base';
 import { Events } from '@beyond-js/events/events';
 import { VoiceAudioDetection } from './vad';
 import { ActiveConversation } from './active-conversation';

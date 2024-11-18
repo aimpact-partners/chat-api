@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { ClientSession } from '@aimpact/agents-api/realtime/client';
 import { Conversation } from '@aimpact/agents-api/realtime/client/conversation';
-import { ClientSession } from '@aimpact/agents-api/realtime/client/local';
 import { State } from '@aimpact/agents-api/realtime/widgets/state';
 import { PhoneIcon, MicIcon, SpeakerIcon } from './icons';
 import { SelectDevice } from './devices';
@@ -8,7 +8,7 @@ import { SelectDevice } from './devices';
 export default function Widget() {
 	const refs = {
 		conversation: useRef<Conversation>(new Conversation('123')),
-		client: useRef<ClientSession>(new ClientSession({ vad: null }))
+		client: useRef<ClientSession>(new ClientSession(this, this, { vad: null }))
 	};
 
 	const state: State<{ muted: boolean; speaker: boolean; duration: number }> = new State();

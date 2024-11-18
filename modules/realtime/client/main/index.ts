@@ -1,13 +1,34 @@
-import type { IVoiceAudioDetection } from '@aimpact/agents-api/realtime/agent';
+import type { IVoiceAudioDetection, AgentStatusType } from '@aimpact/agents-api/realtime/agents/base';
 import { ClientSessionBase } from '@aimpact/agents-api/realtime/client/base';
-import WebSocket from 'ws';
 
 // Define the server URL and the authentication token
 const SERVER_URL = 'ws://localhost:8080';
 const AUTH_TOKEN = 'your_secret_token';
 
-export class AgentBridge extends ClientSessionBase {
+export /*bundle*/ class ClientSession extends ClientSessionBase {
 	#ws: WebSocket;
+
+	#error: Error;
+	get error() {
+		return this.#error;
+	}
+
+	get status(): AgentStatusType {
+		if (!this.#ws) return 'closed';
+
+		const { readyState: state } = this.#ws;
+		if (this.#error) {
+			return 'error';
+		} else if (state === WebSocket.CONNECTING) {
+			return 'connecting';
+		} else if (state === WebSocket.OPEN) {
+			return 'open';
+		} else if (state === WebSocket.CLOSING) {
+			return 'closing';
+		} else if (state === WebSocket.CLOSED) {
+			return 'closed';
+		}
+	}
 
 	#connected: boolean = false;
 	get connected(): boolean {
@@ -44,7 +65,12 @@ export class AgentBridge extends ClientSessionBase {
 		return true;
 	}
 
+	async close() {
+		this.#ws.close();
+		return await super.close();
+	}
+
 	async update(settings: { conversation: { id: string } }): Promise<void> {}
 
-	respond() {}
+	listen(data: { mono: Int16Array; raw: Int16Array }): void {}
 }

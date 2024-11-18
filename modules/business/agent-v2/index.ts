@@ -4,16 +4,14 @@ import type { IPromptExecutionParams } from '@aimpact/agents-api/business/prompt
 import { PromptTemplateExecutor } from '@aimpact/agents-api/business/prompts';
 import { BusinessResponse } from '@aimpact/agents-api/business/response';
 import { User } from '@aimpact/agents-api/business/user';
-import * as dotenv from 'dotenv';
 import { prepare } from './prepare';
-
-dotenv.config();
 
 interface IParams {
 	content: string;
 	id?: string;
 	systemId: string;
 }
+
 interface IMetadata {
 	answer: string;
 	summary?: string;

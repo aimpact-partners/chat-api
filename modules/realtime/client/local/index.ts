@@ -1,9 +1,9 @@
-import type { IVoiceAudioDetection, AgentStatusType } from '@aimpact/agents-api/realtime/agent';
+import type { IVoiceAudioDetection, AgentStatusType } from '@aimpact/agents-api/realtime/agents/base';
 import { ClientSessionBase } from '@aimpact/agents-api/realtime/client/base';
-import { Agent } from '@aimpact/agents-api/realtime/agent';
+import { BaseRealtimeAgent } from '@aimpact/agents-api/realtime/agents/base';
 
 export /*bundle*/ class ClientSession extends ClientSessionBase {
-	#agent: Agent;
+	#agent: BaseRealtimeAgent;
 	get agent() {
 		return this.#agent;
 	}
@@ -16,7 +16,7 @@ export /*bundle*/ class ClientSession extends ClientSessionBase {
 		const apiKey = localStorage.getItem('openai-key');
 		if (!apiKey) throw new Error('Open AI API key must be set as a localstorage item: `openai-key`');
 
-		const agent = new Agent({ apiKey, dangerouslyAllowAPIKeyInBrowser: true });
+		const agent = new BaseRealtimeAgent({ apiKey, dangerouslyAllowAPIKeyInBrowser: true });
 		super(agent, agent.session, settings);
 		this.#agent = agent;
 	}

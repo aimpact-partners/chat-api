@@ -1,16 +1,17 @@
 import type { Express } from 'express';
-import { WebSocketServer, WebSocket } from 'ws';
+import type { WebSocket } from 'ws';
+import type { IncomingMessage } from 'http';
+import { RealtimeConversationConnections } from './connections';
+import { WebSocketServer } from 'ws';
 import * as http from 'http';
 import * as url from 'url';
-import { IncomingMessage } from 'http';
 import { Socket } from 'net';
 
 export /*bundle*/ class RealtimeAgentsServer {
-	constructor(app: Express) {
-		// Create an HTTP server
-		const server = http.createServer(app);
+	#connections = new RealtimeConversationConnections();
 
-		// Create a WebSocket server instance attached to the HTTP server
+	constructor(app: Express) {
+		const server = http.createServer(app);
 		const wss = new WebSocketServer({ noServer: true });
 
 		// Define the secret token that should be used for authentication
@@ -35,19 +36,7 @@ export /*bundle*/ class RealtimeAgentsServer {
 
 		// Handle WebSocket connections
 		wss.on('connection', (ws: WebSocket, request: IncomingMessage) => {
-			console.log('Client connected');
-
-			// Handle messages received from the client
-			ws.on('message', (message: string) => {
-				console.log(`Received message: ${message}`);
-				// Echo the message back to the client
-				ws.send(`Server received: ${message}`);
-			});
-
-			// Handle client disconnecting
-			ws.on('close', () => {
-				console.log('Client disconnected');
-			});
+			this.#connections.create(ws, request);
 		});
 	}
 }

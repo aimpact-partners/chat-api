@@ -1,5 +1,6 @@
 {
 	"name": "realtime/server",
 	"bundle": "ts",
-	"files": "*"
+	"files": "*",
+	"platforms": ["node"]
 }

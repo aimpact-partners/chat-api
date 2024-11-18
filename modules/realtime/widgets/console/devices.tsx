@@ -1,4 +1,4 @@
-import type { ClientSession } from '@aimpact/agents-api/realtime/client/local';
+import type { ClientSessionBase } from '@aimpact/agents-api/realtime/client/base';
 import { devices, IDevice } from '@aimpact/agents-api/realtime/audio/recorder';
 import React, { useEffect, useState } from 'react';
 import { State } from '@aimpact/agents-api/realtime/widgets/state';
@@ -10,7 +10,7 @@ interface IState {
 	error: string;
 }
 
-export const SelectDevice = ({ client }: { client: ClientSession }) => {
+export const SelectDevice = ({ client }: { client: ClientSessionBase }) => {
 	const state: State<IState> = new State();
 	state.define({ available: [], selected: '', fetched: false, error: void 0 });
 	const { values } = state;

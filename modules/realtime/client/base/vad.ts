@@ -1,4 +1,4 @@
-import type { IVoiceAudioDetection } from '@aimpact/agents-api/realtime/agent';
+import type { IVoiceAudioDetection } from '@aimpact/agents-api/realtime/agents/base';
 import type { ClientSessionBase } from '.';
 
 export class VoiceAudioDetection {

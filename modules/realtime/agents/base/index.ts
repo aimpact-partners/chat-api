@@ -13,7 +13,7 @@ export /*bundle*/ interface IVoiceAudioDetection {
 	silence_duration_ms: number;
 }
 
-export /*bundle*/ class Agent extends Events {
+export /*bundle*/ class BaseRealtimeAgent extends Events {
 	/**
 	 * Voice Audio Detection
 	 */

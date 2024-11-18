@@ -1,4 +1,4 @@
-import type { Agent } from '.';
+import type { BaseRealtimeAgent } from '.';
 import type { IChannelSettings, ChannelStatusType } from '@aimpact/agents-api/realtime/channel';
 import type { ISessionCreatedServerEvent } from '@aimpact/agents-api/realtime/interfaces/open-ai-events';
 import { Data as MessageDataType } from 'ws';
@@ -10,7 +10,7 @@ export /*bundle*/ interface ISessionSettings extends IChannelSettings {}
 export /*bundle*/ type AgentStatusType = ChannelStatusType | 'created';
 
 export class AgentSession extends Events {
-	#agent: Agent;
+	#agent: BaseRealtimeAgent;
 
 	#channel: Channel;
 	get channel() {
@@ -34,7 +34,7 @@ export class AgentSession extends Events {
 		return status === 'open' && this.#created ? 'created' : status;
 	}
 
-	constructor(agent: Agent, settings: ISessionSettings) {
+	constructor(agent: BaseRealtimeAgent, settings: ISessionSettings) {
 		super();
 		this.#agent = agent;
 

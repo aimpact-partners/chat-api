@@ -3,7 +3,7 @@ import type {
 	IInputAudioBufferSpeechStartedServerEvent,
 	IInputAudioBufferSpeechStoppedServerEvent
 } from '@aimpact/agents-api/realtime/interfaces/open-ai-events';
-import type { Agent } from '..';
+import type { BaseRealtimeAgent } from '..';
 import { Items } from './items';
 import { ConversationResponses } from './responses';
 import { Speech } from './speech';
@@ -14,7 +14,7 @@ export class Conversation {
 		return this.#id;
 	}
 
-	#agent: Agent;
+	#agent: BaseRealtimeAgent;
 	get agent() {
 		return this.#agent;
 	}
@@ -34,7 +34,7 @@ export class Conversation {
 		return this.#responses;
 	}
 
-	constructor(agent: Agent) {
+	constructor(agent: BaseRealtimeAgent) {
 		this.#agent = agent;
 		this.#items = new Items(this);
 		this.#responses = new ConversationResponses(this);

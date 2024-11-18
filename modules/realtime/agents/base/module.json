@@ -1,5 +1,5 @@
 {
-	"name": "realtime/agent",
+	"name": "realtime/agents/base",
 	"platforms": ["web", "node"],
 	"bundle": "ts",
 	"files": "*"
