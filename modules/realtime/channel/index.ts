@@ -7,16 +7,9 @@ export /*bundle*/ type ChannelStatusType = 'closed' | 'connecting' | 'open' | 'c
  * Interface defining settings for initializing the web socket.
  */
 export /*bundle*/ interface IChannelSettings {
-	url?: string;
-	apiKey: string;
-	model?: string;
-	dangerouslyAllowAPIKeyInBrowser?: boolean;
+	url: string;
+	headers?: Record<string, string> | string[];
 }
-
-const defaults = {
-	url: 'wss://api.openai.com/v1/realtime',
-	model: 'gpt-4o-realtime-preview-2024-10-01'
-};
 
 export /*bundle*/ class Channel extends Events {
 	#settings: IChannelSettings;
@@ -26,9 +19,9 @@ export /*bundle*/ class Channel extends Events {
 		return this.#ws;
 	}
 
-	#browser: boolean;
-	get browser() {
-		return this.#browser;
+	// Determine if running in the browser or Node.js
+	static get browser() {
+		return !(globalThis as any).process?.versions?.node;
 	}
 
 	get status(): ChannelStatusType {
@@ -57,22 +50,21 @@ export /*bundle*/ class Channel extends Events {
 
 	constructor(settings: IChannelSettings) {
 		super();
+		if (!settings?.url) throw new Error(`Invalid settings. Attribute 'url' must be specified`);
+
 		this.#settings = settings;
 	}
 
 	#create() {
-		let { url, apiKey, model } = this.#settings;
-		url = `${url || defaults.url}${model ? `?model=${model}` : `?model=${defaults.model}`}`;
-		apiKey = apiKey || null;
-		model = model || defaults.model;
-
-		// Determine if running in the browser or Node.js
-		this.#browser = !(globalThis as any).process?.versions?.node;
-
-		if (this.#browser) {
+		if (Channel.browser) {
 			// Browser WebSocket setup
 			const WebSocket = (globalThis as any).WebSocket;
-			const headers = ['realtime', `openai-insecure-api-key.${apiKey}`, 'openai-beta.realtime-v1'];
+
+			const { url, headers } = this.#settings;
+			if (headers && !(headers instanceof Array)) {
+				throw new Error('Invalid headers specification. An array was expected when client is a browser');
+			}
+
 			this.#ws = <WebSocket>new WebSocket(url, headers);
 
 			// Define event handlers for the browser
@@ -90,7 +82,12 @@ export /*bundle*/ class Channel extends Events {
 		} else {
 			// Node.js WebSocket setup
 			const { WebSocket } = require('ws');
-			const headers = { Authorization: `Bearer ${apiKey}`, 'OpenAI-Beta': 'realtime=v1' };
+
+			const { url, headers } = this.#settings;
+			if (headers && headers instanceof Array) {
+				throw new Error('Invalid headers specification. An object was expected when running on node.js');
+			}
+
 			this.#ws = <WebSocketNode>new WebSocket(url, { headers });
 
 			// Define event handlers for node.js
@@ -127,7 +124,7 @@ export /*bundle*/ class Channel extends Events {
 	 */
 	#cleanup(): void {
 		// Remove all listeners based on the environment
-		if (this.#browser) {
+		if (Channel.browser) {
 			// Browser: Remove listeners with removeEventListener
 			for (const [event, listener] of Object.entries(this.#listeners)) {
 				(<WebSocket>this.#ws).removeEventListener(event, listener);

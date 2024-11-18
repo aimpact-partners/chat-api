@@ -13,10 +13,10 @@ export /*bundle*/ class ClientSession extends ClientSessionBase {
 	}
 
 	constructor(settings: { vad: IVoiceAudioDetection }) {
-		const apiKey = localStorage.getItem('openai-key');
-		if (!apiKey) throw new Error('Open AI API key must be set as a localstorage item: `openai-key`');
+		const key = localStorage.getItem('openai-key');
+		if (!key) throw new Error('Open AI API key must be set as a localstorage item: `openai-key`');
 
-		const agent = new BaseRealtimeAgent({ apiKey, dangerouslyAllowAPIKeyInBrowser: true });
+		const agent = new BaseRealtimeAgent({ key });
 		super(agent, agent.session, settings);
 		this.#agent = agent;
 	}

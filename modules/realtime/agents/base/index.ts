@@ -1,10 +1,8 @@
-import type { ISessionSettings } from './session';
 import type { AgentEventName } from '@aimpact/agents-api/realtime/interfaces/agent-events';
+import { ISessionSettings } from './session';
 import { AgentSession } from './session';
 import { Conversation } from './conversation';
 import { Events } from '@beyond-js/events/events';
-
-export /*bundle*/ interface IClientSettings extends ISessionSettings {}
 
 export /*bundle*/ interface IVoiceAudioDetection {
 	type: 'server_vad';
@@ -39,7 +37,7 @@ export /*bundle*/ class BaseRealtimeAgent extends Events {
 		return this.#session.status;
 	}
 
-	constructor(settings: IClientSettings) {
+	constructor(settings: ISessionSettings) {
 		super();
 		this.#session = new AgentSession(this, settings);
 		this.#manager = new Conversation(this);

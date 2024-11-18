@@ -14,10 +14,12 @@ export class RealtimeConversationConnection {
 		ws.on('message', this.#onmessage);
 		ws.on('close', this.#onclose);
 
-		this.#agent = new AgentV2({ apiKey: OPENAI_API_KEY });
+		this.#agent = new AgentV2({ key: OPENAI_API_KEY });
 	}
 
-	#onmessage = (message: any) => {};
+	#onmessage = (message: any) => {
+		console.log('on message', message);
+	};
 
 	#onclose = () => {};
 }

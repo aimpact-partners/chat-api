@@ -1,72 +1,34 @@
 import type { IVoiceAudioDetection, AgentStatusType } from '@aimpact/agents-api/realtime/agents/base';
 import { ClientSessionBase } from '@aimpact/agents-api/realtime/client/base';
-
-// Define the server URL and the authentication token
-const SERVER_URL = 'ws://localhost:8080';
-const AUTH_TOKEN = 'your_secret_token';
+import { Channel } from './channel';
 
 export /*bundle*/ class ClientSession extends ClientSessionBase {
-	#ws: WebSocket;
-
-	#error: Error;
-	get error() {
-		return this.#error;
-	}
+	#channel: Channel;
 
 	get status(): AgentStatusType {
-		if (!this.#ws) return 'closed';
-
-		const { readyState: state } = this.#ws;
-		if (this.#error) {
-			return 'error';
-		} else if (state === WebSocket.CONNECTING) {
-			return 'connecting';
-		} else if (state === WebSocket.OPEN) {
-			return 'open';
-		} else if (state === WebSocket.CLOSING) {
-			return 'closing';
-		} else if (state === WebSocket.CLOSED) {
-			return 'closed';
-		}
+		return this.#channel.status;
 	}
 
-	#connected: boolean = false;
-	get connected(): boolean {
-		return this.#connected;
+	get error() {
+		return this.#channel.error;
+	}
+
+	constructor(settings: { vad: IVoiceAudioDetection }) {
+		const channel = new Channel();
+		super(channel, channel, settings);
+
+		this.#channel = channel;
 	}
 
 	async connect(): Promise<boolean> {
-		const headers = {
-			Authorization: `Bearer ${AUTH_TOKEN}`
-		};
+		const ok = await this.#channel.connect();
+		ok && (await super.connect());
 
-		const ws = (this.#ws = new WebSocket(SERVER_URL, { headers }));
-
-		// Handle the open connection
-		ws.on('open', () => {
-			this.#connected = true;
-		});
-
-		// Handle messages from the server
-		ws.on('message', (message: string) => {
-			console.log(`Received from server: ${message}`);
-		});
-
-		// Handle connection errors
-		ws.on('error', (error: Error) => {
-			console.error(`Connection error: ${error.message}`);
-		});
-
-		// Handle connection close
-		ws.on('close', () => {
-			this.#connected = false;
-		});
-
-		return true;
+		return ok;
 	}
 
 	async close() {
-		this.#ws.close();
+		this.#channel.close();
 		return await super.close();
 	}
 

@@ -6,8 +6,16 @@ import { Channel } from '@aimpact/agents-api/realtime/channel';
 import { Events } from '@beyond-js/events/events';
 import { RealtimeUtils } from '@aimpact/agents-api/realtime/utils';
 
-export /*bundle*/ interface ISessionSettings extends IChannelSettings {}
+export /*bundle*/ interface ISessionSettings {
+	key: string; // The Open AI API key
+}
+
 export /*bundle*/ type AgentStatusType = ChannelStatusType | 'created';
+
+const defaults = {
+	url: 'wss://api.openai.com/v1/realtime',
+	model: 'gpt-4o-realtime-preview-2024-10-01'
+};
 
 export class AgentSession extends Events {
 	#agent: BaseRealtimeAgent;
@@ -36,9 +44,21 @@ export class AgentSession extends Events {
 
 	constructor(agent: BaseRealtimeAgent, settings: ISessionSettings) {
 		super();
+
+		if (!settings?.key) throw new Error('OpenAI API key must be specified');
+
 		this.#agent = agent;
 
-		this.#channel = new Channel(settings);
+		const headers = (() => {
+			const { key } = settings;
+			if (Channel.browser) {
+				return ['realtime', `openai-insecure-api-key.${key}`, 'openai-beta.realtime-v1'];
+			} else {
+				return { Authorization: `Bearer ${key}`, 'OpenAI-Beta': 'realtime=v1' };
+			}
+		})();
+
+		this.#channel = new Channel({ url: `${defaults.url}?model=${defaults.model}`, headers });
 		this.#channel.on('open', this.#onopen);
 		this.#channel.on('close', this.#onclose);
 		this.#channel.on('message', this.#onmessage);
