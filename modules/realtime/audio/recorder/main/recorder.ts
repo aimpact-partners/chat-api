@@ -130,7 +130,7 @@ export /*bundle*/ class Recorder extends Events {
 		await this.ready;
 		if (!this.#worklet.check()) return;
 		if (!['stopped', 'paused'].includes(this.#status)) {
-			throw new Error(`Worklet cannot start recording as it is not stopped or paused`);
+			throw new Error(`Cannot start recording as it is not stopped or paused`);
 		}
 		this.#status = 'starting';
 

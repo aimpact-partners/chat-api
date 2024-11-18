@@ -83,8 +83,26 @@ export default function Widget() {
 		}
 	};
 
-	const { status } = client;
+	const { status, valid } = client;
 	const active = ['connecting', 'open', 'created'].includes(status);
+
+	if (!valid) {
+		const { recorder, player } = client;
+		const errors = [];
+		if (recorder?.error) {
+			errors.push(<div key="recorder-error">• Recorder is invalid: {recorder.error.message}</div>);
+		}
+		if (player?.error) {
+			errors.push(<div key="player-error">• Audio player is invalid: {player.error.message}</div>);
+		}
+
+		return (
+			<div className="phone flex items-center justify-center min-h-screen bg-gray-100">
+				<div>Errors found:</div>
+				{errors}
+			</div>
+		);
+	}
 
 	return (
 		<div className="phone flex items-center justify-center min-h-screen bg-gray-100">

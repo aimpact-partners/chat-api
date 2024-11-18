@@ -27,14 +27,18 @@ export /*bundle*/ abstract class ClientSessionBase extends Events {
 		return this.#vad;
 	}
 
+	#recorder: Recorder;
+	get recorder() {
+		return this.#recorder;
+	}
+
 	#player: StreamPlayer;
 	get player() {
 		return this.#player;
 	}
 
-	#recorder: Recorder;
-	get recorder() {
-		return this.#recorder;
+	get valid() {
+		return !this.#recorder.error && !this.#player.error;
 	}
 
 	#listeners = { listen: this.listen.bind(this) };

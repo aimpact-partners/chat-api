@@ -20,6 +20,25 @@
 	"deployment": {
 		"distributions": [
 			{
+				"name": "local-web",
+				"environment": "local",
+				"platform": "web",
+				"ports": {
+					"bundles": 6400
+				}
+			},
+			{
+				"name": "local-web",
+				"environment": "local",
+				"platform": "web",
+				"ts": {
+					"compiler": "tsc"
+				},
+				"ports": {
+					"bundles": 6401
+				}
+			},
+			{
 				"name": "http",
 				"environment": "local",
 				"platform": "node",

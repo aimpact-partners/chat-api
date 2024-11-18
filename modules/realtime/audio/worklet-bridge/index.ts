@@ -80,6 +80,7 @@ export /*bundle*/ abstract class WorkletBridge {
 			!this.#prepared && (await this.#context.audioWorklet.addModule(this.#src));
 			this.#prepared = true;
 		} catch (exc) {
+			console.log(`Error loading "${this.#name}" worklet:\n• ${exc.message}`);
 			this.#error = exc;
 			return exc;
 		} finally {

@@ -99,6 +99,10 @@ export /*bundle*/ class StreamPlayer {
 	 * You can add chunks beyond the current play point and they will be queued for play
 	 */
 	add16BitPCM(arrayBuffer: ArrayBuffer, trackId = 'default'): Int16Array {
+		if (this.#error) {
+			throw new Error(`Cannot play audio as player is in an invalid state. Check the 'error' property.`);
+		}
+
 		if (!this.#stream) throw new Error(`Stream player not connected`);
 
 		if (typeof trackId !== 'string') throw new Error(`trackId must be a string`);

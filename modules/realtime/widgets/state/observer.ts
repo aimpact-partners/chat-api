@@ -20,16 +20,16 @@ export /*bundle*/ class Observer {
 		const instance = (ref.current = new Observer());
 		useEffect(() => {
 			return () => {
-				instance._clean();
+				instance.#clean();
 			};
 		}, []);
 	}
 
 	static set(object: Events, event: string) {
-		this.instance._set(object, event);
+		this.instance.#set(object, event);
 	}
 
-	_set(object: Events, event: string) {
+	#set(object: Events, event: string) {
 		// Observer alrady set
 		if (this.#objects.get(object)?.get(event)) return;
 
@@ -47,7 +47,7 @@ export /*bundle*/ class Observer {
 		object.on(event, listener);
 	}
 
-	_clean() {
+	#clean() {
 		this.#objects.forEach((listeners, object) => {
 			listeners.forEach((listener, event) => {
 				object.off(event, listener);

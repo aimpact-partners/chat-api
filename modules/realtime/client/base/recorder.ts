@@ -16,11 +16,11 @@ export class Recorder extends Events {
 	}
 
 	get status() {
-		return this.#device?.recorder.status;
+		return this.#device?.recorder?.status;
 	}
 
 	get error() {
-		return this.#device?.recorder.error;
+		return this.#device?.recorder?.error;
 	}
 
 	#onchunk = (data: { raw: ArrayBuffer; mono: ArrayBuffer }) => {
