@@ -85,7 +85,7 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 	}
 
 	async #load(): Promise<void> {
-		const { category, name, language } = this;
+		const { name, language } = this;
 		this.#id = `${name}.${language}`;
 
 		// Get the prompt data
@@ -106,7 +106,7 @@ export /*bundle*/ class PromptTemplateProcessor implements IPromptGenerationPara
 
 		// The prompt cannot be an options prompt
 		if (this.#data.options) {
-			this.#error = ErrorGenerator.promptIsOptions(prompt.name);
+			this.#error = ErrorGenerator.promptIsOptions(name);
 			return;
 		}
 

@@ -1,3 +1,4 @@
+import type { CollectionResponseType } from '@beyond-js/firestore-collection/collection';
 import type { IProjectData } from '@aimpact/agents-api/data/interfaces';
 import { v4 as uuid } from 'uuid';
 import { FirestoreErrorManager } from '@beyond-js/firestore-collection/errors';
@@ -8,7 +9,7 @@ import { db } from '@beyond-js/firestore-collection/db';
 import { projects } from '@aimpact/agents-api/data/model';
 
 export /*bundle*/ class Projects {
-	static async data(id?: string) {
+	static async data(id?: string): Promise<CollectionResponseType<IProjectData>> {
 		return await projects.data({ id });
 	}
 

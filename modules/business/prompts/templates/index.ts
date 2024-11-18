@@ -173,7 +173,7 @@ export /*bundle*/ class PromptsTemplate {
 			const dataProject = await Projects.data(params.projectId);
 			if (dataProject.error) return dataProject;
 			if (!dataProject.data.exists) {
-				const error = ErrorGenerator.documentNotFound('projects', params.projectId, dataProject.data.error);
+				const error = ErrorGenerator.documentNotFound('projects', params.projectId);
 				return new Response({ error });
 			}
 
