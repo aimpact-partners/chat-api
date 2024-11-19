@@ -84,8 +84,8 @@ export class AgentSession extends Events {
 				this.off('session.created', oncreated);
 
 				this.#agent.trigger('session.created');
-				console.log('Session created. @TODO: handle session data (id, settings)', event);
 
+				// @TODO: Session created. @TODO: handle session data (id, settings)
 				resolve(true);
 			};
 

@@ -20,14 +20,34 @@ export class Channel extends Events {
 
 		this.#channel.on('open', this.#onopen);
 		this.#channel.on('close', this.#onclose);
+		this.#channel.on('message', this.#onmessage);
 	}
 
 	#onopen = () => this.trigger('open');
 	#onclose = () => this.trigger('close');
 
-	cleanup() {
+	#onmessage = (message: any) => {
+		try {
+			const parsed = JSON.parse(message);
+			const { event, data } = parsed;
+
+			if (!event) {
+				console.warn(`Agent message seems to be invalid, event not defined:`, message);
+				return;
+			}
+
+			console.log(`Event "${event}" has been received:`, data);
+			this.trigger(event, data);
+		} catch (exc) {
+			console.warn(`Unable to parse agent message:`, message, exc.message);
+			return;
+		}
+	};
+
+	#cleanup() {
 		this.#channel.off('open', this.#onopen);
 		this.#channel.off('close', this.#onclose);
+		this.#channel.off('message', this.#onmessage);
 	}
 
 	async connect() {
@@ -35,6 +55,11 @@ export class Channel extends Events {
 	}
 
 	async close() {
+		this.#cleanup();
 		return await this.#channel.close();
+	}
+
+	send(event: string, data: any) {
+		this.#channel.send(JSON.stringify({ event, data }));
 	}
 }

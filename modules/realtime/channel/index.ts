@@ -1,6 +1,8 @@
 import type { WebSocket as WebSocketNode, Data as MessageDataType } from 'ws';
 import { Events } from '@beyond-js/events/events';
 
+declare function bimport(module: string): Promise<any>;
+
 export /*bundle*/ type ChannelStatusType = 'closed' | 'connecting' | 'open' | 'closing' | 'error';
 
 /**
@@ -8,7 +10,7 @@ export /*bundle*/ type ChannelStatusType = 'closed' | 'connecting' | 'open' | 'c
  */
 export /*bundle*/ interface IChannelSettings {
 	url: string;
-	headers?: Record<string, string> | string[];
+	headers?: { [key: string]: string } | string[];
 }
 
 export /*bundle*/ class Channel extends Events {
@@ -30,13 +32,13 @@ export /*bundle*/ class Channel extends Events {
 		const { readyState: state } = this.#ws;
 		if (this.#error) {
 			return 'error';
-		} else if (state === WebSocket.CONNECTING) {
+		} else if (state === this.#ws.CONNECTING) {
 			return 'connecting';
-		} else if (state === WebSocket.OPEN) {
+		} else if (state === this.#ws.OPEN) {
 			return 'open';
-		} else if (state === WebSocket.CLOSING) {
+		} else if (state === this.#ws.CLOSING) {
 			return 'closing';
-		} else if (state === WebSocket.CLOSED) {
+		} else if (state === this.#ws.CLOSED) {
 			return 'closed';
 		}
 	}
@@ -55,7 +57,7 @@ export /*bundle*/ class Channel extends Events {
 		this.#settings = settings;
 	}
 
-	#create() {
+	async #create() {
 		if (Channel.browser) {
 			// Browser WebSocket setup
 			const WebSocket = (globalThis as any).WebSocket;
@@ -81,9 +83,9 @@ export /*bundle*/ class Channel extends Events {
 			}
 		} else {
 			// Node.js WebSocket setup
-			const { WebSocket } = require('ws');
+			const { WebSocket } = <{ WebSocket: typeof WebSocketNode }>await bimport('ws');
 
-			const { url, headers } = this.#settings;
+			const { url, headers } = <{ url: string; headers: { [key: string]: string } }>this.#settings;
 			if (headers && headers instanceof Array) {
 				throw new Error('Invalid headers specification. An object was expected when running on node.js');
 			}
@@ -145,7 +147,7 @@ export /*bundle*/ class Channel extends Events {
 
 	async connect(): Promise<boolean> {
 		if (this.#ws) throw new Error(`Socket status must be 'closed' before attempting to connect`);
-		this.#create();
+		await this.#create();
 
 		const promise: Promise<boolean> = new Promise(resolve => {
 			const off = () => {

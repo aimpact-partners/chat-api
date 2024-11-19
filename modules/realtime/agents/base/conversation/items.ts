@@ -27,7 +27,7 @@ import {
 import { ConversationItem } from './item';
 import { Events } from '@beyond-js/events/events';
 
-const logger = true;
+const LOG = true;
 
 export class Items extends Events {
 	#conversation: Conversation;
@@ -82,8 +82,8 @@ export class Items extends Events {
 		transcripts: Map<string, string>;
 	};
 
-	log(...values: any[]) {
-		logger && console.log(...values);
+	log(...args: any[]) {
+		LOG && console.log(...args);
 	}
 
 	constructor(conversation: Conversation) {

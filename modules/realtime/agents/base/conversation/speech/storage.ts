@@ -13,17 +13,18 @@ export class SpeechStorage {
 	#buffer: Int16Array = new Int16Array(0);
 	#stream: Writable;
 	#browser: boolean;
+	#prepared = false;
 
 	constructor(conversation: Conversation) {
 		this.#conversation = conversation;
 
 		// Determine if running in the browser or Node.js
 		this.#browser = !(globalThis as any).process?.versions?.node;
-		!this.#browser && this.#ready();
+		!this.#browser && this.#ready().catch(exc => console.log(exc));
 	}
 
-	#ready() {
-		const { Storage } = require('@google-cloud/storage');
+	async #ready() {
+		const { Storage } = await bimport('@google-cloud/storage');
 		const storage: Storage = new Storage();
 		const bucket = storage.bucket('conversations-audios');
 
@@ -37,6 +38,8 @@ export class SpeechStorage {
 
 		this.#stream.on('error', this.#onerror);
 		this.#stream.on('finish', this.#onfinish);
+
+		this.#prepared = true;
 	}
 
 	#onerror = (error: Error) => {
@@ -64,6 +67,15 @@ export class SpeechStorage {
 	flush() {
 		if (this.#browser) return;
 		if (this.#buffer.byteLength === 0) return;
+
+		if (!this.#prepared) {
+			// Reset the buffer, some audio is going to be lost
+			// This should never happen, it is related with the `ready` method
+			this.#buffer = new Int16Array(0);
+
+			console.warn(`Speech storage is not prepared`);
+			return;
+		}
 
 		// Write the current buffer to the GCS file stream
 		this.#stream.write(Buffer.from(this.#buffer.buffer), error => {

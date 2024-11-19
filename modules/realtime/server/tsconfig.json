@@ -4,7 +4,6 @@
 		"target": "es2018",
 		"noImplicitAny": true,
 		"moduleResolution": "Node",
-		"lib": [],
 		"types": []
 	}
 }

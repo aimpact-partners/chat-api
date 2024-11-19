@@ -34,5 +34,7 @@ export /*bundle*/ class ClientSession extends ClientSessionBase {
 
 	async update(settings: { conversation: { id: string } }): Promise<void> {}
 
-	listen(data: { mono: Int16Array; raw: Int16Array }): void {}
+	listen(data: { mono: Int16Array; raw: Int16Array }): void {
+		this.#channel.send('listen', { audio: data.mono.buffer });
+	}
 }

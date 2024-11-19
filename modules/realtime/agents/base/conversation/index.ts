@@ -8,6 +8,8 @@ import { Items } from './items';
 import { ConversationResponses } from './responses';
 import { Speech } from './speech';
 
+const LOG = false;
+
 export class Conversation {
 	#id: string;
 	get id() {
@@ -50,19 +52,23 @@ export class Conversation {
 		this.#speech.append(chunk);
 	}
 
+	log(...args: any[]) {
+		LOG && console.log(...args);
+	}
+
 	onCreated(event: IConversationCreatedServerEvent) {
-		console.log('[IMPLEMENTED] on[Conversation]Created event received:', event);
+		this.log('[IMPLEMENTED] on[Conversation]Created event received:', event);
 		this.#id = event.conversation.id;
 	}
 
 	onSpeechStarted(event: IInputAudioBufferSpeechStartedServerEvent) {
-		console.log('[IMPLEMENTED] onSpeechStarted event received:', event);
+		this.log('[IMPLEMENTED] onSpeechStarted event received:', event);
 		this.#speech.onStarted(event);
 		this.#items.speechStarted(event);
 	}
 
 	onSpeechStopped(event: IInputAudioBufferSpeechStoppedServerEvent, audio: Int16Array) {
-		console.log('onSpeechStopped event received:', event);
+		this.log('onSpeechStopped event received:', event);
 
 		// if (!this.#lookup.has(event.item_id)) {
 		// 	this.trigger('error', { error: `input_audio_buffer.speech_stopped: Item "${event.item_id}" not found` });

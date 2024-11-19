@@ -45,7 +45,6 @@ export class ConversationItemText extends Events {
 		if (event.part.type !== 'text') return;
 
 		this.#value += event.part.text;
-		console.log(this.#value);
 	}
 
 	/**
