@@ -27,7 +27,7 @@ import {
 import { ConversationItem } from './item';
 import { Events } from '@beyond-js/events/events';
 
-const LOG = true;
+const LOG = false;
 
 export class Items extends Events {
 	#conversation: Conversation;
