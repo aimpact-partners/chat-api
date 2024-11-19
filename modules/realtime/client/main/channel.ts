@@ -5,9 +5,11 @@ const SERVER_URL = 'ws://localhost:8080';
 
 export class Channel extends Events {
 	#channel: ChannelBase;
+	#created = false;
 
 	get status() {
-		return this.#channel.status;
+		const { status } = this.#channel;
+		return status === 'open' && this.#created ? 'created' : status;
 	}
 
 	get error() {
@@ -27,21 +29,25 @@ export class Channel extends Events {
 	#onclose = () => this.trigger('close');
 
 	#onmessage = (message: any) => {
+		let event: string, data: any;
+
 		try {
 			const parsed = JSON.parse(message);
-			const { event, data } = parsed;
+			({ event, data } = parsed);
 
 			if (!event) {
 				console.warn(`Agent message seems to be invalid, event not defined:`, message);
 				return;
 			}
-
-			console.log(`Event "${event}" has been received:`, data);
-			this.trigger(event, data);
 		} catch (exc) {
 			console.warn(`Unable to parse agent message:`, message, exc.message);
 			return;
 		}
+
+		console.log(`Event "${event}" has been received:`, data);
+
+		event === 'session.created' && (this.#created = true);
+		this.trigger(event, data);
 	};
 
 	#cleanup() {

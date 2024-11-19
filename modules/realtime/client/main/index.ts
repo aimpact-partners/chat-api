@@ -1,6 +1,7 @@
 import type { IVoiceAudioDetection, AgentStatusType } from '@aimpact/agents-api/realtime/agents/base';
 import { ClientSessionBase } from '@aimpact/agents-api/realtime/client/base';
 import { Channel } from './channel';
+import { RealtimeUtils } from '@aimpact/agents-api/realtime/utils';
 
 export /*bundle*/ class ClientSession extends ClientSessionBase {
 	#channel: Channel;
@@ -35,6 +36,7 @@ export /*bundle*/ class ClientSession extends ClientSessionBase {
 	async update(settings: { conversation: { id: string } }): Promise<void> {}
 
 	listen(data: { mono: Int16Array; raw: Int16Array }): void {
-		this.#channel.send('listen', { audio: data.mono.buffer });
+		const audio = RealtimeUtils.arrayBufferToBase64(data.mono);
+		this.#channel.send('listen', { audio });
 	}
 }

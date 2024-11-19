@@ -1,6 +1,7 @@
 import type { WebSocket } from 'ws';
 import type { IncomingMessage } from 'http';
 import { AgentV2 } from '@aimpact/agents-api/realtime/agents/v2';
+import { RealtimeUtils } from '@aimpact/agents-api/realtime/utils';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -56,8 +57,8 @@ export class RealtimeConversationConnection {
 		try {
 			switch (event) {
 				case 'listen':
-					const audio = new Int16Array(data.audio);
-					this.#agent.manager.listen(audio);
+					const audio = RealtimeUtils.base64ToArrayBuffer(data.audio);
+					this.#agent.manager.listen(new Int16Array(audio));
 					break;
 				default:
 					const error = `Realtime agent received message seems to be invalid, event name is not defined:`;
