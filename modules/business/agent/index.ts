@@ -121,7 +121,6 @@ export /*bundle*/ class Agent {
 			// Use the response body as a stream
 			const reader = response.body.getReader();
 
-			let error;
 			while (true) {
 				const { done, value } = await reader.read();
 				if (done) break;
@@ -134,9 +133,6 @@ export /*bundle*/ class Agent {
 					} else {
 						metadata.started = true;
 						const split = chunk.split('ÿ');
-						const data = JSON.parse(split[1]);
-						if (data.error) error = data.error;
-
 						metadata.value += split[1];
 						if (split[0]) yield { chunk: split[0] };
 					}
@@ -144,12 +140,12 @@ export /*bundle*/ class Agent {
 					metadata.value += chunk;
 				}
 			}
-			if (error) yield { metadata: error };
 
 			// Parse the metadata data
 			try {
 				metadata.parsed = JSON.parse(metadata.value);
-				const { answer, summary } = metadata?.parsed;
+				const { answer, summary, error } = metadata?.parsed;
+				if (error) yield { metadata: error };
 
 				const promises = [];
 
@@ -173,18 +169,18 @@ export /*bundle*/ class Agent {
 				// set last interaction on chat
 				promises.push(Chat.setLastInteractions(chatId, 4));
 
-				let error: any;
+				let errorPromises: any;
 				const responses = await Promise.all(promises);
 				responses.forEach(response => {
 					if (response.error) {
-						error = response.error;
+						errorPromises = response.error;
 						return;
 					}
 				});
-				if (error) yield { metadata: error };
+				if (errorPromises) yield { metadata: errorPromises };
 			} catch (exc) {
-				console.error(`HRC101`, exc);
-				return { status: false, error: ErrorGenerator.internalError('HRC101') };
+				console.error(`HRC102`, exc);
+				return { status: false, error: ErrorGenerator.internalError('HRC102') };
 			}
 
 			yield { metadata: <IMetadata>metadata.parsed };
