@@ -70,7 +70,7 @@ export const audio = async (req: IAuthenticatedRequest, res: IResponse) => {
 		return done({ status: false, error: ErrorGenerator.internalError('HRC101') });
 	}
 
-	if (metadata.error) return done({ status: false, error: metadata.error });
+	if (metadata?.error) return done({ status: false, error: metadata.error });
 
 	done({ status: true });
 };

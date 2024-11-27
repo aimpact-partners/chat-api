@@ -121,6 +121,7 @@ export /*bundle*/ class Agent {
 			// Use the response body as a stream
 			const reader = response.body.getReader();
 
+			let error;
 			while (true) {
 				const { done, value } = await reader.read();
 				if (done) break;
@@ -133,6 +134,9 @@ export /*bundle*/ class Agent {
 					} else {
 						metadata.started = true;
 						const split = chunk.split('ÿ');
+						const data = JSON.parse(split[1]);
+						if (data.error) error = data.error;
+
 						metadata.value += split[1];
 						if (split[0]) yield { chunk: split[0] };
 					}
@@ -140,6 +144,7 @@ export /*bundle*/ class Agent {
 					metadata.value += chunk;
 				}
 			}
+			if (error) yield { metadata: error };
 
 			// Parse the metadata data
 			try {
@@ -176,7 +181,7 @@ export /*bundle*/ class Agent {
 						return;
 					}
 				});
-				if (error) return { status: false, error };
+				if (error) yield { metadata: error };
 			} catch (exc) {
 				console.error(`HRC101`, exc);
 				return { status: false, error: ErrorGenerator.internalError('HRC101') };

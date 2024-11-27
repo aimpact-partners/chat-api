@@ -36,7 +36,8 @@ export /*bundle*/ class Chat {
 			const { data } = response.data;
 			if (!showMessages) return new BusinessResponse({ data });
 
-			const collection = await chats.doc({ id }).collection('messages').get();
+			// const collection = await chats.doc({ id }).collection('messages').get();
+			const collection = await chats.doc({ id }).collection('messages').orderBy('timestamp').get();
 			const messages = collection.docs.map(doc => {
 				const data = doc.data();
 				return {
@@ -48,7 +49,7 @@ export /*bundle*/ class Chat {
 					timestamp: Timestamp.format(data.timestamp)
 				};
 			});
-			messages.sort((a, b) => a.timestamp - b.timestamp);
+			// messages.sort((a, b) => a.timestamp - b.timestamp);
 
 			return new BusinessResponse({ data: Object.assign({}, data, { messages }) });
 		} catch (exc) {
