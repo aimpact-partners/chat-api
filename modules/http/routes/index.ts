@@ -10,9 +10,11 @@ import { UsersRoutes } from './users';
 import { join } from 'path';
 
 export /*bundle*/ class Routes implements IRoutes {
-	static setup(app: Application) {
+	setup(app: Application) {
 		try {
-			app.get('/', (req: Request, res: IResponse) => res.send('AImpact Chat API http server'));
+			app.get('/', (req: Request, res: IResponse) => {
+				res.send('AImpact Chat API http server');
+			});
 
 			AudiosRoutes.setup(app);
 			ChatsRoutes.setup(app);
