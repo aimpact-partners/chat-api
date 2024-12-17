@@ -1,6 +1,5 @@
 import { Server as ServerBase } from '@aimpact/agents-api/beyond-js/backend';
 import { RealtimeAgentsServer } from '@aimpact/agents-api/realtime/server';
-import * as express from 'express';
 
 import * as dotenv from 'dotenv';
 

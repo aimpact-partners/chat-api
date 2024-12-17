@@ -1,13 +1,13 @@
-import type { Request, Response as IResponse, Application } from 'express';
-import type { IAuthenticatedRequest } from '@aimpact/agents-api/http/middleware';
-import type { IChatDataSpecs } from '@aimpact/agents-api/data/interfaces';
-import { db } from '@beyond-js/firestore-collection/db';
-import { Response } from '@beyond-js/response/main';
 import { Chat, Chats } from '@aimpact/agents-api/business/chats';
+import type { IChatDataSpecs } from '@aimpact/agents-api/data/interfaces';
+import type { IAuthenticatedRequest } from '@aimpact/agents-api/http/middleware';
 import { UserMiddlewareHandler as middleware } from '@aimpact/agents-api/http/middleware';
+import { HTTPResponse as Response } from '@aimpact/agents-api/http/response';
+import { db } from '@beyond-js/firestore-collection/db';
 import { ErrorGenerator } from '@beyond-js/firestore-collection/errors';
-import { ChatMessagesRoutes } from './messages';
+import type { Application, Response as IResponse, Request } from 'express';
 import { IChat } from './interfaces';
+import { ChatMessagesRoutes } from './messages';
 
 export class ChatsRoutes {
 	static setup(app: Application) {
@@ -46,8 +46,7 @@ export class ChatsRoutes {
 			const { id } = req.params;
 			const { uid } = req.user;
 
-			// true for get messages
-			const { data, error } = await Chat.get(id, uid, true);
+			const { data, error } = await Chat.get(id, uid, true); // true for get messages
 			res.json(new Response({ data, error }));
 		} catch (exc) {
 			res.json(new Response({ error: ErrorGenerator.internalError(exc) }));
