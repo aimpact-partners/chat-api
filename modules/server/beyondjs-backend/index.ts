@@ -1,15 +1,11 @@
-import type { Express, Request, Response, NextFunction } from 'express';
+import type { Express, NextFunction, Request, Response } from 'express';
 import * as express from 'express';
-import * as socketio from 'socket.io';
-import * as http from 'http';
-import { Connections } from './connections';
 import { middleware } from 'express-openapi-validator';
+import * as http from 'http';
+import * as socketio from 'socket.io';
+import { Connections } from './connections';
 
 declare const bimport: (module: string) => Promise<any>;
-
-export /*bundle*/ interface IRoutes {
-	setup: (app: Express) => void;
-}
 
 interface IHMR {
 	on: (event: string, listener: () => any) => void;
@@ -42,9 +38,9 @@ export /*bundle*/ class Server {
 		return this.#port;
 	}
 
-	#Routes: IRoutes;
 	#hmr: IHMR;
 	#specs: string;
+	#setup: (app: Express) => void;
 
 	constructor(port: number | string) {
 		this.#port = port;
@@ -54,12 +50,14 @@ export /*bundle*/ class Server {
 
 	start(module: string) {
 		bimport(module)
-			.then(({ Routes, specs, hmr }: { Routes: IRoutes; specs: () => Promise<string>; hmr: IHMR }) => {
-				this.#Routes = Routes;
-				this.#hmr = hmr;
+			.then(
+				({ setup, specs, hmr }: { setup: (app: Express) => void; specs: () => Promise<string>; hmr: IHMR }) => {
+					this.#setup = setup;
+					this.#hmr = hmr;
 
-				return specs();
-			})
+					return specs();
+				}
+			)
 			.then(specs => {
 				this.#specs = specs;
 				this._setup();
@@ -76,7 +74,7 @@ export /*bundle*/ class Server {
 			this._setHeader();
 
 			// Call static method `setup`, to set up the HTTP endpoint routes
-			this.#Routes.setup(this.#app);
+			this.#setup(this.#app);
 
 			// Setup middleware for OpenAPI specs validation
 			this.#specs && this.#app.use(middleware({ apiSpec: this.#specs }));
@@ -88,7 +86,7 @@ export /*bundle*/ class Server {
 			this.#hmr.on('change', this.onChange);
 
 			this.#server = server.listen(this.#port, () => {
-				console.log(`HTTP API Server port:  "${this.#port}"`);
+				console.log(`HTTP API Server port: "${this.#port}"`);
 			});
 
 			this.#connections = new Connections(this.#server);

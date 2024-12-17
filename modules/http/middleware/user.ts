@@ -1,6 +1,6 @@
-import type { Request, Response, NextFunction } from 'express';
-import * as admin from 'firebase-admin';
 import type { IUser } from '@aimpact/agents-api/business/user';
+import type { NextFunction, Request, Response } from 'express';
+import * as admin from 'firebase-admin';
 
 export interface /*bundle*/ IAuthenticatedRequest extends Request {
 	user?: IUser;
@@ -30,11 +30,9 @@ export /*bundle*/ class UserMiddlewareHandler {
 				phoneNumber: decodedToken.phoneNumber
 			};
 			next();
-		} catch (e) {
-			console.error(e);
-			const code = e.message.includes('401') ? 401 : 500;
-
-			return res.status(500).json({ status: false, error: e.message, code });
+		} catch (exc) {
+			const code = exc.message.includes('401') ? 401 : 500;
+			return res.status(500).json({ status: false, error: exc.message, code });
 		}
 	}
 }
